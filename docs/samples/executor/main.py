@@ -18,6 +18,21 @@ logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(leve
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=8)
 
+@app.post('/greet.json')
+async def greet_api(request: Request):
+    body_raw = {}
+    try:
+        name = request.query_params.get("user")
+        if name is None:
+            return {"result_type": "FAILED", "error_msg": "params user is null"}
+
+        body_raw = await request.json()
+        logging.info("header:%s, request body:%s", request.headers.items(), body_raw)
+        greetWord = body_raw[name]
+        return {"result_type", "SUCCESS", "result", greetWord}
+    except Exception as e:
+        logging.error("greet processing failed. request body:%s", body_raw, e)
+        return {"result_type": "FAILED", "error_msg": "greet processing failed"}
 
 @app.post('/executor.json')
 async def executor_api(request: Request):
