@@ -91,8 +91,8 @@ tmp_ui_1          /docker-entrypoint.sh /bin ...   Up      0.0.0.0:8088->80/tcp,
 
 - Step 1: 提交 YAML 文件定义的流程图
 
-```yaml
-curl --location  --request POST 'http://127.0.0.1:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSimpleTest&feature_name=greet&alias=release' \
+```curl
+curl --location  --request POST 'http://127.0.0.1:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSimple&feature_name=greet&alias=release' \
 --header 'Content-Type: text/plain' \
 --data-raw '---
 version: 1.0.0

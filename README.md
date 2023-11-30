@@ -20,7 +20,7 @@ Before you begin, ensure that the following tools are installed:
 
 ### Service Deployment
 
-Install Rill Flow services on your local Kubernetes environment using Docker-Compose:
+Install Rill Flow services on your local environment using Docker-Compose:
 
 ```shell
 cat << EOF > docker-compose.yaml
@@ -69,7 +69,7 @@ Once deployed, you can access the Rill Flow management console at <http://localh
 - Step 1: Submit a YAML file defining a workflow
 
 ```curl
-curl --location  --request POST 'http://127.0.0.1:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSimpleTest&feature_name=greet&alias=release' \
+curl --location  --request POST 'http://127.0.0.1:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSimple&feature_name=greet&alias=release' \
 --header 'Content-Type: text/plain' \
 --data-raw '---
 version: 1.0.0
@@ -105,7 +105,7 @@ curl -XPOST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple
 
 - Step 3：Query the task execution results
 
-  Query the execution details via the Rill Flow management console
+  Query the execution details via the Rill Flow management console.(admin/admin)
 
 ```curl
 http://127.0.0.1:8080/#/flow-instance/list
