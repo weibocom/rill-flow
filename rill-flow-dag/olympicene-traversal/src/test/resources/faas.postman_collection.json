@@ -1,0 +1,378 @@
+{
+	"variables": [],
+	"info": {
+		"name": "faas",
+		"_postman_id": "7f4b4d54-2736-4286-4245-5d1e5e82e028",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "submit",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/run.json?url=http://test.com/test",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"run.json"
+					],
+					"query": [
+						{
+							"key": "url",
+							"value": "http://test.com/test",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "version: 0.0.1\nnamespace: olympicene\nname: test\ntype: flow\ntasks:\n- category: function\n  name: A\n  resourceName: \\\"olympicene::test::function1::prod\\\"\n  pattern: task_scheduler\n  inputMappings:\n     - target: $.input.url\n       source: $.config.url\n  outputMappings:\n     - target: $.context.segments\n       source: $.output.segments\n  next: B\n- category: foreach\n  name: B\n  inputMappings:\n    - target: $.input.segments\n      source: $.context.segments\n  iterationMapping:\n      collection: $.input.segments\n      item: segmentUrl\n  outputMappings:\n    - target: $.context.gopUrls\n      source: $.output.sub_context.[*].gopUrl\n  next: C\n  tasks:\n     - category: function\n       resourceName: \\\"testBusinessId::testFeatureName::testResource::prod\\\"\n       pattern: task_scheduler\n       name: B1\n       next: B2\n       inputMappings:\n          - target: $.input.segmentUrl\n            source: $.config.segmentUrl\n       outputMappings:\n          - target: $.context.gopPath\n            source: $.output.gopPath\n     - category: function\n       resourceName: \\\"testBusinessId::testFeatureName::testResource::prod\\\"\n       name: B2\n       pattern: task_scheduler\n       inputMappings:\n          - target: $.input.gopPath\n            source: $.context.gopPath\n       outputMappings:\n          - target: $.context.gopUrl\n            source: $.output.gopUrl\n- category: function\n  name: C\n  resourceName: \\\"olympicene::test::funtion1::prod\\\"\n  pattern: task_scheduler\n  inputMappings:\n     - target: $.input.gopUrls\n       source: $.context.gopUrls\n  outputMappings:\n     - target: $.context.url\n       source: $.output.url"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishA",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=A&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "A",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"segments\": [\n    \"gopUrl1\", \"gopUrl2\"\n  ]\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishB01",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=B-0-B1&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "B-0-B1",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"gopPath\": \"gopPath1\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishB02",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=B-0-B2&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "B-0-B2",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"gopUrl\": \"gopResultUrl1\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishB11",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=B-1-B1&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "B-1-B1",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"gopPath\": \"gopPath2\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishB12",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=B-1-B2&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "B-1-B2",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"gopUrl\": \"gopResultUrl2\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "finishC",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/od/finish.json?executionId=a0c6112e-fd60-4db3-ba43-9893bf5ab200&name=C&taskStatus=SUCCEEDED",
+					"protocol": "http",
+					"host": [
+						"10",
+						"77",
+						"120",
+						"131"
+					],
+					"port": "8080",
+					"path": [
+						"od",
+						"finish.json"
+					],
+					"query": [
+						{
+							"key": "executionId",
+							"value": "a0c6112e-fd60-4db3-ba43-9893bf5ab200",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "name",
+							"value": "C",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "taskStatus",
+							"value": "SUCCEEDED",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"url\": \"http://test.com/result1\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

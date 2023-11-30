@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright 2021-2023 Weibo, Inc.
+  ~
+  ~    Licensed under the Apache License, Version 2.0 (the "License");
+  ~    you may not use this file except in compliance with the License.
+  ~    You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~    Unless required by applicable law or agreed to in writing, software
+  ~    distributed under the License is distributed on an "AS IS" BASIS,
+  ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~    See the License for the specific language governing permissions and
+  ~    limitations under the License.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--rill flow ok http client start-->
+    <bean id="rillFlowHttpTemplate" class="org.springframework.web.client.RestTemplate">
+        <property name="requestFactory" ref="rillFlowHttpRequestFactory"/>
+        <constructor-arg index="0">
+            <list>
+                <bean id="byteArrayHttpMessageConverter"
+                      class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+                <bean id="stringHttpMessageConverter"
+                      class="org.springframework.http.converter.StringHttpMessageConverter">
+                    <constructor-arg value="UTF-8"/>
+                </bean>
+                <bean id="resourceHttpMessageConverter"
+                      class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+                <bean id="sourceHttpMessageConverter"
+                      class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
+                <bean id="allEncompassingFormHttpMessageConverter"
+                      class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>
+                <bean id="mappingJackson2HttpMessageConverter"
+                      class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="rillFlowHttpRequestFactory"
+          class="org.springframework.http.client.OkHttp3ClientHttpRequestFactory">
+        <constructor-arg name="client" ref="rillFlowHttpClient"/>
+    </bean>
+
+    <bean id="rillFlowHttpClient" class="com.weibo.rill.flow.service.component.OkHttpClientFactoryBean">
+        <property name="connectTimeOut" value="500"/>
+        <property name="writeTimeOut" value="1500"/>
+        <property name="readTimeOut" value="1500"/>
+        <property name="connectionPool">
+            <bean class="okhttp3.ConnectionPool">
+                <constructor-arg name="maxIdleConnections" value="10"/>
+                <constructor-arg name="keepAliveDuration" value="10"/>
+                <constructor-arg name="timeUnit" value="SECONDS"/>
+            </bean>
+        </property>
+    </bean>
+    <!--rill flow ok http client end-->
+
+</beans>

@@ -1,0 +1,56 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: parallelAsyncTask
+tasks:
+  - category: pass
+    name: random
+    outputMappings:
+      - transform: "let list = seq.list();  let random = rand(source)+1;  for i in range(0, random) {  	seq.add(list, i*source);  }  return list;  "
+        target: "$.context.segments"
+        source: $.context.rand_num
+    next: foreachNode
+  - category: foreach
+    name: foreachNode
+    next: print
+    iterationMapping:
+      collection: $.input.segments
+      item: segment_item
+    inputMappings:
+      - target: $.input.segments
+        source: $.context.segments
+    outputMappings:
+      - target: $.context.callback_result_list
+        source: $.output.sub_context.[*].callback_result
+    tasks:
+      - category: function
+        name: executor
+        resourceName: http://sample-executor:8000/executor.json
+        pattern: task_async
+        inputMappings:
+          - target: $.input.segment_item
+            source: $.context.segment_item
+        outputMappings:
+          - target: $.context.executor_result
+            source: $.output.result.executor_result
+        next: callback
+      - category: function
+        name: callback
+        resourceName: http://sample-executor:8000/callback.json
+        pattern: task_sync
+        inputMappings:
+          - target: $.input.executor_result
+            source: $.context.executor_result
+        outputMappings:
+          - target: $.context.callback_result
+            source: $.output.callback_result
+  - category: function
+    name: print
+    pattern: task_sync
+    resourceName: "http://sample-executor:8000/calculate.json"
+    inputMappings:
+      - target: $.input.callback_result_list
+        source: $.context.callback_result_list
+    outputMappings:
+      - target: $.context.sum
+        source: $.output.sum

@@ -1,0 +1,63 @@
+version: 0.0.1
+type: flow
+workspace: rillFlow
+dagName: txt2img
+tasks:
+  - category: function
+    name: chatgptExecutor
+    pattern: task_async
+    parameters: {"apikey":"<OPENAI_API_KEY>"}
+    resourceName: chatgpt://
+    resourceProtocol: chatgpt
+    inputMappings:
+      - source: $.context.prompt
+        target: $.input.prompt
+    outputMappings:
+      - source: $.output.result
+        target: $.context.gpt_response
+      - source: $.output.error
+        target: $.context.error
+    next: gptOutputProcessor
+  - category: function
+    name: gptOutputProcessor
+    pattern: task_sync
+    resourceName: http://<RILL_FLOW_HOST>/flow/sample/gpt_output_processor.json
+    inputMappings:
+      - source: $.context.gpt_response
+        target: $.input.result
+    outputMappings:
+      - source: $.output.result
+        target: $.context.gpt_output_processor_result
+    next: StableDiffusion
+  - category: function
+    name: StableDiffusion
+    pattern: task_sync
+    resourceName: http://<SD_API_HOST>/sdapi/v1/txt2img
+    inputMappings:
+      - target: $.input.prompt
+        source: $.context.gpt_output_processor_result
+      - target: $.input.negative_prompt
+        source: ""
+      - target: $.input.seed
+        source: 1
+      - target: $.input.steps
+        source: 20
+      - target: $.input.width
+        source: 512
+      - target: $.input.height
+        source: 512
+      - target: $.input.cfg_scale
+        source: 7
+      - target: $.input.sampler_name
+        source: "DPM++ 2M Karras"
+      - target: $.input.n_iter
+        source: 1
+      - target: $.input.batch_size
+        source: 1
+    outputMappings:
+      - target: $.context.images
+        source: $.output.images
+      - target: $.context.parameters
+        source: $.output.parameters
+      - target: $.context.info
+        source: $.output.info

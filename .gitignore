@@ -1,0 +1,10 @@
+*.iml
+target
+.idea
+
+dependency-reduced-pom.xml
+
+.java-version
+.DS_Store
+/rill-flow-web/src/main/resources/static/
+.vscode/

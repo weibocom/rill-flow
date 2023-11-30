@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: decebal
+Build-Jdk: 17.0.8
+Plugin-Id: aliyun-ai-plugin
+Plugin-Provider: rill-flow
+Plugin-Version: 0.0.1

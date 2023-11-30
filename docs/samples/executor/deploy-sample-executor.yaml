@@ -1,0 +1,42 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: sample-executor
+  namespace: rill-flow
+spec:
+  type: NodePort
+  selector:
+    rill-flow: sample-executor
+  ports:
+    - name: web-port
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: sample-executor
+  namespace: rill-flow
+  labels:
+    rill-flow: sample-executor
+spec:
+  selector:
+    matchLabels:
+      rill-flow: sample-executor
+  template:
+    metadata:
+      labels:
+        rill-flow: sample-executor
+    spec:
+      containers:
+        - name: sample-executor
+          image: 'weibocom/sample-executor:0.0.1'
+          imagePullPolicy: Always
+          ports:
+            - hostPort: 8000
+              containerPort: 8000
+              protocol: TCP
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst

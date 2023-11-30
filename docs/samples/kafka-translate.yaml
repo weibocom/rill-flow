@@ -1,0 +1,34 @@
+version: 1.0.0
+workspace: rillFlowSample
+dagName: kafkaTranslate
+type: flow
+tasks:
+  - category: function
+    name: chatgptExecutor
+    pattern: task_async
+    parameters:
+      {
+        "apikey":"<OPENAI_API_KEY>",
+        "prompt_prefix": "Please translate into Chinese: ",
+      }
+    resourceName: chatgpt://
+    resourceProtocol: chatgpt
+    inputMappings:
+      - source: $.context.message
+        target: $.input.prompt
+    outputMappings:
+      - source: $.output.result
+        target: $.context.gpt_response
+      - source: $.output.error
+        target: $.context.error
+    next: gptOutputProcessor
+  - category: function
+    name: gptOutputProcessor
+    pattern: task_sync
+    resourceName: "http://sample-executor:8000/gpt_output_processor.json"
+    inputMappings:
+      - source: $.context.gpt_response
+        target: $.input.result
+    outputMappings:
+      - source: $.output.result
+        target: $.context.gpt_output_processor_result

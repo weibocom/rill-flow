@@ -1,0 +1,29 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: subdagTask
+tasks:
+  - category: pass
+    name: start
+    next: subdag
+  - category: function
+    name: subdag
+    resourceName: rillflow://rillFlowSample:parallelAsyncTask
+    pattern: flow_sync
+    inputMappings:
+      - target: $.input.rand_num
+        source: $.context.parent_rand_num
+    outputMappings:
+      - target: $.context.sub_context.sum
+        source: $.output.sum
+    next: callback
+  - category: function
+    name: callback
+    pattern: task_sync
+    resourceName: http://sample-executor:8000/sub_callback.json
+    inputMappings:
+      - target: $.input.sum
+        source: $.context.sub_context.sum
+    outputMappings:
+      - target: $.context.sub_callback.print
+        source: $.output.callback_result

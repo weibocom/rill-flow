@@ -1,0 +1,39 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: callApiSample
+tasks:
+  - category: pass
+    name: startNode
+    next: callApiNode
+  - category: function
+    name: callApiNode
+    pattern: task_sync
+    next: returnNode
+    resourceName: http://sample-executor:8000/choice.json
+    inputMappings:
+      - target: $.input.input_num
+        source: $.context.input_num
+    outputMappings:
+      - target: $.context.sum
+        source: $.output.sum
+  - category: return
+    name: returnNode
+    inputMappings:
+      - target: $.input.sum
+        source: $.context.sum
+      - target: $.input.result_type
+        source: $.context.result_type
+    conditions:
+      - $.input.[?(@.result_type == "SUCCESS")]
+    next: printNode
+  - category: function
+    name: printNode
+    pattern: task_sync
+    resourceName: http://sample-executor:8000/print.json
+    inputMappings:
+      - target: $.input.sum
+        source: $.context.sum
+    outputMappings:
+      - target: $.context.print_result
+        source: $.output.print_result

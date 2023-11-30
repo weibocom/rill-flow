@@ -1,0 +1,50 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package com.weibo.rill.flow.impl.auth;
+
+import com.weibo.rill.flow.common.util.AuthHttpUtil;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
+import com.weibo.rill.flow.service.auth.AuthHeaderGenerator;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.TreeMap;
+
+@Service("authHeaderGenerator")
+public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
+    @Value("${rill_flow_callback_url}")
+    private String flowCallbackUrl;
+
+    @Value("${rill_flow_auth_secret_key}")
+    private String authSecret;
+
+    @Override
+    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task) {
+        Map<String, String> paramMap = new TreeMap<>();
+        if (executionId != null) {
+            paramMap.put("execution_id", executionId);
+        }
+        if (task != null) {
+            paramMap.put("task_name", task.getName());
+        }
+        paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
+        AuthHttpUtil.addSignToParam(paramMap, authSecret);
+        httpHeaders.add("X-Callback-Url", flowCallbackUrl + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
+    }
+}
