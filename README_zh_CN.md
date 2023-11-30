@@ -56,6 +56,8 @@ services:
     environment:
       - BACKEND_SERVER=http://rill-flow:8080
       - TRACE_SERVER=http://jaeger:16686
+  sample-executor:
+    image: weibocom/rill-flow-sample:sample-executor 
 EOF
 docker-compose up -d
 ```
@@ -102,7 +104,7 @@ type: flow
 tasks:
   - category: function
     name: Bob 
-    resourceName: http://127.0.0.1:8080/flow/sample/greet.json?user=Bob
+    resourceName: http://sample-executor:8000/greet.json?user=Bob
     pattern: task_sync
     tolerance: false
     next: Alice
@@ -111,7 +113,7 @@ tasks:
         target: "$.input.Bob"
   - category: function
     name: Alice 
-    resourceName: http://127.0.0.1:8080/flow/sample/greet.json?user=Alice
+    resourceName: http://sample-executor:8000/greet.json?user=Alice
     pattern: task_sync
     tolerance: false
     inputMappings:
