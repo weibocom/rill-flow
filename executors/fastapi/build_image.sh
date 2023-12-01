@@ -1,1 +1,1 @@
-docker build -t rill-flow-executor-fastapi:0.0.1 .
+docker buildx build -t weibocom/rill-flow-sample:fastapi-executor
