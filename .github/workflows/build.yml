@@ -35,6 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=weibocom_rill-flow
+        if: env.SONAR_TOKEN != ''
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
