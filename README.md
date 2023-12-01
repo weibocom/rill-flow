@@ -4,13 +4,17 @@
 
 ## Overview
 
-Rill Flow is a high-performance and scalable distributed workflow orchestration service, originally designed to tackle the complexities and high concurrency demands of video processing workflows in the Weibo video business context. Key features of Rill Flow include user-friendliness, high concurrency, and low latency, which are essential for efficient task management. Currently, Rill Flow is extensively utilized in Weibo's video publishing and transcoding operations, handling tens of millions of tasks daily and supporting core processes of the video services.
+Rill Flow is a high-performance, scalable distributed workflow orchestration service with the following core features:
 
-Additionally, with the widespread adoption of Large Language Models (LLMs), Rill Flow has undergone optimizations based on cloud-native architecture and adapted for LLMs through plugin integration. This enhancement significantly improves scalability, enabling swift support for AI-generated content (AIGC) workflow integration.
+- High performance: Supports the execution of tens of millions of tasks per day, with task execution latency less than 100ms
+- Distributed: Supports the orchestration and scheduling of heterogeneous distributed systems
+- Ease to use: supports visual process orchestration and plug-in access
+- Cloud native: Supports cloud native container deployment and cloud native function orchestration
+- AIGC: supports rapid integration of LLM model services
 
 ## QuickStart
 
-### Tool Preparation
+### Environment Preparation
 
 Before you begin, ensure that the following tools are installed:
 
@@ -105,7 +109,7 @@ curl -XPOST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple
 
 - Step 3：Query the task execution results
 
-  Query the execution details via the Rill Flow management console.(admin/admin)
+  Query the execution details via the Rill Flow UI.(admin/admin)
 
 ```curl
 http://127.0.0.1:8088/#/flow-instance/list
