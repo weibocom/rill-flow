@@ -89,6 +89,8 @@ public class KafkaTrigger implements Trigger {
                 topic, descriptorId, kafkaServer, groupId);
 
         JSONObject jsonDetails = buildCommonDetail(uid, descriptorId, callback, resourceCheck);
+        jsonDetails.put("group_id", groupId);
+        jsonDetails.put("kafka_server", kafkaServer);
         String taskKey = topic + "#" + descriptorId;
         if (taskInfos.containsKey(taskKey)) {
             return new JSONObject(Map.of("code", -1, "message", "task has already existed"));

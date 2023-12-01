@@ -19,14 +19,16 @@ import java.util.Optional;
 @RequestMapping("/flow/trigger")
 public class TriggerController {
     @Autowired
-    private KafkaTemplate<Object, Object> template;
-    @Autowired
     private Map<String, Trigger> triggerMap;
 
     @PostConstruct
     private void initTriggers() {
-        for (Trigger trigger: triggerMap.values()) {
-            trigger.initTriggerTasks();
+        for (Map.Entry<String, Trigger> triggerEntry: triggerMap.entrySet()) {
+            try {
+                triggerEntry.getValue().initTriggerTasks();
+            } catch (Exception e) {
+                log.warn("init trigger error, trigger type: {}, ", triggerEntry.getKey(), e);
+            }
         }
     }
 
