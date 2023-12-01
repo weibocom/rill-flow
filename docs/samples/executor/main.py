@@ -111,7 +111,7 @@ async def choice_api(request: Request):
         if len(body_raw) == 0:
             return {"result_type": "FAILED", "error_msg": "body is empty"}
         total = 0
-        for i in range(body_raw["random_num"]):
+        for i in range(body_raw["input_num"]):
             total += i * i
         return {"sum": total}
     except Exception as e:
