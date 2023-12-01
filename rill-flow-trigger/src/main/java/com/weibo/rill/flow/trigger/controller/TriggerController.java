@@ -25,8 +25,12 @@ public class TriggerController {
 
     @PostConstruct
     private void initTriggers() {
-        for (Trigger trigger: triggerMap.values()) {
-            trigger.initTriggerTasks();
+        for (Map.Entry<String, Trigger> triggerEntry: triggerMap.entrySet()) {
+            try {
+                triggerEntry.getValue().initTriggerTasks();
+            } catch (Exception e) {
+                log.warn("init trigger error, trigger type: {}, ", triggerEntry.getKey(), e);
+            }
         }
     }
 
