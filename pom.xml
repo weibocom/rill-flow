@@ -50,8 +50,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/weibocom/rill-flow</connection>
-        <developerConnection>scm:git:ssh://github.com/weibocom/rill-flow</developerConnection>
+        <connection>scm:git:git://github.com/weibocom/rill-flow.git</connection>
+        <developerConnection>scm:git:ssh://github.com/weibocom/rill-flow.git</developerConnection>
         <url>https://github.com/weibocom/rill-flow</url>
     </scm>
 
