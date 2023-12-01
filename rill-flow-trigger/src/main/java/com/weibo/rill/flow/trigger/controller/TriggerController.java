@@ -19,8 +19,6 @@ import java.util.Optional;
 @RequestMapping("/flow/trigger")
 public class TriggerController {
     @Autowired
-    private KafkaTemplate<Object, Object> template;
-    @Autowired
     private Map<String, Trigger> triggerMap;
 
     @PostConstruct
