@@ -156,6 +156,8 @@ https://rill-flow.github.io/docs/intro
 - Kylen     ([@Kylen](https://github.com/Kylen0714))
 - zzfzzf    ([@zzfzzf](https://github.com/zzfzzf))
 - feifei    ([@feifei325](https://github.com/feifei325))
+- moqimoqidea    ([@moqimoqidea](https://github.com/moqimoqidea))
+- Guo, Jiansheng ([@guojiansheng0925](https://github.com/guojiansheng0925)))
 
 ## 开源协议
 
