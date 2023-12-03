@@ -147,17 +147,17 @@ https://rill-flow.github.io/docs/intro
 
 以下是项目贡献者及其 GitHub 链接：
 
-- axb       ([@qdaxb](https://github.com/qdaxb))
+- axb       ([@qdaxb](https://github.com/qdaxb)) *Maintainer*
+- techlog   ([@techloghub](https://github.com/techloghub)) *Maintainer*
+- ch15084   ([@ch15084](https://github.com/ch15084)) *Maintainer*
 - Ocean     ([@hhh041](https://github.com/hhh041))
 - xilong-t  ([@xilong-t](https://github.com/xilong-t))
-- techlog   ([@techloghub](https://github.com/techloghub))
-- ch15084   ([@ch15084](https://github.com/ch15084))
 - qfl       ([@qiaofenlin](https://github.com/qiaofenlin))
 - Kylen     ([@Kylen](https://github.com/Kylen0714))
 - zzfzzf    ([@zzfzzf](https://github.com/zzfzzf))
 - feifei    ([@feifei325](https://github.com/feifei325))
 - moqimoqidea    ([@moqimoqidea](https://github.com/moqimoqidea))
-- Guo, Jiansheng ([@guojiansheng0925](https://github.com/guojiansheng0925)))
+- Guo, Jiansheng ([@guojiansheng0925](https://github.com/guojiansheng0925))
 
 ## 开源协议
 
