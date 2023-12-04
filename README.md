@@ -116,7 +116,8 @@ http://127.0.0.1:8088/#/flow-instance/list
 ```
 
 ## Document
-https://rill-flow.github.io/en/docs/intro
+* [Document](https://rill-flow.github.io/en/docs/intro)
+* [中文文档](https://rill-flow.github.io/docs/intro)
 
 ## Contributors
 
