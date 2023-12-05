@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <artifactId>rill-flow-plugins</artifactId>
     <packaging>pom</packaging>
@@ -14,6 +14,9 @@
         <module>aliyun-ai-plugin</module>
         <module>chatgpt-plugin</module>
     </modules>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.weibo</groupId>

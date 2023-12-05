@@ -19,7 +19,7 @@
     <parent>
         <artifactId>rill-flow</artifactId>
         <groupId>com.weibo</groupId>
-        <version>0.1.1</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <modules>
         <module>olympicene-traversal</module>
@@ -63,7 +63,6 @@
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>2.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

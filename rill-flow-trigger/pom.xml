@@ -4,20 +4,17 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <artifactId>rill-flow-trigger</artifactId>
     <packaging>jar</packaging>
 
     <name>rill-flow-trigger Maven Webapp</name>
     <url>http://maven.apache.org</url>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
