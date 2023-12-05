@@ -34,16 +34,11 @@
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-storage</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-ddl</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>olympicene-storage</artifactId>
         </dependency>
 
         <dependency>
