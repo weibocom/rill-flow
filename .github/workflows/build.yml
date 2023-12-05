@@ -18,8 +18,8 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin' # Alternative distribution options are available.
-          gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-private-key: MAVEN_GPG_PRIVATE_KEY
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
@@ -39,7 +39,7 @@ jobs:
         if: env.SONAR_TOKEN == ''
       - name: Build and analyze with sonar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=weibocom_rill-flow
         if: env.SONAR_TOKEN != ''
