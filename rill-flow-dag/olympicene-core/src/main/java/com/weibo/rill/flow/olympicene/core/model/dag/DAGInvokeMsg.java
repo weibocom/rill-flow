@@ -23,7 +23,7 @@ import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
 import com.weibo.rill.flow.interfaces.model.task.InvokeTimeInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import lombok.*;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;

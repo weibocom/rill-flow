@@ -21,7 +21,7 @@ import com.weibo.rill.flow.interfaces.model.exception.DAGException;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
