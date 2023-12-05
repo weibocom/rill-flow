@@ -20,6 +20,8 @@ jobs:
     steps:
       # 拉取源码
       - uses: actions/checkout@v3
+        with:
+          token: ${{secrets.RELEASE_TOKEN}}
       - name: Set up Apache Maven Central
         uses: actions/setup-java@v4
         with:
