@@ -27,10 +27,10 @@ jobs:
           java-version: 17
           server-id: ossrh
           cache: 'maven'
-          server-username: secrets.MAVEN_USERNAME
-          server-password: secrets.MAVEN_CENTRAL_TOKEN
-          gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          gpg-private-key: secrets.MAVEN_GPG_PRIVATE_KEY
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
       - name: Configure Git User
         run: |
           git config user.email "actions@github.com"
