@@ -51,7 +51,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/weibocom/rill-flow.git</connection>
-        <developerConnection>scm:git:ssh://github.com/weibocom/rill-flow.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/weibocom/rill-flow.git</developerConnection>
         <url>https://github.com/weibocom/rill-flow</url>
     </scm>
 
