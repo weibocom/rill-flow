@@ -90,4 +90,5 @@ jobs:
           push: true
           context: .
           file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           tags: ${{ github.event.inputs.releaseVersion != '' && format('weibocom/rill-flow:latest,weibocom/rill-flow:{0}',github.event.inputs.releaseVersion) || 'weibocom/rill-flow:latest' }}
