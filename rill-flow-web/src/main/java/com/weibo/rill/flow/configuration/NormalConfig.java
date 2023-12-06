@@ -49,4 +49,15 @@ public class NormalConfig {
         decorator.setTaskDecoratorAssemblerList(List.of(new ShareMdcFeatureDecoratorAssembler()));
         return decorator;
     }
+
+    @Bean(destroyMethod = "shutdown")
+    public ExecutorService statisticExecutor() {
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("olympicene-statistic-%d").build();
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(20, 100, 100000,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(10000), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+        TaskDecoratingExecutorServiceDecorator decorator = new TaskDecoratingExecutorServiceDecorator(threadPoolExecutor);
+        decorator.setTaskDecoratorAssemblerList(List.of(new ShareMdcFeatureDecoratorAssembler()));
+
+        return decorator;
+    }
 }
