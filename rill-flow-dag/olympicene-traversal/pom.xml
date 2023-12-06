@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow-dag</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,16 +34,11 @@
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-storage</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-ddl</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>olympicene-storage</artifactId>
         </dependency>
 
         <dependency>

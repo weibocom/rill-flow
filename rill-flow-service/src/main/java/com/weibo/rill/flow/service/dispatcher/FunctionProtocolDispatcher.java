@@ -33,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.Map;
@@ -56,7 +57,7 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
         TaskInfo taskInfo = dispatchInfo.getTaskInfo();
         String taskInfoName = taskInfo.getName();
         String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
-        HttpHeaders header = dispatchInfo.getHeaders();
+        MultiValueMap<String, String> header = dispatchInfo.getHeaders();
 
         try {
             HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);

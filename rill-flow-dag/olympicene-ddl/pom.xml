@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow-dag</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,7 +34,6 @@
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
-            <version>2.4</version>
         </dependency>
     </dependencies>
 </project>
