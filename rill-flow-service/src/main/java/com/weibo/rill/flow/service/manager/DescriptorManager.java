@@ -156,6 +156,7 @@ public class DescriptorManager {
     }
 
     /**
+     * @param useCache 是否使用缓存:descriptorIdToRedisKeyCache
      * <pre>
      * 先根据descriptorId获取其对应的redisKey，再根据redisKey取对应版本的yaml文件具体内容
      *
@@ -167,7 +168,6 @@ public class DescriptorManager {
      *    redisKey与yaml文件一一对应 所以该缓存默认启用
      *    如: testBusinessId:testFeatureName:md5_4297f44b13955235245b2497399d7a93 -> yaml
      *
-     * @param useCache 是否使用缓存:descriptorIdToRedisKeyCache
      * </pre>
      */
     public String getDagDescriptorWithCache(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {

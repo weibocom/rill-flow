@@ -3,8 +3,6 @@ package com.weibo.rill.flow.common.model;
 
 /**
  * @author fenglin
- * @Description
- * @createTime 2023年09月19日 11:43:00
  */
 public enum NodeType {
     FUNCTION("function"),

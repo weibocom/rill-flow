@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author xinyu55
- * @date 2023-08-31 14:20
  */
 @Slf4j
 public class PrometheusActions {

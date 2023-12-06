@@ -63,8 +63,7 @@ jobs:
           -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
           -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
           -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
-          -DscmCommentPrefix="[skip ci]" \
-          -Darguments="-Dmaven.javadoc.skip=true"
+          -DscmCommentPrefix="[skip ci]"
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}

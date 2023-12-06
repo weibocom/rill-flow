@@ -18,7 +18,6 @@ package com.weibo.rill.flow.olympicene.core.exception;
 
 /**
  * @author xinyu
- * @date 2023/08/15 14:56
  */
 public class AuthException extends RuntimeException {
 
