@@ -17,9 +17,9 @@
 package com.weibo.rill.flow.service.component;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
-import org.testng.collections.Maps;
 
 import java.util.Map;
 import java.util.Objects;

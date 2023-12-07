@@ -19,7 +19,7 @@ package com.weibo.rill.flow.interfaces.model.strategy;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.http.HttpHeaders;
+import org.springframework.util.MultiValueMap;
 
 import java.util.Map;
 
@@ -29,5 +29,5 @@ public class DispatchInfo {
     String executionId;
     TaskInfo taskInfo;
     Map<String, Object> input;
-    HttpHeaders headers;
+    MultiValueMap<String,String> headers;
 }

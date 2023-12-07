@@ -19,7 +19,7 @@
     <parent>
         <artifactId>rill-flow</artifactId>
         <groupId>com.weibo</groupId>
-        <version>0.1.0</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -50,12 +50,12 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
-            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -64,8 +64,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-ddl</artifactId>
-            <version>0.1.0</version>
-            <scope>compile</scope>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

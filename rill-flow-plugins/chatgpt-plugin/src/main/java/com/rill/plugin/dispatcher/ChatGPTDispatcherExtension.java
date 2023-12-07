@@ -11,12 +11,12 @@ import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.utils.HttpUtil;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
+import org.springframework.util.MultiValueMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,8 +98,8 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
 
     private void callback(DispatchInfo dispatchInfo, String result, String resultType) {
         logger.info("callback is start");
-        HttpHeaders headers = dispatchInfo.getHeaders();
-        String callbackUrl = headers.getFirst("X-Callback-Url");
+        MultiValueMap<String, String> headers = dispatchInfo.getHeaders();
+        String callbackUrl = headers.get("X-Callback-Url").stream().findFirst().get();
         try {
             JSONObject jsonObject;
             if (StringUtils.isNotBlank(result)) {

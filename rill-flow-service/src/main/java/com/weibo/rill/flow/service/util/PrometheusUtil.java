@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author xinyu55
- * @date 2023-08-30 11:01
  */
 @Component
 public class PrometheusUtil implements ApplicationContextAware {

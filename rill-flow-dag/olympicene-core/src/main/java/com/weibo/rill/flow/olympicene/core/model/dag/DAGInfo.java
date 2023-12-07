@@ -20,8 +20,8 @@ import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
