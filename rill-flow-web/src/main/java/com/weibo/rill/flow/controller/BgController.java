@@ -44,7 +44,7 @@ public class BgController {
     private static final String BUSINESS_IDS = "business_ids";
     private static final String TRACE_ID_PREFIX = "trace_id_";
 
-    @Value("${rill_flow_trace_query_url}")
+    @Value("${rill_flow_trace_query_host:}")
     private String traceQueryUrl;
 
     @Autowired
