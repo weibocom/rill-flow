@@ -17,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,9 @@ public class BgController {
     private static final String EXECUTION_ID = "execution_id";
     private static final String BUSINESS_IDS = "business_ids";
     private static final String TRACE_ID_PREFIX = "trace_id_";
+
+    @Value("${rill_flow_trace_query_url}")
+    private String traceQueryUrl;
 
     @Autowired
     private DescriptorManager descriptorManager;
@@ -152,9 +156,21 @@ public class BgController {
     ) {
 
         Map<String, Object> result = dagRuntimeFacade.getBasicDAGInfo(executionId, false);
-        String traceId = redisClient.get(TRACE_ID_PREFIX + executionId);
-        result.put("trace_uri", "/trace/" + traceId);
+        appendTraceInfo(executionId, result);
         return result;
+    }
+
+    private void appendTraceInfo(String executionId, Map<String, Object> result) {
+        if (StringUtils.isNotBlank(traceQueryUrl)) {
+            try {
+                String traceId = redisClient.get(TRACE_ID_PREFIX + executionId);
+                if (StringUtils.isNotBlank(traceId)) {
+                    result.put("trace_url", traceQueryUrl + "/trace/" + traceId);
+                }
+            } catch (Exception e) {
+                log.error("append trace info error! execution_id:{}", executionId, e);
+            }
+        }
     }
 
     /**
@@ -202,7 +218,7 @@ public class BgController {
 
     @GetMapping(value = "/user/currentUser.json")
     public Map<String, Object> currentUser() {
-        String user ="{\n" +
+        String user = "{\n" +
                 "\t\"realName\": \"admin\",\n" +
                 "\t\"password\": \"123456\",\n" +
                 "\t\"homePath\": \"/flow-instance/list\",\n" +
