@@ -1,0 +1,50 @@
+version: '3'
+services:
+  rill-flow-textGatherer:
+    image: <repository>/rill-flow-textgatherer:0.0.1
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/tmp:/tmp"
+    environment:
+      - PROXY_RILL_FLOW_DOMAIN="<rill-flow-ip>"
+      - PROXY_RILL_FLOW_PORT=8080
+    networks:
+      - rill-flow
+  rill-flow-bark:
+    image: <repository>/rill-flow-bark:0.0.1
+    ports:
+      - "9001:9001"
+    volumes:
+      - "/tmp:/tmp"
+    environment:
+      - PROXY_RILL_FLOW_DOMAIN="<rill-flow-ip>"
+      - PROXY_RILL_FLOW_PORT=8080
+    networks:
+      - rill-flow
+  rill-flow-wav2lip:
+    image: <repository>/rill-flow-wav2lip:0.0.1
+    ports:
+      - "9002:9002"
+    volumes:
+      - "/tmp:/tmp"
+    environment:
+      - PROXY_RILL_FLOW_DOMAIN="<rill-flow-ip>"
+      - PROXY_RILL_FLOW_PORT=8080
+    networks:
+      - rill-flow
+  rill-flow-media-processor:
+    image: <repository>/rill-flow-processor:0.0.1
+    ports:
+      - "9003:9003"
+    volumes:
+      - "/tmp:/tmp"
+    environment:
+      - PROXY_RILL_FLOW_DOMAIN="<rill-flow-ip>"
+      - PROXY_RILL_FLOW_PORT=8080
+    networks:
+      - rill-flow
+networks:
+  rill-flow:
+    name: "<rill-flow-network>"
+    external: true

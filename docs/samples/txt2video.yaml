@@ -1,0 +1,60 @@
+version: 0.0.1
+type: flow
+workspace: rillFlow
+dagName: digitalHuman
+tasks:
+  - category: function
+    name: textGatherer
+    pattern: task_async
+    resourceName: http://<rill-flow-textGatherer-ip>:9000/scrape
+    inputMappings:
+      - target: $.input.paragraph_limit
+        source: $.context.paragraph_limit
+    outputMappings:
+      - target: $.context.txt_array
+        source: $.output.txt_array
+    next: generate
+  - category: foreach
+    name: generate
+    iterationMapping:
+      collection: $.input.txt_array
+      item: txt
+    inputMappings:
+      - target: $.input.txt_array
+        source: $.context.txt_array
+    outputMappings:
+      - target: $.context.segments
+        source: $.output.sub_context.[*].segment
+    next: processor
+    tasks:
+      - category: function
+        name: bark
+        pattern: task_async
+        resourceName: http://<rill-flow-bark-ip>:9001/bark/generate
+        inputMappings:
+          - source: $.context.txt
+            target: $.input.txt
+        outputMappings:
+          - source: $.output.audio_path
+            target: $.context.audio_path
+        next: digital
+      - category: function
+        name: digital
+        pattern: task_async
+        resourceName: http://<rill-flow-wav2lip-ip>:9002/wav2lip/generate
+        inputMappings:
+          - source: $.context.audio_path
+            target: $.input.audio_path
+        outputMappings:
+          - source: $.output.segment
+            target: $.context.segment
+  - category: function
+    name: processor
+    pattern: task_async
+    resourceName: http://<rill-flow-media-processor-ip>:9003/moviepy/generate
+    inputMappings:
+      - source: $.context.segments
+        target: $.input.segments
+    outputMappings:
+      - source: $.output.video_path
+        target: $.context.video_path
