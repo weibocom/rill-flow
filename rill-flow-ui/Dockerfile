@@ -20,6 +20,6 @@ RUN echo "🎉  启动服务  🎉"
 
 # 启动 Nginx 服务
 # 在容器启动时替换 Nginx 配置文件中的模板变量
-CMD /bin/sh -c "envsubst '\$BACKEND_SERVER \$TRACE_SERVER' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+CMD /bin/sh -c "envsubst '\$BACKEND_SERVER' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
 RUN echo "🎉 架 🎉 设 🎉 成 🎉 功 🎉"
 
