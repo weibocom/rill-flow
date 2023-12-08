@@ -33,13 +33,13 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean javadoc:javadoc test
+        run: mvn -B clean javadoc:javadoc clean verify  -P coverage  -DskipITs=false -Dmaven.test.skip=false
         if: env.SONAR_TOKEN == ''
       - name: Build and analyze with sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=weibocom_rill-flow
+        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage  -DskipITs=false -Dmaven.test.skip=false -Dsonar.projectKey=weibocom_rill-flow
         if: env.SONAR_TOKEN != ''
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
