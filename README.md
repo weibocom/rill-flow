@@ -1,6 +1,6 @@
 # Rill Flow
 
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![EN doc](https://img.shields.io/badge/document-中文-red.svg)](README_zh_CN.md)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) ![codecov](https://codecov.io/gh/weibocom/rill-flow/branch/main/graph/badge.svg) [![CN doc](https://img.shields.io/badge/document-中文-blue.svg)](README_zh_CN.md)
 
 ## Overview
 
