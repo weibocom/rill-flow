@@ -139,6 +139,9 @@ curl -XPOST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple
 http://127.0.0.1:8088/#/flow-instance/list
 ```
 
+![preview](https://rill-flow.github.io/img/flow_sample.jpg)
+
+
 ## 文档
 * [中文文档](https://rill-flow.github.io/docs/intro)
 
