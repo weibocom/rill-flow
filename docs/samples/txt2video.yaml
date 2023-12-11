@@ -6,7 +6,7 @@ tasks:
   - category: function
     name: textGatherer
     pattern: task_async
-    resourceName: http://<rill-flow-textGatherer-ip>:9000/scrape
+    resourceName: http://<textGatherer-executor-host>:9000/scrape
     inputMappings:
       - target: $.input.paragraph_limit
         source: $.context.paragraph_limit
@@ -30,7 +30,7 @@ tasks:
       - category: function
         name: bark
         pattern: task_async
-        resourceName: http://<rill-flow-bark-ip>:9001/bark/generate
+        resourceName: http://<bark-executor-host>:9001/bark/generate
         inputMappings:
           - source: $.context.txt
             target: $.input.txt
@@ -41,7 +41,7 @@ tasks:
       - category: function
         name: digital
         pattern: task_async
-        resourceName: http://<rill-flow-wav2lip-ip>:9002/wav2lip/generate
+        resourceName: http://<wav2lip-executor-host>:9002/wav2lip/generate
         inputMappings:
           - source: $.context.audio_path
             target: $.input.audio_path
@@ -51,7 +51,7 @@ tasks:
   - category: function
     name: processor
     pattern: task_async
-    resourceName: http://<rill-flow-media-processor-ip>:9003/moviepy/generate
+    resourceName: http://<mergevideo-executor-host>:9003/moviepy/generate
     inputMappings:
       - source: $.context.segments
         target: $.input.segments
