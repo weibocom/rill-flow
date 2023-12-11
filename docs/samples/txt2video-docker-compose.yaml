@@ -7,7 +7,7 @@ services:
     volumes:
       - "/tmp:/tmp"
     environment:
-      - PROXY_RILL_FLOW_DOMAIN="<RILL_FLOW_HOST>"
+      - RILL_FLOW_HOST="<rill-flow-ip>"
       - PROXY_RILL_FLOW_PORT=8080
     networks:
       - rill-flow
@@ -18,7 +18,7 @@ services:
     volumes:
       - "/tmp:/tmp"
     environment:
-      - PROXY_RILL_FLOW_DOMAIN="<RILL_FLOW_HOST>"
+      - RILL_FLOW_HOST="<rill-flow-ip>"
       - PROXY_RILL_FLOW_PORT=8080
     networks:
       - rill-flow
@@ -29,7 +29,7 @@ services:
     volumes:
       - "/tmp:/tmp"
     environment:
-      - PROXY_RILL_FLOW_DOMAIN="<RILL_FLOW_HOST>"
+      - RILL_FLOW_HOST="<rill-flow-ip>"
       - PROXY_RILL_FLOW_PORT=8080
     networks:
       - rill-flow
@@ -40,7 +40,7 @@ services:
     volumes:
       - "/tmp:/tmp"
     environment:
-      - PROXY_RILL_FLOW_DOMAIN="<RILL_FLOW_HOST>"
+      - RILL_FLOW_HOST="<rill-flow-ip>"
       - PROXY_RILL_FLOW_PORT=8080
     networks:
       - rill-flow
