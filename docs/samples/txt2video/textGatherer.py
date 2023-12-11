@@ -43,10 +43,10 @@ class RillFlowSpider(scrapy.Spider):
     def finish_task(self, execution_id: str, name: str, paragraph_list: dict):
         headers = {"Content-Type": "application/json"}
         RILL_FLOW_HOST = os.environ.get(
-            "PROXY_RILL_FLOW_DOMAIN", "127.0.0.1"
+            "RILL_FLOW_HOST", "127.0.0.1"
         )
         RILL_FLOW_PORT = os.environ.get(
-            "PROXY_RILL_FLOW_PORT", "8080"
+            "RILL_FLOW_PORT", "8080"
         )
         url = f"http://{RILL_FLOW_HOST}:{RILL_FLOW_PORT}/flow/finish.json"
         params = {'execution_id': execution_id, 'task_name': name}

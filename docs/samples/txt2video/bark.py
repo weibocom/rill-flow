@@ -37,10 +37,10 @@ def transformers_genarate(excution_id: str, name: str, txt: str):
 def finish_task(execution_id, name, audio_path):
     headers = {"Content-Type": "application/json"}
     RILL_FLOW_HOST = os.environ.get(
-        "PROXY_RILL_FLOW_DOMAIN", "127.0.0.1"
+        "RILL_FLOW_HOST", "127.0.0.1"
     )
     RILL_FLOW_PORT = os.environ.get(
-        "PROXY_RILL_FLOW_PORT", "8080"
+        "RILL_FLOW_PORT", "8080"
     )
     url = f"http://{RILL_FLOW_HOST}:{RILL_FLOW_PORT}/flow/finish.json"
     params = {'execution_id': execution_id, 'task_name': name}
