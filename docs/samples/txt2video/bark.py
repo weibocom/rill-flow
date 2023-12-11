@@ -6,15 +6,21 @@ def bark_generator_async(execution_id: str, name: str, request: dict):
     return {"result": "success"}
 
 
-def transformers_genarate(excution_id: str, name: str, txt: str):
-    processor = AutoProcessor.from_pretrained("suno/bark")
-    # # docker config path
-    model_path = os.getcwd() + "/bark/models/bark"
+@app.on_event("startup")
+async def on_startup():
+    load_model()
 
-    model = BarkModel.from_pretrained(model_path)
+
+def load_model():
+    global bark_model, processor, voice_preset
+    bark_model = BarkModel.from_pretrained(model_path)
+    processor = AutoProcessor.from_pretrained("suno/bark")
     voice_preset = "v2/en_speaker_9"
+
+
+def transformers_genarate(excution_id: str, name: str, txt: str):
     inputs = processor(txt, voice_preset=voice_preset)
-    audio_array = model.generate(**inputs)
+    audio_array = bark_model.generate(**inputs)
     audio_array = audio_array.cpu().numpy().squeeze()
 
     # save audio to disk
