@@ -11,17 +11,17 @@ tasks:
       - target: $.input.paragraph_limit
         source: $.context.paragraph_limit
     outputMappings:
-      - target: $.context.txt_array
-        source: $.output.txt_array
+      - target: $.context.text_array
+        source: $.output.text_array
     next: generate
   - category: foreach
     name: generate
     iterationMapping:
-      collection: $.input.txt_array
-      item: txt
+      collection: $.input.text_array
+      item: text
     inputMappings:
-      - target: $.input.txt_array
-        source: $.context.txt_array
+      - target: $.input.text_array
+        source: $.context.text_array
     outputMappings:
       - target: $.context.segments
         source: $.output.sub_context.[*].segment
@@ -32,8 +32,8 @@ tasks:
         pattern: task_async
         resourceName: http://<bark-executor-host>:9001/bark/generate
         inputMappings:
-          - source: $.context.txt
-            target: $.input.txt
+          - source: $.context.text
+            target: $.input.text
         outputMappings:
           - source: $.output.audio_path
             target: $.context.audio_path
