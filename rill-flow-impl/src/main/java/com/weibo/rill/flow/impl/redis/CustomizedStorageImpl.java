@@ -50,14 +50,14 @@ public class CustomizedStorageImpl implements CustomizedStorage {
         int reserveTimeInSecond = getReserveTimeInSecond(bucketName);
 
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             pipeline.hset(bucketName, "expire", String.valueOf(currentTimeSecond + reserveTimeInSecond));
             if (MapUtils.isNotEmpty(fieldToValues)) {
                 fieldToValues.forEach((field, value) -> pipeline.hset(bucketName, field, value.toString()));
             }
             pipeline.expire(bucketName, reserveTimeInSecond);
             pipeline.sync();
-        }
+        });
         return bucketName;
     }
 
@@ -67,10 +67,10 @@ public class CustomizedStorageImpl implements CustomizedStorage {
         }
 
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             fieldToValues.forEach((field, value) -> pipeline.hset(bucketName, field, value.toString()));
             pipeline.sync();
-        }
+        });
     }
 
     public Map<String, String> load(String bucketName, boolean hGetAll, List<String> fieldNames, String fieldPrefix) {
@@ -105,9 +105,7 @@ public class CustomizedStorageImpl implements CustomizedStorage {
     public boolean remove(String bucketName, List<String> fieldNames) {
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
         if (CollectionUtils.isNotEmpty(fieldNames)) {
-            try (Pipeline pipeline = jedisFlowClient.pipelined()) {
-                fieldNames.forEach(fieldName -> pipeline.hdel(bucketName, fieldName));
-            }
+            jedisFlowClient.pipelined().accept(pipeline -> fieldNames.forEach(fieldName -> pipeline.hdel(bucketName, fieldName)));
         }
         return true;
     }

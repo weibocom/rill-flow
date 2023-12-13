@@ -248,14 +248,14 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
                 log.info("setBusinessValue business aggregate switcher off, businessAggregate:{}", businessAggregate);
                 return;
             }
-            try (Pipeline pipeline = businessAggregateClient.pipelined()) {
+            businessAggregateClient.pipelined().accept(pipeline -> {
                 businessAggregate.forEach((businessKey, hash) -> {
                             hash.forEach((field, incrValue) -> pipeline.hincrBy(businessKey, field, incrValue));
                             pipeline.expire(businessKey, BUSINESS_AGGREGATE_EXPIRE_TIME_IN_SECOND);
                         }
                 );
                 pipeline.sync();
-            }
+            });
         } catch (Exception e) {
             log.warn("setBusinessValue fails, ", e);
         }
@@ -286,7 +286,7 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
         int reserveTime = ValueExtractor.getConfiguredValue(executionId, bizDConfs.getRedisBusinessIdToUnfinishedReserveSecond(), 86400);
 
         JedisFlowClient jedisFlowClient = (JedisFlowClient) runtimeRedisClients.choose(flowKey);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             if (waitTime > 0L) {
                 pipeline.hincrBy(flowKey, buildFlowResourceWaitTimeField(resourceType), waitTime);
             }
@@ -295,7 +295,7 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
             }
             pipeline.expire(flowKey, reserveTime);
             pipeline.sync();
-        }
+        });
     }
 
     private void businessResourceCount(String resourceName, String businessKey, String serviceId) {
