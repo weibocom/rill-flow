@@ -1,16 +1,20 @@
 # main.py
+class Item(BaseModel):
+    paragraph_limit: int = 2
+
+
 @app.post("/scrape")
-def start_scrapy_async(execution_id: str, name: str, request: dict):
-    executor.submit(start_scrapy, execution_id, name, request)
+def start_scrapy_async(request: Request, item: Item):
+    callback_url = request.headers.get("X-Callback-Url")
+    executor.submit(start_scrapy, item, callback_url)
     return {"result": "success"}
 
 
-def start_scrapy(execution_id: str, name: str, request: dict):
-    paragraph_limit = request["paragraph_limit"]
+def start_scrapy(item: Item, callback_url: str):
+    paragraph_limit = item.paragraph_limit
     subprocess.run(['scrapy', 'crawl', 'rill_flow',
-                    '-a', 'execution_id=' + execution_id,
-                    '-a', 'name=' + name,
-                    '-a', 'paragraph_limit=' + str(paragraph_limit)])
+                    '-a', 'paragraph_limit=' + str(paragraph_limit),
+                    '-a', 'callback_url=' + callback_url])
 
 
 if __name__ == '__main__':
@@ -28,29 +32,17 @@ class RillFlowSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
+
     def parse(self, response):
-        execution_id = self.execution_id
-        name = self.name
-        paragraph_limit = self.paragraph_limit
         paragraph = response.css('p::text').getall()
-        if (len(paragraph) < int(paragraph_limit)):
-            paragraph_list = paragraph
-        else:
-            paragraph_list = paragraph[:int(paragraph_limit)]
-        self.finish_task(execution_id, name, paragraph_list)
-
-
-    def finish_task(self, execution_id: str, name: str, paragraph_list: dict):
-        headers = {"Content-Type": "application/json"}
-        RILL_FLOW_HOST = os.environ.get(
-            "RILL_FLOW_HOST", "127.0.0.1"
-        )
-        RILL_FLOW_PORT = os.environ.get(
-            "RILL_FLOW_PORT", "8080"
-        )
-        url = f"http://{RILL_FLOW_HOST}:{RILL_FLOW_PORT}/flow/finish.json"
-        params = {'execution_id': execution_id, 'task_name': name}
-        data = {
-            "txt_array": paragraph_list
+        paragraph_list = paragraph[:int(self.paragraph_limit)]
+        callback_body = {
+            "text_array": paragraph_list
         }
-        requests.post(url, data=json.dumps(data), params=params, headers=headers)
+        self.callback(self.callback_url, callback_body)
+
+
+    def callback(self, callback_url, callback_body):
+        headers = {"Content-Type": "application/json"}
+        payload = json.dumps(callback_body)
+        requests.post(callback_url, headers=headers, data=payload)
