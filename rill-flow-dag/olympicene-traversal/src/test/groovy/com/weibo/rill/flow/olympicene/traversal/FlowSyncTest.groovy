@@ -11,13 +11,13 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
 import com.weibo.rill.flow.olympicene.traversal.result.LocalSyncDAGResultHandler
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import spock.lang.Specification
 
 import java.util.concurrent.ExecutorService
@@ -29,9 +29,9 @@ class FlowSyncTest extends Specification {
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     DAGResultHandler dagResultHandler = new LocalSyncDAGResultHandler()
     ExecutorService executor = Executors.newFixedThreadPool(10)
-    RedisClient redisClient = Mock(RedisClient.class)
+    TraceService traceService = Mock(TraceService.class)
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, dagStorageProcedure, null, dagResultHandler, Mock(DAGDispatcher.class), Mock(DefaultTimeChecker.class), executor, redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, dagStorageProcedure, null, dagResultHandler, Mock(DAGDispatcher.class), Mock(DefaultTimeChecker.class), executor, traceService, switcherManager)
 
     def "test one passTask dag should work well"() {
         given:

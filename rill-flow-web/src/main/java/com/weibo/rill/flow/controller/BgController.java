@@ -8,6 +8,7 @@ import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
@@ -52,7 +53,7 @@ public class BgController {
     private DAGRuntimeFacade dagRuntimeFacade;
 
     @Autowired
-    private DAGContextStorage dagContextStorage;
+    private TraceService traceService;
 
     /**
      * 流程图的详情
@@ -159,11 +160,7 @@ public class BgController {
             return;
         }
         try {
-            Map<String, Object> context = dagContextStorage.getContext(executionId);
-            if (MapUtils.isEmpty(context)) {
-                return;
-            }
-            String traceId = (String) context.getOrDefault("traceId", StringUtils.EMPTY);
+            String traceId = traceService.getTraceId(executionId);
             if (StringUtils.isBlank(traceId)) {
                 return;
             }

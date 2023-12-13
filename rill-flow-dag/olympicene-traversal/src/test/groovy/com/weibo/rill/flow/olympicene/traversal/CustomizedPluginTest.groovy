@@ -7,7 +7,6 @@ import com.weibo.rill.flow.interfaces.model.task.FunctionTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult
 import com.weibo.rill.flow.olympicene.traversal.helper.SameThreadExecutorService
@@ -16,6 +15,7 @@ import com.weibo.rill.flow.olympicene.traversal.runners.DAGRunner
 import com.weibo.rill.flow.olympicene.traversal.runners.FunctionTaskRunner
 import com.weibo.rill.flow.olympicene.traversal.runners.TaskRunner
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import org.slf4j.Logger
 import spock.lang.Specification
 
@@ -25,12 +25,12 @@ import java.util.function.Supplier
 
 class CustomizedPluginTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
-    RedisClient redisClient = Mock(RedisClient.class)
+    TraceService traceService = Mock(TraceService.class)
     Logger mockLogger = Mock(Logger.class)
 
     def "notify plugin test"() {
         given:
-        DAGOperations dagOperationsMock = Mock(DAGOperations.class, 'constructorArgs': [null, null, null, null, null, null, null, redisClient]) as DAGOperations
+        DAGOperations dagOperationsMock = Mock(DAGOperations.class, 'constructorArgs': [null, null, null, null, null, null, null, traceService]) as DAGOperations
         Olympicene olympicene = new Olympicene(dagStorage, dagOperationsMock, SameThreadExecutorService.INSTANCE, null)
 
         BiConsumer<Runnable, Map<String, Object>> plugin =
@@ -95,7 +95,7 @@ class CustomizedPluginTest extends Specification {
         Map<String, TaskRunner> taskRunners = [(TaskCategory.FUNCTION.getValue()): functionTaskRunnerMock]
         TimeCheckRunner timeCheckRunner = Mock(TimeCheckRunner.class, 'constructorArgs':[null, null, null, null]) as TimeCheckRunner
         DAGTraversal dagTraversal = Mock(DAGTraversal.class, 'constructorArgs': [null, null, null, null]) as DAGTraversal
-        DAGOperations dagOperations = new DAGOperations(SameThreadExecutorService.INSTANCE, taskRunners, dagRunnerMock, timeCheckRunner, dagTraversal, Mock(Callback.class), null, redisClient)
+        DAGOperations dagOperations = new DAGOperations(SameThreadExecutorService.INSTANCE, taskRunners, dagRunnerMock, timeCheckRunner, dagTraversal, Mock(Callback.class), null, traceService)
 
         BiFunction<Supplier<ExecutionResult>, Map<String, Object>, ExecutionResult> plugin =
                 ({ nextActions, params ->

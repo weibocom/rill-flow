@@ -43,11 +43,13 @@ import com.weibo.rill.flow.olympicene.traversal.runners.DAGRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TaskRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner;
 import com.weibo.rill.flow.interfaces.model.task.*;
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService;
 import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -57,7 +59,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class DAGOperations {
     private static final String EXECUTION_ID = "executionId";
-    private static final String INVALID_TRACE_ID = "00000000000000000000000000000000";
 
     private final ExecutorService runnerExecutor;
     private final Map<String, TaskRunner> taskRunners;
@@ -67,7 +68,7 @@ public class DAGOperations {
     private final Callback<DAGCallbackInfo> callback;
     private final DAGResultHandler dagResultHandler;
 
-    private final RedisClient redisClient;
+    private final TraceService traceService;
 
     public static final BiConsumer<Runnable, Integer> OPERATE_WITH_RETRY = (operation, retryTimes) -> {
         int exceptionCatchTimes = retryTimes;
@@ -85,7 +86,7 @@ public class DAGOperations {
 
     public DAGOperations(ExecutorService runnerExecutor, Map<String, TaskRunner> taskRunners, DAGRunner dagRunner,
                          TimeCheckRunner timeCheckRunner, DAGTraversal dagTraversal, Callback<DAGCallbackInfo> callback,
-                         DAGResultHandler dagResultHandler, RedisClient redisClient) {
+                         DAGResultHandler dagResultHandler, TraceService traceService) {
         this.runnerExecutor = runnerExecutor;
         this.taskRunners = taskRunners;
         this.dagRunner = dagRunner;
@@ -93,7 +94,7 @@ public class DAGOperations {
         this.dagTraversal = dagTraversal;
         this.callback = callback;
         this.dagResultHandler = dagResultHandler;
-        this.redisClient = redisClient;
+        this.traceService = traceService;
     }
 
     public void runTasks(String executionId, Collection<Pair<TaskInfo, Map<String, Object>>> taskInfoToContexts) {
@@ -240,31 +241,11 @@ public class DAGOperations {
 
     public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
-        // 存储traceId
-        storageTraceId(executionId, data);
+        traceService.setTraceId(data);
         ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                 .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));
         dagTraversal.submitTraversal(executionId, null);
-    }
-
-    private void storageTraceId(String executionId, Map<String, Object> data) {
-        Span currentSpan = Span.current();
-        if (Objects.isNull(currentSpan)) {
-            log.warn("submitDAG currentSpan is null executionId:{}", executionId);
-            return;
-        }
-        String traceId = currentSpan.getSpanContext().getTraceId();
-        log.info("submitDAG executionId:{} traceId:{}", executionId, traceId);
-        if (StringUtils.isEmpty(traceId) || StringUtils.equals(traceId, INVALID_TRACE_ID)) {
-            return;
-        }
-        if (data == null) {
-            data = Maps.newHashMap();
-            data.put("traceId", traceId);
-        } else {
-            data.put("traceId", traceId);
-        }
     }
 
     public void finishDAG(String executionId, DAGInfo dagInfo, DAGStatus dagStatus, DAGInvokeMsg dagInvokeMsg) {

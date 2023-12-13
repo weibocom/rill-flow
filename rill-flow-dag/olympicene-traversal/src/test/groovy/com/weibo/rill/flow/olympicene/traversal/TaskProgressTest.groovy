@@ -10,7 +10,6 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
@@ -19,6 +18,7 @@ import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeChecker
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import spock.lang.Specification
 
 class TaskProgressTest extends Specification {
@@ -28,9 +28,9 @@ class TaskProgressTest extends Specification {
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     TimeChecker timeChecker = Mock(DefaultTimeChecker.class)
-    RedisClient redisClient = Mock(RedisClient.class)
+    TraceService traceService = Mock(TraceService.class)
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, traceService, switcherManager)
 
     def "degrade current task only test"() {
         given:
@@ -54,7 +54,6 @@ class TaskProgressTest extends Specification {
                 "      - source: \$.input.length\n" +
                 "        variable: length\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit("executionId", dag, ['length': 10])

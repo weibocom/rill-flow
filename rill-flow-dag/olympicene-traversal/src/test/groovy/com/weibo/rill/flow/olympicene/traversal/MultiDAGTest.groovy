@@ -14,13 +14,13 @@ import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.ForeachTaskValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
+import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
@@ -30,10 +30,10 @@ class MultiDAGTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
+    TraceService traceService = Mock(TraceService.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), traceService, switcherManager)
     DAG dag
 
     def setup() {
@@ -63,7 +63,6 @@ class MultiDAGTest extends Specification {
     def "task record sub dag executionId and dag record execute route"() {
         given:
         dispatcher.dispatch(*_) >> "{\"execution_id\":\"level2\"}"
-        redisClient.get(*_) >> "aaaaaa"
         when:
         olympicene.submit("level1", dag, [:])
         NotifyInfo notifyInfo = NotifyInfo.builder()
@@ -82,7 +81,6 @@ class MultiDAGTest extends Specification {
     def "depth should not exceed setting value"() {
         given:
         dispatcher.dispatch(*_) >> "{\"execution_id\":\"xxx\"}"
-        redisClient.get(*_) >> "aaaaaa"
         when:
         DAGSettings dagSettings = DAGSettings.builder().dagMaxDepth(2).build()
 
