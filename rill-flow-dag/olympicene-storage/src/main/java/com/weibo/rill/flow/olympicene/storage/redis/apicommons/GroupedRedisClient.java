@@ -258,7 +258,18 @@ public abstract class GroupedRedisClient implements RedisClient {
         return choose(shardingKey).eval(script, shardingKey, keys, args);
     }
 
+    @Override
+    public Set<String> hkeys(String key) {
+        return choose(key).hkeys(key);
+    }
+
+    @Override
+    public String hget(String key, String field) {
+        return choose(key).hget(key, field);
+    }
+
     private RedisClient choose(byte[] shardingKey) {
         return choose(new String(shardingKey, StandardCharsets.UTF_8));
     }
+
 }
