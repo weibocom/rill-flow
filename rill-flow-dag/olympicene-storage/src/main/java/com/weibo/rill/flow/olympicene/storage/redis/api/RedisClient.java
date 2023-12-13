@@ -115,4 +115,8 @@ public interface RedisClient {
     Object eval(String script, String shardingKey, List<String> keys, List<String> args);
     long incr(String key);
     long hset(String key, String field, String value);
+
+    Set<String> hkeys(String key);
+
+    String hget(String key, String field);
 }

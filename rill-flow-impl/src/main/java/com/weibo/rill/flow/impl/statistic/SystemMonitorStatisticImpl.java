@@ -222,7 +222,7 @@ public class SystemMonitorStatisticImpl implements SystemMonitorStatistic {
     }
 
     public List<Pair<String, String>> getExecutionIds(String key, Long cursor) {
-        Set<Pair<String, Double>> redisRet = runtimeRedisClients.zrangeByScoreWithScores(key,0, cursor);
+        Set<Pair<String, Double>> redisRet = runtimeRedisClients.zrangeByScoreWithScores(key, 0, cursor);
         return redisRet.stream()
                 .sorted((c1, c2) -> Double.compare(c2.getRight(), c1.getRight()))
                 .map(memberToScore -> {
@@ -269,32 +269,32 @@ public class SystemMonitorStatisticImpl implements SystemMonitorStatistic {
             }
             String statusKey = executionStatusKey(serviceId, dagStatus);
             JedisFlowClient jedisFlowClient = getRuntimeClient(statusKey);
-            try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+            jedisFlowClient.pipelined().accept(pipeline -> {
                 pipeline.zadd(statusKey, submitTime, executionId);
                 pipeline.zremrangeByScore(statusKey, 0, minTime);
-            }
+            });
         });
 
         Optional.ofNullable(failCode).filter(StringUtils::isNotBlank).ifPresent(code -> {
             String codeKey = executionCodeKey(serviceId, failCode);
             JedisFlowClient jedisFlowClient = getRuntimeClient(codeKey);
-            try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+            jedisFlowClient.pipelined().accept(pipeline -> {
                 pipeline.zadd(codeKey, submitTime, executionId);
                 pipeline.zremrangeByScore(codeKey, 0, minTime);
-            }
+            });
 
             String totalCodeKey = totalCodeKey(serviceId);
             JedisFlowClient totalCodeRedisClient = getRuntimeClient(totalCodeKey);
-            try (Pipeline pipeline = totalCodeRedisClient.pipelined()) {
+            totalCodeRedisClient.pipelined().accept(pipeline -> {
                 pipeline.zadd(totalCodeKey, System.currentTimeMillis(), failCode);
                 pipeline.zremrangeByScore(totalCodeKey, 0, minTime);
-            }
+            });
 
             String serviceKey = executionServiceKey(serviceId, submitTime);
-            try (Pipeline pipeline = getRuntimeClient(serviceKey).pipelined()) {
+            getRuntimeClient(serviceKey).pipelined().accept(pipeline -> {
                 pipeline.hset(serviceKey, executionId, failCode);
                 pipeline.expire(serviceKey, statisticSaveTimeInMinute * 60L);
-            }
+            });
         });
     }
 
