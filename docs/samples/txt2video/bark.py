@@ -1,4 +1,4 @@
-#main.py
+# main.py
 class Item(BaseModel):
     text: str
 
@@ -42,8 +42,7 @@ def transformers_generate(execution_id: str, name: str, text: str, callback_url:
 def callback(callback_url, callback_body):
     headers = {"Content-Type": "application/json"}
     payload = json.dumps(callback_body)
-    response = requests.post(callback_url, headers=headers, data=payload)
-    print(response)
+    requests.post(callback_url, headers=headers, data=payload)
 
 
 if __name__ == '__main__':
