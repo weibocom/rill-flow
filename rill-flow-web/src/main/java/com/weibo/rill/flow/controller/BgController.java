@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.weibo.rill.flow.common.model.DAGRecord;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
+import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
@@ -14,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,7 +38,6 @@ import java.util.stream.Collectors;
 public class BgController {
     private static final String EXECUTION_ID = "execution_id";
     private static final String BUSINESS_IDS = "business_ids";
-    private static final String TRACE_ID_PREFIX = "trace_id_";
 
     @Value("${rill_flow_trace_query_host:}")
     private String traceQueryHost;
@@ -51,8 +52,7 @@ public class BgController {
     private DAGRuntimeFacade dagRuntimeFacade;
 
     @Autowired
-    @Qualifier("dagDefaultStorageRedisClient")
-    private RedisClient redisClient;
+    private DAGContextStorage dagContextStorage;
 
     /**
      * 流程图的详情
@@ -155,15 +155,21 @@ public class BgController {
     }
 
     private void appendTraceInfo(String executionId, Map<String, Object> result) {
-        if (StringUtils.isNotBlank(traceQueryHost)) {
-            try {
-                String traceId = redisClient.get(TRACE_ID_PREFIX + executionId);
-                if (StringUtils.isNotBlank(traceId)) {
-                    result.put("trace_url", traceQueryHost + "/trace/" + traceId);
-                }
-            } catch (Exception e) {
-                log.error("append trace info error! execution_id:{}", executionId, e);
+        if (StringUtils.isBlank(traceQueryHost)) {
+            return;
+        }
+        try {
+            Map<String, Object> context = dagContextStorage.getContext(executionId);
+            if (MapUtils.isEmpty(context)) {
+                return;
             }
+            String traceId = (String) context.getOrDefault("traceId", StringUtils.EMPTY);
+            if (StringUtils.isBlank(traceId)) {
+                return;
+            }
+            result.put("trace_url", traceQueryHost + "/trace/" + traceId);
+        } catch (Exception e) {
+            log.error("append trace info error! execution_id:{}", executionId, e);
         }
     }
 

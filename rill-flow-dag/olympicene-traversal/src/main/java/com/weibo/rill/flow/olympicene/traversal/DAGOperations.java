@@ -58,8 +58,6 @@ import java.util.function.Supplier;
 public class DAGOperations {
     private static final String EXECUTION_ID = "executionId";
     private static final String INVALID_TRACE_ID = "00000000000000000000000000000000";
-    private static final int EXPIRE_7DAYS_SECOND = 7 * 24 * 60 * 60;
-    private static final String TRACE_ID_PREFIX = "trace_id_";
 
     private final ExecutorService runnerExecutor;
     private final Map<String, TaskRunner> taskRunners;
@@ -242,19 +240,15 @@ public class DAGOperations {
 
     public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
-        // executionId 和traceId对应关系存储
-        storageTraceIdAndExecutionIdToRedis(executionId);
+        // 存储traceId
+        storageTraceId(executionId, data);
         ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                 .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));
         dagTraversal.submitTraversal(executionId, null);
     }
 
-    private void storageTraceIdAndExecutionIdToRedis(String executionId) {
-        String cacheValue = redisClient.get(TRACE_ID_PREFIX + executionId);
-        if (StringUtils.isNotBlank(cacheValue)) {
-            return;
-        }
+    private void storageTraceId(String executionId, Map<String, Object> data) {
         Span currentSpan = Span.current();
         if (Objects.isNull(currentSpan)) {
             log.warn("submitDAG currentSpan is null executionId:{}", executionId);
@@ -265,7 +259,12 @@ public class DAGOperations {
         if (StringUtils.isEmpty(traceId) || StringUtils.equals(traceId, INVALID_TRACE_ID)) {
             return;
         }
-        redisClient.setex(TRACE_ID_PREFIX + executionId, EXPIRE_7DAYS_SECOND, traceId);
+        if (data == null) {
+            data = Maps.newHashMap();
+            data.put("traceId", traceId);
+        } else {
+            data.put("traceId", traceId);
+        }
     }
 
     public void finishDAG(String executionId, DAGInfo dagInfo, DAGStatus dagStatus, DAGInvokeMsg dagInvokeMsg) {
