@@ -6,9 +6,6 @@ services:
       - "9000:9000"
     volumes:
       - "/tmp:/tmp"
-    environment:
-      - RILL_FLOW_HOST="<rill-flow-host>"
-      - RILL_FLOW_PORT=8080
     networks:
       - rill-flow
   rill-flow-bark:
@@ -17,9 +14,6 @@ services:
       - "9001:9001"
     volumes:
       - "/tmp:/tmp"
-    environment:
-      - RILL_FLOW_HOST="<rill-flow-host>"
-      - RILL_FLOW_PORT=8080
     networks:
       - rill-flow
   rill-flow-wav2lip:
@@ -28,9 +22,6 @@ services:
       - "9002:9002"
     volumes:
       - "/tmp:/tmp"
-    environment:
-      - RILL_FLOW_HOST="<rill-flow-host>"
-      - RILL_FLOW_PORT=8080
     networks:
       - rill-flow
   rill-flow-media-processor:
@@ -39,9 +30,6 @@ services:
       - "9003:9003"
     volumes:
       - "/tmp:/tmp"
-    environment:
-      - RILL_FLOW_HOST="<rill-flow-host>"
-      - RILL_FLOW_PORT=8080
     networks:
       - rill-flow
 networks:
