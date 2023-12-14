@@ -33,16 +33,23 @@ import java.util.function.Function;
 @Slf4j
 public class ExecutorWrapper {
 
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(10);
+    private final ExecutorService executor;
 
     @Autowired
     private TaskFinishCallback callback;
 
+    public ExecutorWrapper() {
+        this.executor = Executors.newFixedThreadPool(10);
+    }
+    public ExecutorWrapper (ExecutorService executorService) {
+        this.executor = executorService;
+    }
+
     public Map<String, Object> execute(ExecutorContext context, Function<ExecutorContext, Map<String, Object>> function) {
 
-        boolean isAsyncMode = Optional.ofNullable(context).map(ExecutorContext::getMode).map(it -> it.equals("async")).orElse(true);
+        boolean isAsyncMode = Optional.ofNullable(context).map(ExecutorContext::getMode).map(it -> it.equals("async")).orElse(false);
         if (isAsyncMode) {
-            EXECUTOR.submit(() -> asyncExecute(context, function));
+            executor.submit(() -> asyncExecute(context, function));
             return Map.of("result_type", "SUCCESS");
         } else {
             return doExecute(context, function);
