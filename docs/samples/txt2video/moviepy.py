@@ -21,10 +21,10 @@ def concatenate_video(execution_id: str, segments: List, callback_url: str):
 
     # add subtitles
     video = VideoFileClip(video_clip_path)
-    generator = lambda txt: TextClip(txt, font='Arial', fontsize=52, color='white')
+    generator = lambda txt: TextClip(txt, font='Arial', fontsize=25, color='white')
     subs = SubtitlesClip('./subtitles.srt', generator)
     subtitles = SubtitlesClip(subs, generator)
-    video_with_subtitles = CompositeVideoClip([video, subtitles.set_position(lambda t: ('center', 2000 + t))])
+    video_with_subtitles = CompositeVideoClip([video, subtitles.set_position(lambda t: ('center', 1200 + t))])
     video_subtitles_path = video_path + "/subtitles_output.mp4"
     video_with_subtitles.write_videofile(video_subtitles_path)
 
