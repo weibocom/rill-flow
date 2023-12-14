@@ -6,20 +6,16 @@ import com.google.common.collect.ImmutableMap;
 import com.weibo.rill.flow.common.model.DAGRecord;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
-import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.olympicene.traversal.service.TraceService;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.trace.TraceableContextWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,9 +47,6 @@ public class BgController {
 
     @Autowired
     private DAGRuntimeFacade dagRuntimeFacade;
-
-    @Autowired
-    private TraceService traceService;
 
     /**
      * 流程图的详情
@@ -151,22 +144,20 @@ public class BgController {
     ) {
 
         Map<String, Object> result = dagRuntimeFacade.getBasicDAGInfo(executionId, false);
-        appendTraceInfo(executionId, result);
+        appendTraceInfo(result);
         return result;
     }
 
-    private void appendTraceInfo(String executionId, Map<String, Object> result) {
-        if (StringUtils.isBlank(traceQueryHost)) {
-            return;
-        }
+    private void appendTraceInfo(Map<String, Object> result) {
         try {
-            String traceId = traceService.getTraceId(executionId);
-            if (StringUtils.isBlank(traceId)) {
+            if (StringUtils.isBlank(traceQueryHost)) {
                 return;
             }
+            Map<String, Object> context = (Map<String, Object>) result.get("context");
+            String traceId = new TraceableContextWrapper(context).getTraceId();
             result.put("trace_url", traceQueryHost + "/trace/" + traceId);
         } catch (Exception e) {
-            log.error("append trace info error! execution_id:{}", executionId, e);
+            log.warn("append Trace Info error, original result:{}", result);
         }
     }
 

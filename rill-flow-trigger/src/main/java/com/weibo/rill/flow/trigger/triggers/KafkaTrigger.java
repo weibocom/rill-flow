@@ -7,6 +7,7 @@ import com.weibo.rill.flow.common.function.ResourceCheckConfig;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.impl.model.FlowUser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
@@ -37,14 +38,16 @@ import java.util.function.Supplier;
 @Slf4j
 @Service("kafka_trigger")
 public class KafkaTrigger implements Trigger {
+
     @Autowired
     private ProfileRecordService profileRecordService;
-    @Autowired
-    private DAGSubmitChecker submitChecker;
-    @Autowired
-    private BizDConfs bizDConfs;
+
     @Autowired
     private OlympiceneFacade olympiceneFacade;
+
+    @Autowired
+    private DAGContextInitializer dagContextInitializer;
+
     @Autowired
     @Qualifier("dagDefaultStorageRedisClient")
     RedisClient redisClient;
@@ -68,6 +71,7 @@ public class KafkaTrigger implements Trigger {
         kafkaTriggerProperties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return kafkaTriggerProperties;
     }
+
     private static final String KAFKA_TRIGGER_TOPICS = "kafka_trigger_topics";
 
     @Override
@@ -109,7 +113,7 @@ public class KafkaTrigger implements Trigger {
     @Override
     public void initTriggerTasks() {
         Map<String, String> triggerTopics = redisClient.hgetAll(KAFKA_TRIGGER_TOPICS);
-        for (Map.Entry<String, String> entry: triggerTopics.entrySet()) {
+        for (Map.Entry<String, String> entry : triggerTopics.entrySet()) {
             String key = entry.getKey();
             String[] keyInfos = key.split("#");
             if (keyInfos.length < 2) {
@@ -174,9 +178,9 @@ public class KafkaTrigger implements Trigger {
                     log.info("kafka trigger consume, topic: {}, descriptor_id: {}, message: {}", topic, descriptorId, message);
                     JSONObject context = JSON.parseObject(message);
                     ResourceCheckConfig resourceCheckConfig = JSON.parseObject(resourceCheck, ResourceCheckConfig.class);
-                    JSONObject dataPassCheck = submitChecker.checkContext(context, descriptorId, bizDConfs.getRuntimeSubmitContextMaxSize());
+                    Map<String, Object> contextMap = dagContextInitializer.newSubmitContextBuilder().withData(context).withIdentity(descriptorId).build();
 
-                    Map<String, Object> result = olympiceneFacade.submit(new FlowUser(uid), descriptorId, dataPassCheck, callback, resourceCheckConfig);
+                    Map<String, Object> result = olympiceneFacade.submit(new FlowUser(uid), descriptorId, contextMap, callback, resourceCheckConfig);
                     log.info("kafka trigger submit success, topic: {}, descriptor_id: {}, result: {}", topic, descriptorId, result);
                     return result;
                 };

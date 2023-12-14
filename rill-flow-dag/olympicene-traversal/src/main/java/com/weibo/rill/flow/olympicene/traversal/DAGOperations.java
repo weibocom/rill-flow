@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
+import com.weibo.rill.flow.interfaces.model.task.*;
 import com.weibo.rill.flow.olympicene.core.concurrent.ExecutionRunnable;
 import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
 import com.weibo.rill.flow.olympicene.core.event.Callback;
@@ -28,11 +29,8 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.*;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg.ExecutionInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
-import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.traversal.callback.CallbackInvoker;
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo;
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent;
@@ -42,14 +40,10 @@ import com.weibo.rill.flow.olympicene.traversal.helper.PluginHelper;
 import com.weibo.rill.flow.olympicene.traversal.runners.DAGRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TaskRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner;
-import com.weibo.rill.flow.interfaces.model.task.*;
-import com.weibo.rill.flow.olympicene.traversal.service.TraceService;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +62,6 @@ public class DAGOperations {
     private final Callback<DAGCallbackInfo> callback;
     private final DAGResultHandler dagResultHandler;
 
-    private final TraceService traceService;
 
     public static final BiConsumer<Runnable, Integer> OPERATE_WITH_RETRY = (operation, retryTimes) -> {
         int exceptionCatchTimes = retryTimes;
@@ -86,7 +79,7 @@ public class DAGOperations {
 
     public DAGOperations(ExecutorService runnerExecutor, Map<String, TaskRunner> taskRunners, DAGRunner dagRunner,
                          TimeCheckRunner timeCheckRunner, DAGTraversal dagTraversal, Callback<DAGCallbackInfo> callback,
-                         DAGResultHandler dagResultHandler, TraceService traceService) {
+                         DAGResultHandler dagResultHandler) {
         this.runnerExecutor = runnerExecutor;
         this.taskRunners = taskRunners;
         this.dagRunner = dagRunner;
@@ -94,7 +87,6 @@ public class DAGOperations {
         this.dagTraversal = dagTraversal;
         this.callback = callback;
         this.dagResultHandler = dagResultHandler;
-        this.traceService = traceService;
     }
 
     public void runTasks(String executionId, Collection<Pair<TaskInfo, Map<String, Object>>> taskInfoToContexts) {
@@ -241,7 +233,6 @@ public class DAGOperations {
 
     public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
-        traceService.setTraceId(data);
         ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                 .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));

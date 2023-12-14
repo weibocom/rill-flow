@@ -38,7 +38,6 @@ import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPath;
 import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapping;
 import com.weibo.rill.flow.olympicene.traversal.runners.*;
-import com.weibo.rill.flow.olympicene.traversal.service.TraceService;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -48,15 +47,15 @@ public class OlympiceneFacade {
     public static Olympicene build(DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage,
                                    Callback<DAGCallbackInfo> callback, DAGDispatcher dagDispatcher,
                                    DAGStorageProcedure dagStorageProcedure, TimeChecker timeChecker,
-                                   TraceService traceService, SwitcherManager switcherManager) {
+                                   SwitcherManager switcherManager) {
         ExecutorService executor = SameThreadExecutorService.INSTANCE;
         return build(dagInfoStorage, dagContextStorage, dagStorageProcedure, callback, null,
-                dagDispatcher, timeChecker, executor, traceService, switcherManager);
+                dagDispatcher, timeChecker, executor, switcherManager);
     }
 
     public static Olympicene build(DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage, DAGStorageProcedure dagStorageProcedure,
                                    Callback<DAGCallbackInfo> callback, DAGResultHandler dagResultHandler, DAGDispatcher dagDispatcher,
-                                   TimeChecker timeChecker, ExecutorService executor, TraceService traceService, SwitcherManager switcherManager) {
+                                   TimeChecker timeChecker, ExecutorService executor, SwitcherManager switcherManager) {
         JSONPathInputOutputMapping jsonPathInputOutputMapping = new JSONPathInputOutputMapping();
 
         DefaultStasher stasher = new DefaultStasher();
@@ -67,7 +66,7 @@ public class OlympiceneFacade {
                 jsonPathInputOutputMapping, jsonPathInputOutputMapping, dagStorageProcedure, stasher, switcherManager);
 
         DAGTraversal dagTraversal = new DAGTraversal(dagContextStorage, dagInfoStorage, dagStorageProcedure, executor);
-        DAGOperations dagOperations = new DAGOperations(executor, taskRunners, dagRunner, timeCheckRunner, dagTraversal, callback, dagResultHandler, traceService);
+        DAGOperations dagOperations = new DAGOperations(executor, taskRunners, dagRunner, timeCheckRunner, dagTraversal, callback, dagResultHandler);
         dagTraversal.setDagOperations(dagOperations);
         dagTraversal.setStasher(stasher);
         timeCheckRunner.setDagOperations(dagOperations);

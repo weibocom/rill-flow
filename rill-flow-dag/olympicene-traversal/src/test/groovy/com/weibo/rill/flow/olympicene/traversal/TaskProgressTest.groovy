@@ -18,7 +18,6 @@ import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeChecker
-import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import spock.lang.Specification
 
 class TaskProgressTest extends Specification {
@@ -28,9 +27,8 @@ class TaskProgressTest extends Specification {
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     TimeChecker timeChecker = Mock(DefaultTimeChecker.class)
-    TraceService traceService = Mock(TraceService.class)
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, traceService, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, switcherManager)
 
     def "degrade current task only test"() {
         given:

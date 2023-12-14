@@ -25,7 +25,6 @@ import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
-import com.weibo.rill.flow.olympicene.traversal.service.TraceService
 import spock.lang.Specification
 
 
@@ -34,7 +33,6 @@ class TimeCheckerTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    TraceService traceService = Mock(TraceService.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     DefaultTimeChecker timeChecker = new DefaultTimeChecker()
     Olympicene olympicene
@@ -43,7 +41,7 @@ class TimeCheckerTest extends Specification {
     def setup() {
         timeChecker.redisClient = Mock(RedisClient.class)
         SwitcherManager switcherManager = Mock(SwitcherManager.class)
-        olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, traceService, switcherManager)
+        olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, switcherManager)
         timeChecker.timeCheckRunner = olympicene.dagOperations.timeCheckRunner
     }
 
@@ -336,7 +334,7 @@ class TimeCheckerTest extends Specification {
 
         TimeCheckRunner timeCheckRunner = Mock(TimeCheckRunner.class, 'constructorArgs': [null, null, null, null]) as TimeCheckRunner
         DAGOperations dagOperations = new DAGOperations(olympicene.dagOperations.runnerExecutor, olympicene.dagOperations.taskRunners, olympicene.dagOperations.dagRunner,
-                timeCheckRunner, olympicene.dagOperations.dagTraversal, olympicene.dagOperations.callback, olympicene.dagOperations.dagResultHandler, traceService)
+                timeCheckRunner, olympicene.dagOperations.dagTraversal, olympicene.dagOperations.callback, olympicene.dagOperations.dagResultHandler)
         dagOperations.dagTraversal.setDagOperations(dagOperations)
         Olympicene olympiceneTimeMock = new Olympicene(olympicene.dagInfoStorage, dagOperations, olympicene.notifyExecutor, olympicene.dagResultHandler)
 
