@@ -16,10 +16,12 @@
 
 package com.weibo.rill.flow.olympicene.traversal;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
+import com.weibo.rill.flow.interfaces.model.task.*;
 import com.weibo.rill.flow.olympicene.core.concurrent.ExecutionRunnable;
 import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
 import com.weibo.rill.flow.olympicene.core.event.Callback;
@@ -28,8 +30,6 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.*;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg.ExecutionInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
-import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
@@ -42,7 +42,6 @@ import com.weibo.rill.flow.olympicene.traversal.helper.PluginHelper;
 import com.weibo.rill.flow.olympicene.traversal.runners.DAGRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TaskRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner;
-import com.weibo.rill.flow.interfaces.model.task.*;
 import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -61,13 +60,26 @@ public class DAGOperations {
     private static final int EXPIRE_7DAYS_SECOND = 7 * 24 * 60 * 60;
     private static final String TRACE_ID_PREFIX = "trace_id_";
 
-    private final ExecutorService runnerExecutor;
-    private final Map<String, TaskRunner> taskRunners;
-    private final DAGRunner dagRunner;
-    private final TimeCheckRunner timeCheckRunner;
-    private final DAGTraversal dagTraversal;
-    private final Callback<DAGCallbackInfo> callback;
-    private final DAGResultHandler dagResultHandler;
+    @VisibleForTesting
+    final ExecutorService runnerExecutor;
+
+    @VisibleForTesting
+    final Map<String, TaskRunner> taskRunners;
+
+    @VisibleForTesting
+    final DAGRunner dagRunner;
+
+    @VisibleForTesting
+    final TimeCheckRunner timeCheckRunner;
+
+    @VisibleForTesting
+    final DAGTraversal dagTraversal;
+
+    @VisibleForTesting
+    final Callback<DAGCallbackInfo> callback;
+
+    @VisibleForTesting
+    final DAGResultHandler dagResultHandler;
 
     private final RedisClient redisClient;
 
@@ -112,7 +124,8 @@ public class DAGOperations {
     }
 
 
-    private void runTask(String executionId, TaskInfo taskInfo, Map<String, Object> context) {
+    @VisibleForTesting
+    void runTask(String executionId, TaskInfo taskInfo, Map<String, Object> context) {
         Map<String, Object> params = Maps.newHashMap();
         params.put(EXECUTION_ID, executionId);
         params.put("taskInfo", taskInfo);

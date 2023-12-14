@@ -33,8 +33,8 @@ class ChoiceTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
         when:
         dagParser.parse(text)
 
@@ -58,8 +58,8 @@ class ChoiceTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
         when:
         dagParser.parse(text)
 
@@ -84,8 +84,8 @@ class ChoiceTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
         when:
         dagParser.parse(text)
 

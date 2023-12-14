@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.olympicene.traversal.checker;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.redis.lock.RedisScriptLoader;
@@ -55,7 +56,9 @@ public class DefaultTimeChecker implements TimeChecker {
     }
 
     @Setter
-    private RedisClient redisClient;
+    @VisibleForTesting
+    public RedisClient redisClient;
+
     @Setter
     private TimeCheckRunner timeCheckRunner;
 
@@ -115,7 +118,8 @@ public class DefaultTimeChecker implements TimeChecker {
                 memberCheckPeriodInSeconds, memberCheckPeriodInSeconds, TimeUnit.SECONDS);
     }
 
-    protected void timeCheck() {
+    @VisibleForTesting
+    public void timeCheck() {
         try {
             log.info("timeCheck start");
 
@@ -138,6 +142,7 @@ public class DefaultTimeChecker implements TimeChecker {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void doCheck(String redisKey, Consumer<String> action) {
         try {
             log.info("doCheck start redisKey:{}", redisKey);

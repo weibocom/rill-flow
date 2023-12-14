@@ -36,7 +36,7 @@ public class AliyunAiDispatcherExtension implements DispatcherExtension {
         String executionId = dispatchInfo.getExecutionId();
         String taskInfoName = taskInfo.getName();
 
-        HttpParameter requestParams = HttpUtil.functionRequestParams(executionId, taskInfoName, resource, input);
+        HttpParameter requestParams = HttpUtil.functionRequestParams(executionId, taskInfoName, input);
 
         try {
             Map<String, Object> body = requestParams.getBody();
@@ -104,7 +104,6 @@ public class AliyunAiDispatcherExtension implements DispatcherExtension {
                 .prompt(prompt)
                 .apiKey(apikey)
                 .build();
-        GenerationResult result = generation.call(param);
-        return result;
+        return generation.call(param);
     }
 }

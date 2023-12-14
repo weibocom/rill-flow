@@ -16,14 +16,15 @@
 
 package com.weibo.rill.flow.olympicene.storage.save.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
 import com.weibo.rill.flow.olympicene.storage.constant.DAGRedisPrefix;
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.script.RedisScriptManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -170,7 +171,9 @@ public class ContextDAO {
         }
     }
 
-    private List<List<List<byte[]>>> getContextFromRedis(String executionId, boolean needSubContext) {
+    @SuppressWarnings("unchecked")
+    @VisibleForTesting
+    List<List<List<byte[]>>> getContextFromRedis(String executionId, boolean needSubContext) {
         List<String> keys = !needSubContext ?
                 Lists.newArrayList(buildContextRedisKey(executionId)) :
                 Lists.newArrayList(buildContextRedisKey(executionId), buildContextNameToContextRedisKey(executionId));
@@ -241,6 +244,7 @@ public class ContextDAO {
                 .collect(Collectors.toSet());
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getContext(String executionId, Collection<String> fields) {
         try {
             log.info("getContext executionId:{} fields:{}", executionId, fields);
@@ -334,7 +338,8 @@ public class ContextDAO {
         return context;
     }
 
-    private void buildEvalParam(String executionId, List<String> rootContextFields, List<String> subContextNames, List<String> keys, List<String> argv) {
+    @VisibleForTesting
+    void buildEvalParam(String executionId, List<String> rootContextFields, List<String> subContextNames, List<String> keys, List<String> argv) {
         if (CollectionUtils.isNotEmpty(rootContextFields)) {
             keys.add(buildContextRedisKey(executionId));
             rootContextFields.forEach(rootContextField -> {
@@ -347,7 +352,8 @@ public class ContextDAO {
                 .forEach(keys::add);
     }
 
-    private void distinguishField(Collection<String> fields, List<String> rootContextFields, List<String> subContextNames) {
+    @VisibleForTesting
+    void distinguishField(Collection<String> fields, List<String> rootContextFields, List<String> subContextNames) {
         if (CollectionUtils.isEmpty(fields)) {
             return;
         }
@@ -435,7 +441,9 @@ public class ContextDAO {
         }
     }
 
-    private Map<String, Map<String, Object>> getContextNameToContentMap(int depth, String contextName, Map<String, Object> context) {
+    @SuppressWarnings("unchecked")
+    @VisibleForTesting
+    Map<String, Map<String, Object>> getContextNameToContentMap(int depth, String contextName, Map<String, Object> context) {
         Map<String, Map<String, Object>> contextNameToContentMap = Maps.newHashMap();
         Map<String, Object> currentContext = contextNameToContentMap.computeIfAbsent(contextName, k -> Maps.newHashMap());
 

@@ -65,8 +65,7 @@ public class RedisCodecUtil {
     }
 
     public static <E> List<E> getList(Object object, Function<Object, E> func) {
-        if (object instanceof List) {
-            List list = (List) object;
+        if (object instanceof List<?> list) {
             List<E> result = new ArrayList<>(list.size());
             for (Object o : list) {
                 try {
@@ -86,8 +85,7 @@ public class RedisCodecUtil {
     }
 
     public static <K, V> Map<K, V> getAsMap(Object object, Function<Object, K> keyFunc, Function<Object, V> valFunc) {
-        if (object instanceof List) {
-            List list = (List) object;
+        if (object instanceof List<?> list) {
 
             if (list.size() % 2 != 0) {
                 return null;

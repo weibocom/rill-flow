@@ -715,9 +715,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M6</version>
                 <configuration>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <io.netty.leakDetectionLevel>PARANOID</io.netty.leakDetectionLevel>
-                    </systemProperties>
+                    </systemPropertyVariables>
                     <useFile>false</useFile>
                 </configuration>
                 <executions>

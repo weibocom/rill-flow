@@ -17,11 +17,9 @@
 package com.weibo.rill.flow.interfaces.model.resource;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 
-@Slf4j
 @Getter
 public class Resource {
     public static final String CONNECTOR = "://";

@@ -11,6 +11,7 @@ import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
+import com.weibo.rill.flow.trigger.util.TriggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -18,7 +19,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,7 +88,7 @@ public class KafkaTrigger implements Trigger {
         log.info("kafka trigger add task, topic: {}, descriptor_id: {}, server: {}, group_id: {}",
                 topic, descriptorId, kafkaServer, groupId);
 
-        JSONObject jsonDetails = buildCommonDetail(uid, descriptorId, callback, resourceCheck);
+        JSONObject jsonDetails = TriggerUtil.buildCommonDetail(uid, descriptorId, callback, resourceCheck);
         jsonDetails.put("group_id", groupId);
         jsonDetails.put("kafka_server", kafkaServer);
         String taskKey = topic + "#" + descriptorId;
@@ -187,17 +187,4 @@ public class KafkaTrigger implements Trigger {
         }
     }
 
-    @NotNull
-    private static JSONObject buildCommonDetail(Long uid, String descriptorId, String callback, String resourceCheck) {
-        JSONObject jsonDetails = new JSONObject();
-        jsonDetails.put("descriptor_id", descriptorId);
-        jsonDetails.put("uid", uid);
-        if (jsonDetails.containsKey("callback")) {
-            jsonDetails.put("callback", callback);
-        }
-        if (jsonDetails.containsKey("resource_check")) {
-            jsonDetails.put("resource_check", resourceCheck);
-        }
-        return jsonDetails;
-    }
 }

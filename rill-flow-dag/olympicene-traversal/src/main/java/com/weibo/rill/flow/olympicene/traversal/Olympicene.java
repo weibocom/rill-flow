@@ -16,7 +16,9 @@
 
 package com.weibo.rill.flow.olympicene.traversal;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.concurrent.ExecutionRunnable;
 import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
 import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
@@ -24,7 +26,6 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGResult;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInteraction;
@@ -42,10 +43,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Olympicene implements DAGInteraction {
-    private final DAGInfoStorage dagInfoStorage;
-    private final DAGOperations dagOperations;
-    private final ExecutorService notifyExecutor;
-    private final DAGResultHandler dagResultHandler;
+    @VisibleForTesting
+    final DAGInfoStorage dagInfoStorage;
+
+    @VisibleForTesting
+    final DAGOperations dagOperations;
+
+    @VisibleForTesting
+    final ExecutorService notifyExecutor;
+
+    @VisibleForTesting
+    final DAGResultHandler dagResultHandler;
+
     @Setter
     private long dagResultGetTimeoutInMillisecond = 5000;
 

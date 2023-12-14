@@ -52,10 +52,10 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
             }
 
             if (TASK_ASYNC.equals(functionTask.getPattern())) {
-                THREAD_POOL_EXECUTOR.submit(() -> asyncExecute(resource, dispatchInfo));
+                THREAD_POOL_EXECUTOR.submit(() -> asyncExecute(dispatchInfo));
                 return "{\"result\": {\"err_msg\": \"success\"}}";
             } else {
-                return execute(resource, dispatchInfo);
+                return execute(dispatchInfo);
             }
 
         } catch (Exception e) {
@@ -83,11 +83,11 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
                 "yMTMxBzEB8uASKBKLgDqFxF08kI1lQAAAABJRU5ErkJggg==";
     }
 
-    private void asyncExecute(Resource resource, DispatchInfo dispatchInfo) {
+    private void asyncExecute(DispatchInfo dispatchInfo) {
         String resultTye = "SUCCESS";
         String result = null;
         try {
-            result = execute(resource, dispatchInfo);
+            result = execute(dispatchInfo);
         } catch (Exception e) {
             resultTye = "FAILED";
             logger.error("execute is failed. error:{}", e.getMessage());
@@ -118,7 +118,7 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
         }
     }
 
-    private String execute(Resource resource, DispatchInfo dispatchInfo) {
+    private String execute(DispatchInfo dispatchInfo) {
         Map<String, Object> input = dispatchInfo.getInput();
 
         String apiKey = (String) input.get("apikey");
@@ -126,7 +126,7 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
         header.put("Authorization", "Bearer " + apiKey);
         header.put("Content-Type", "application/json");
 
-        HttpParameter httpParameter = HttpUtil.functionRequestParams(resource, dispatchInfo);
+        HttpParameter httpParameter = HttpUtil.functionRequestParams(dispatchInfo);
         String promptPrefix = (String) httpParameter.getBody().get("prompt_prefix");
         String promptSuffix = (String) httpParameter.getBody().get("prompt_suffix");
         String prompt = (String) httpParameter.getBody().get("prompt");

@@ -28,8 +28,8 @@ class ForeachTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
         when:
         dagParser.parse(text)
 
@@ -53,10 +53,10 @@ class ForeachTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
+                "       source: segments\n" +
                 "  iterationMappings:\n" +
                 "       collection: \n" +
-                "  next: ";
+                "  next: "
         when:
         dagParser.parse(text)
 
@@ -80,10 +80,10 @@ class ForeachTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
+                "       source: segments\n" +
                 "  iterationMappings:\n" +
                 "       collection: \n" +
-                "  next: ";
+                "  next: "
         when:
         dagParser.parse(text)
 
@@ -108,13 +108,13 @@ class ForeachTaskTest extends Specification {
                 "       source: url\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
+                "       source: segments\n" +
                 "  iterationMapping:\n" +
                 "       collection: \$.test\n" +
                 "  tasks:\n" +
                 "    - category: function\n" +
                 "      name: testName1\n" +
-                "  next: ";
+                "  next: "
         when:
         dagParser.parse(text)
 

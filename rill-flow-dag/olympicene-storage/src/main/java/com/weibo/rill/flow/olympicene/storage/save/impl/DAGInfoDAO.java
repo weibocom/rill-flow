@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.olympicene.storage.save.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -141,7 +142,8 @@ public class DAGInfoDAO {
         log.debug("checkDAGInfoLength executionId:{} contents size empty:{}", executionId, CollectionUtils.isEmpty(contents));
     }
 
-    protected int getFinishStatusReserveTimeInSecond(String executionId) {
+    @VisibleForTesting
+    public int getFinishStatusReserveTimeInSecond(String executionId) {
         log.debug("getFinishStatusReserveTimeInSecond executionId:{}, time:{}", executionId, finishStatusReserveTimeInSecond);
         return finishStatusReserveTimeInSecond;
     }
@@ -174,7 +176,9 @@ public class DAGInfoDAO {
         }
     }
 
-    private List<List<List<byte[]>>> getDagInfoFromRedis(String executionId, boolean needSubTasks) {
+    @SuppressWarnings("unchecked")
+    @VisibleForTesting
+    List<List<List<byte[]>>> getDagInfoFromRedis(String executionId, boolean needSubTasks) {
         List<String> keys = !needSubTasks ?
                 Lists.newArrayList(buildDagInfoRedisKey(executionId)) :
                 Lists.newArrayList(buildDagInfoRedisKey(executionId), buildTaskNameToSubTaskRedisKey(executionId));
@@ -279,6 +283,7 @@ public class DAGInfoDAO {
         return getTaskInfo(executionId, chainNames.get(chainNames.size() - 2), subTaskPrefix);
     }
 
+    @SuppressWarnings("unchecked")
     private TaskInfo getTaskInfo(String executionId, String taskName, String subTaskPrefix) {
         log.info("getTaskInfo executionId:{} taskName:{} subTaskPrefix:{}", executionId, taskName, subTaskPrefix);
 
@@ -334,6 +339,7 @@ public class DAGInfoDAO {
         return taskInfo;
     }
 
+    @SuppressWarnings("unchecked")
     public DAG getDAGDescriptor(String executionId) {
         log.info("getDAGDescriptor executionId:{}", executionId);
 

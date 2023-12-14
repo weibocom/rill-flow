@@ -19,14 +19,12 @@ package com.weibo.rill.flow.impl.dconfs;
 import com.weibo.rill.flow.service.configuration.BeanConfig;
 import com.weibo.rill.flow.service.dconfs.DynamicClientConfs;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@Slf4j
 @Data
 @Component
 public class DynamicClientConfsImpl implements DynamicClientConfs {

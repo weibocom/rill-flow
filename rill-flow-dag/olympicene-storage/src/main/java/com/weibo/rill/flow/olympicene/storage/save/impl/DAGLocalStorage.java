@@ -17,11 +17,11 @@
 package com.weibo.rill.flow.olympicene.storage.save.impl;
 
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
@@ -90,6 +90,7 @@ public class DAGLocalStorage implements DAGInfoStorage, DAGContextStorage {
         return parentClone;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void updateContext(String executionId, Map<String, Object> context) {
         Map<String, Object> cachedContext = contextCache.computeIfAbsent(executionId, k -> Maps.newHashMap());
@@ -102,7 +103,7 @@ public class DAGLocalStorage implements DAGInfoStorage, DAGContextStorage {
             if (!(value instanceof Map)) {
                 throw new StorageException(StorageErrorCode.CLASS_TYPE_NONSUPPORT.getCode(), "value type is not map");
             }
-            ((Map) cachedContext.computeIfAbsent(key, k -> Maps.newHashMap())).putAll((Map) value);
+            ((Map<String, Object>) cachedContext.computeIfAbsent(key, k -> Maps.newHashMap())).putAll((Map<String, Object>) value);
         });
     }
 

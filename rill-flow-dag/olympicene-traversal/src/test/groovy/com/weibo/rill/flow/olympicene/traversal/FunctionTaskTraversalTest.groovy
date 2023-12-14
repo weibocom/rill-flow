@@ -17,11 +17,11 @@ import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValid
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
-import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
-import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
+import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
+import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
 import spock.lang.Specification
 
 class FunctionTaskTraversalTest extends Specification {
@@ -57,7 +57,7 @@ class FunctionTaskTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         redisClient.get(*_) >> "aaaaaa"
 
@@ -213,7 +213,7 @@ class FunctionTaskTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         redisClient.get(*_) >> "aaaaaa"
 
@@ -300,7 +300,7 @@ class FunctionTaskTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         redisClient.get(*_) >> "aaaaaa"
 
@@ -363,7 +363,7 @@ class FunctionTaskTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         redisClient.get(*_) >> "aaaaaa"
 
@@ -402,7 +402,7 @@ class FunctionTaskTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         dispatcher.dispatch(*_) >> dispatchRet
         redisClient.get(*_) >> "aaaaaa"

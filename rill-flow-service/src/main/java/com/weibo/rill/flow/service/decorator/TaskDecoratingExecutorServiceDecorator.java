@@ -16,7 +16,10 @@
 
 package com.weibo.rill.flow.service.decorator;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jerry 16-3-7.
  */
-public class TaskDecoratingExecutorServiceDecorator extends AbstractExecutorService implements ExecutorService {
+public class TaskDecoratingExecutorServiceDecorator extends AbstractExecutorService {
 
     private final ExecutorService underlyingExecutorService;
     private final Deque<TaskDecoratorAssembler> taskDecoratorAssemblerList = new ArrayDeque<>();
@@ -77,7 +80,7 @@ public class TaskDecoratingExecutorServiceDecorator extends AbstractExecutorServ
     }
 
     public List<TaskDecoratorAssembler> getTaskDecoratorAssemblerList() {
-        return Collections.unmodifiableList(new ArrayList<>(taskDecoratorAssemblerList));
+        return List.copyOf(taskDecoratorAssemblerList);
     }
 
     @Override

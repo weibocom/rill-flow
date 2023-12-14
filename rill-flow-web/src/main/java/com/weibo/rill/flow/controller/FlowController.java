@@ -28,12 +28,9 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.service.util.ProfileActions;
-import com.weibo.rill.flow.service.util.PrometheusActions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -73,9 +70,6 @@ public class FlowController {
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
 
-    @Autowired
-    private DescriptorManager descriptorManager;
-
     /**
      * 任务提交接口
      *
@@ -100,7 +94,7 @@ public class FlowController {
             return olympiceneFacade.submit(flowUser, descriptorId, dataPassCheck, callback, resourceCheckConfig);
         };
 
-        return runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
+        return profileRecordService.runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
     }
 
     private ResourceCheckConfig getCheckConfig(String resourceCheck) {
@@ -111,25 +105,6 @@ public class FlowController {
             return SerializerUtil.deserialize(resourceCheck.getBytes(StandardCharsets.UTF_8), ResourceCheckConfig.class);
         } catch (Exception e) {
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "resource_check content nonsupport");
-        }
-    }
-
-    /**
-     * 按业务类型分别统计 接口调用情况 运维配置的监控为接口总体调用情况
-     */
-    private Map<String, Object> runNotifyAndRecordProfile(String url, String id, Supplier<Map<String, Object>> notifyActions) {
-        long startTime = System.currentTimeMillis();
-        try {
-            Map<String, Object> ret = notifyActions.get();
-            ProfileActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            return ret;
-        } catch (Exception e) {
-            ProfileActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            throw e;
         }
     }
 

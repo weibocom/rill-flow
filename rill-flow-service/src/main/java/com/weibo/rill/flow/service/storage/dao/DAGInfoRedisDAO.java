@@ -16,22 +16,20 @@
 
 package com.weibo.rill.flow.service.storage.dao;
 
-import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
-import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.service.util.ValueExtractor;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDAO;
-import lombok.extern.slf4j.Slf4j;
+import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
+import com.weibo.rill.flow.service.dconfs.BizDConfs;
+import com.weibo.rill.flow.service.util.ValueExtractor;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
 
 
-@Slf4j
 public class DAGInfoRedisDAO extends DAGInfoDAO {
     private SwitcherManager switcherManagerImpl;
 
@@ -47,7 +45,7 @@ public class DAGInfoRedisDAO extends DAGInfoDAO {
     }
 
     @Override
-    protected int getFinishStatusReserveTimeInSecond(String executionId) {
+    public int getFinishStatusReserveTimeInSecond(String executionId) {
         return ValueExtractor.getConfiguredValue(executionId, bizDConfs.getRedisBusinessIdToFinishReserveSecond(), 86400);
     }
 
