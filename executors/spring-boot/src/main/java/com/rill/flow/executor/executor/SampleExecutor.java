@@ -12,12 +12,12 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class SampleExecutor implements Function<ExecutorContext,Map<String,Object>> {
+public class SampleExecutor implements Function<ExecutorContext, Map<String, Object>> {
 
     @Override
     public Map<String, Object> apply(ExecutorContext executorContext) {
         Map<String, Object> requestBody = executorContext.getBody();
-        if (requestBody.isEmpty()) {
+        if (requestBody == null) {
             throw new RuntimeException("request body is empty");
         }
         // your business here
