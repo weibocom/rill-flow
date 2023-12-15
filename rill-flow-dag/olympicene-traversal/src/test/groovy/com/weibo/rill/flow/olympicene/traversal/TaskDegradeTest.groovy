@@ -12,7 +12,6 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
@@ -28,10 +27,9 @@ class TaskDegradeTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "degrade current task only test"() {
         given:
@@ -56,7 +54,7 @@ class TaskDegradeTest extends Specification {
                 "- category: pass\n" +
                 "  name: E"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit("executionId", dag, null)
@@ -97,7 +95,7 @@ class TaskDegradeTest extends Specification {
                 "- category: pass\n" +
                 "  name: E"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit("executionId", dag, null)
@@ -139,7 +137,7 @@ class TaskDegradeTest extends Specification {
                 "- category: pass\n" +
                 "  name: E"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit("executionId", dag, null)
