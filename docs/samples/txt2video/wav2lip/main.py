@@ -1,4 +1,17 @@
-# main.py
+import json
+import os
+import subprocess
+from concurrent.futures import ThreadPoolExecutor
+import requests
+import uvicorn
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+
+app = FastAPI()
+executor = ThreadPoolExecutor(max_workers=20)
+data_dir = os.getenv('WORK_DIR', "/tmp")
+
+
 class Item(BaseModel):
     audio_path: str
 
@@ -15,12 +28,11 @@ def generate_digital_human(execution_id: str, name: str, audio_path: str, callba
         os.makedirs(mp4_path)
     out_file = os.path.join(mp4_path, f"{name}.mp4")
 
-    command = ['python', 'inference.py',
-               '--checkpoint_path', 'face_detection/detection/sfd/wav2lip.pth',
-               '--face', 'MonaLisa.jpg',
-               '--audio', audio_path,
-               '--outfile', out_file]
-    run_subprocess(command)
+    subprocess.run(['python', 'inference.py',
+                    '--checkpoint_path', 'face_detection/detection/sfd/wav2lip_gan.pth',
+                    '--face', 'MonaLisa.jpg',
+                    '--audio', audio_path,
+                    '--outfile', out_file])
 
     callback_body = {
         "segment": out_file
@@ -28,22 +40,11 @@ def generate_digital_human(execution_id: str, name: str, audio_path: str, callba
     callback(callback_url, callback_body)
 
 
-def run_subprocess(command, max_retries=3):
-    retries = 0
-    while retries < max_retries:
-        try:
-            subprocess.run(command, check=True)
-            return True
-        except subprocess.CalledProcessError:
-            retries += 1
-    print(f"Subprocess failed after {max_retries} retries.")
-    return False
-
-
 def callback(callback_url, callback_body):
     headers = {"Content-Type": "application/json"}
     payload = json.dumps(callback_body)
-    requests.post(callback_url, headers=headers, data=payload)
+    response = requests.post(callback_url, headers=headers, data=payload)
+    print(response)
 
 
 if __name__ == '__main__':
