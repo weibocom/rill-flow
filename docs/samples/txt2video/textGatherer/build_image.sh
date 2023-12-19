@@ -1,1 +1,1 @@
-docker build -t weibocom/rill-flow-bark .
+docker build -t weibocom/rill-flow-textgatherer .
