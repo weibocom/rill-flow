@@ -1,4 +1,19 @@
-# main.py
+from concurrent.futures import ThreadPoolExecutor
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+from scipy.io.wavfile import write as write_wav
+from transformers import AutoProcessor, BarkModel
+from bark import SAMPLE_RATE
+import requests
+import uvicorn
+import json
+import os
+
+app = FastAPI()
+executor = ThreadPoolExecutor(max_workers=20)
+data_dir = os.getenv('WORK_DIR', "/tmp")
+
+
 class Item(BaseModel):
     text: str
 
@@ -15,7 +30,7 @@ def bark_generator_async(execution_id: str, name: str, item: Item, request: Requ
 
 
 def load_model():
-    model_path = os.getcwd() + "/bark/models/bark"
+    model_path = "./bark/models"
     global bark_model, processor, voice_preset
     bark_model = BarkModel.from_pretrained(model_path)
     processor = AutoProcessor.from_pretrained("suno/bark")
@@ -42,7 +57,8 @@ def transformers_generate(execution_id: str, name: str, text: str, callback_url:
 def callback(callback_url, callback_body):
     headers = {"Content-Type": "application/json"}
     payload = json.dumps(callback_body)
-    requests.post(callback_url, headers=headers, data=payload)
+    response = requests.post(callback_url, headers=headers, data=payload)
+    print(response)
 
 
 if __name__ == '__main__':
