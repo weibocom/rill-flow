@@ -1,4 +1,19 @@
-# main.py
+import json
+from concurrent.futures import ThreadPoolExecutor
+from typing import List
+import requests
+import uvicorn
+from fastapi import FastAPI, Request
+from moviepy.editor import *
+from moviepy.video.tools.subtitles import SubtitlesClip
+from pydantic import BaseModel
+
+
+app = FastAPI()
+executor = ThreadPoolExecutor(max_workers=20)
+data_dir = os.getenv('WORK_DIR', "/tmp")
+
+
 class Item(BaseModel):
     segments: List[str]
 
@@ -20,6 +35,7 @@ def concatenate_video(execution_id: str, segments: List, callback_url: str):
     final_clip.write_videofile(video_clip_path)
 
     # add subtitles
+    print(os.getcwd())
     video = VideoFileClip(video_clip_path)
     generator = lambda txt: TextClip(txt, font='Arial', fontsize=25, color='white')
     subs = SubtitlesClip('./subtitles.srt', generator)
@@ -37,7 +53,8 @@ def concatenate_video(execution_id: str, segments: List, callback_url: str):
 def callback(callback_url, callback_body):
     headers = {"Content-Type": "application/json"}
     payload = json.dumps(callback_body)
-    requests.post(callback_url, headers=headers, data=payload)
+    response = requests.post(callback_url, headers=headers, data=payload)
+    print(response)
 
 
 if __name__ == '__main__':
