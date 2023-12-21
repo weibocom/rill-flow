@@ -35,7 +35,7 @@ def generate_digital_human(execution_id: str, name: str, audio_path: str, callba
                     '--outfile', out_file])
 
     callback_body = {
-        "segment": out_file
+        "video_path": out_file
     }
     callback(callback_url, callback_body)
 
