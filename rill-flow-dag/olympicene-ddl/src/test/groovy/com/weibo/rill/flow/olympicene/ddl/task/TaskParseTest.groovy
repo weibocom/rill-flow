@@ -1,10 +1,9 @@
 package com.weibo.rill.flow.olympicene.ddl.task
 
-
-import com.weibo.rill.flow.olympicene.core.model.task.ChoiceTask
-import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask
+import com.weibo.rill.flow.olympicene.core.model.task.ChoiceTask
+import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLMapper
 import spock.lang.Specification
@@ -25,8 +24,8 @@ class TaskParseTest extends Specification {
                 "     source: url2\n" +
                 "outputMappings:\n" +
                 "   - target: segments\n" +
-                "     source: semgents\n" +
-                "next: segmentForeach";
+                "     source: segments\n" +
+                "next: segmentForeach"
         when:
         FunctionTask ret = YAMLMapper.parseObject(text, FunctionTask.class)
 

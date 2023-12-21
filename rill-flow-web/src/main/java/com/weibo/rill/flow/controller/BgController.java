@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.weibo.rill.flow.controller;
 
 import com.alibaba.fastjson.JSON;
@@ -78,15 +94,14 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
-            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
-                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
-                    descriptorManager.getVersion(bussinessId, featureId, alia).forEach(version -> {
-                        Map versionMap = (Map) version;
-                        String descriptorId = String.valueOf(versionMap.get("descriptor_id"));
-                        long createTime = Long.parseLong(String.valueOf(versionMap.get("create_time")));
+        descriptorManager.getBusiness().forEach(businessId -> {
+            descriptorManager.getFeature(businessId).forEach(featureId -> {
+                descriptorManager.getAlias(businessId, featureId).forEach(alia -> {
+                    descriptorManager.getVersion(businessId, featureId, alia).forEach(version -> {
+                        String descriptorId = String.valueOf(version.get("descriptor_id"));
+                        long createTime = Long.parseLong(String.valueOf(version.get("create_time")));
                         DAGRecord record = DAGRecord.builder()
-                                .businessId(bussinessId)
+                                .businessId(businessId)
                                 .featureId(featureId)
                                 .alia(alia)
                                 .descriptorId(descriptorId)
@@ -168,7 +183,7 @@ public class BgController {
      */
     @GetMapping(value = "/edit/dag_op_groups.json")
     public Map<String, Object> getDagOpGroups() {
-        List<Map> groups = dagDescriptorFacade.getDagOpGroups();
+        List<Map<String, Object>> groups = dagDescriptorFacade.getDagOpGroups();
         return Map.of("data", groups, "message", "", "success", true);
     }
 
@@ -226,6 +241,7 @@ public class BgController {
 
     @RequestMapping(value = "get_business_options.json", method = RequestMethod.GET)
     public Map<String, Object> getBusinessOptions() {
+        @SuppressWarnings("unchecked")
         Set<String> businessIds = (Set<String>) dagDescriptorFacade.getBusiness().get(BUSINESS_IDS);
         return ImmutableMap.of(BUSINESS_IDS, businessIds.stream().map(item -> ImmutableMap.of("id", item, "name", item)).collect(Collectors.toList()));
     }

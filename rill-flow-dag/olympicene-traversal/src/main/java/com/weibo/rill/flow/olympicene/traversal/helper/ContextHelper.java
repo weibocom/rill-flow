@@ -19,8 +19,8 @@ package com.weibo.rill.flow.olympicene.traversal.helper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
+import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
@@ -45,6 +45,7 @@ public class ContextHelper {
     @Setter
     private volatile boolean independentContext = true;
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getContext(DAGContextStorage dagContextStorage, String executionId, TaskInfo taskInfo) {
         Map<String, Object> context;
         if (taskInfo != null && !DAGWalkHelper.getInstance().isAncestorTask(taskInfo.getName())) {
@@ -71,6 +72,7 @@ public class ContextHelper {
         return independentContext ? getIndependentContext(taskInfos, gContext) : getSharedContext(taskInfos, gContext);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Pair<TaskInfo, Map<String, Object>>> getSharedContext(Set<TaskInfo> taskInfos, Map<String, Object> gContext) {
         return taskInfos.stream().map(taskInfo -> {
             Map<String, Object> context;
@@ -87,6 +89,7 @@ public class ContextHelper {
         }).toList();
     }
 
+    @SuppressWarnings("unchecked")
     private List<Pair<TaskInfo, Map<String, Object>>> getIndependentContext(Set<TaskInfo> taskInfos, Map<String, Object> gContext) {
         List<TaskInfo> ancestorTasks = Lists.newArrayList();
         Map<String, List<TaskInfo>> fieldToSubTasks = Maps.newHashMap();
@@ -116,6 +119,7 @@ public class ContextHelper {
         return ret;
     }
 
+    @SuppressWarnings("unchecked")
     private List<Pair<TaskInfo, Map<String, Object>>> calculateIndependentContext(List<TaskInfo> tasks, Map<String, Object> sharedContext) {
         if (CollectionUtils.isEmpty(tasks)) {
             return Collections.emptyList();
@@ -132,6 +136,7 @@ public class ContextHelper {
         }).toList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getSubContextList(DAGContextStorage dagContextStorage, String executionId, TaskInfo taskInfo) {
         Set<String> subContextFields = DAGWalkHelper.getInstance().buildSubTaskContextFieldNameInCurrentTask(taskInfo);
         if (CollectionUtils.isEmpty(subContextFields)) {

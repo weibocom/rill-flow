@@ -39,7 +39,7 @@ public enum DAGStatus {
     FAILED("failed"),
     ;
 
-    private String value;
+    private final String value;
 
     @JsonCreator
     public static DAGStatus parse(String value) {

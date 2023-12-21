@@ -18,11 +18,11 @@ package com.weibo.rill.flow.impl.redis;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.common.exception.TaskException;
+import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.service.manager.DAGClientPool;
-import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.service.storage.CustomizedStorage;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import com.weibo.rill.flow.service.util.ValueExtractor;
@@ -32,10 +32,12 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Pipeline;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service

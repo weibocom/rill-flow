@@ -30,8 +30,6 @@ import com.weibo.rill.flow.service.facade.OlympiceneFacade;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.service.util.ProfileActions;
-import com.weibo.rill.flow.service.util.PrometheusActions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -97,26 +95,7 @@ public class FlowController {
             return olympiceneFacade.submit(flowUser, descriptorId, context, callback, resourceCheckConfig);
         };
 
-        return runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
-    }
-
-    /**
-     * 按业务类型分别统计 接口调用情况 运维配置的监控为接口总体调用情况
-     */
-    private Map<String, Object> runNotifyAndRecordProfile(String url, String id, Supplier<Map<String, Object>> notifyActions) {
-        long startTime = System.currentTimeMillis();
-        try {
-            Map<String, Object> ret = notifyActions.get();
-            ProfileActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            return ret;
-        } catch (Exception e) {
-            ProfileActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            throw e;
-        }
+        return profileRecordService.runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
     }
 
     @ApiOperation(value = "任务完成回调")

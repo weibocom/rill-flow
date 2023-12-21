@@ -1,13 +1,13 @@
 package com.weibo.rill.flow.olympicene.traversal
 
+import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
+import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
+import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.event.Callback
 import com.weibo.rill.flow.olympicene.core.event.Event
 import com.weibo.rill.flow.olympicene.core.model.DAGSettings
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
-import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
-import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
-import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
@@ -16,11 +16,11 @@ import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
+import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
+import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
-import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
-import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import spock.lang.Specification
 
 class InvokeMsgTest extends Specification {
@@ -85,8 +85,8 @@ class InvokeMsgTest extends Specification {
                 .taskInfoName("B_0-C")
                 .taskStatus(TaskStatus.FAILED)
                 .taskInvokeMsg(TaskInvokeMsg.builder().code("code").msg("msg").ext(['ext':'info']).build())
-                .build();
-        olympicene.finish("smallFlow", DAGSettings.DEFAULT, [:], smallFlowNotify);
+                .build()
+        olympicene.finish("smallFlow", DAGSettings.DEFAULT, [:], smallFlowNotify)
 
         then:
         1 * callback.onEvent({Event event ->

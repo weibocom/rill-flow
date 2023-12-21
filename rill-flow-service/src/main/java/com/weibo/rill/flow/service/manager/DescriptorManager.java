@@ -22,15 +22,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.aviator.Expression;
-import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.common.constant.ReservedConstant;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -457,7 +458,7 @@ public class DescriptorManager {
         return resourceName;
     }
 
-    public List<Map> getVersion(String businessId, String featureName, String alias) {
+    public List<Map<String, ? extends Serializable>> getVersion(String businessId, String featureName, String alias) {
         Set<Pair<String, Double>> redisRet = redisClient.zrangeWithScores(businessId, buildVersionRedisKey(businessId, featureName, alias), 0, -1);
         return redisRet.stream()
                 .map(memberToScore -> {

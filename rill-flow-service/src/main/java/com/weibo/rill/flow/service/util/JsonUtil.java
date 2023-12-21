@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.google.common.base.Strings;
 import com.weibo.rill.flow.olympicene.ddl.serialize.ObjectMapperFactory;
 import org.slf4j.Logger;
@@ -46,7 +47,10 @@ public class JsonUtil {
     static {
         mapper = ObjectMapperFactory.getJSONMapper();
         mapperWithDefaultTyping = mapper.copy();
-        mapperWithDefaultTyping.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        mapperWithDefaultTyping.activateDefaultTyping(
+            LaissezFaireSubTypeValidator.instance, 
+            ObjectMapper.DefaultTyping.NON_FINAL
+        );
     }
 
     public static <T> T parseObject(final String json, final Class<T> type) throws IOException {

@@ -1,9 +1,8 @@
 package com.weibo.rill.flow.olympicene.ddl
 
-
-import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGType
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
@@ -33,8 +32,8 @@ class DAGStringParserTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
 
         when:
         DAG dag = dagParser.parse(text)
@@ -65,8 +64,8 @@ class DAGStringParserTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: ";
+                "       source: segments\n" +
+                "  next: "
 
         when:
         DAG dag = dagParser.parse(text)
@@ -97,7 +96,7 @@ class DAGStringParserTest extends Specification {
                 "         source: url2\n" +
                 "    outputMappings:\n" +
                 "       - target: segments\n" +
-                "         source: semgents\n" +
+                "         source: segments\n" +
                 "    next: segmentForeach\n" +
                 "  - category: foreach\n" +
                 "    name: segmentForeach\n" +
