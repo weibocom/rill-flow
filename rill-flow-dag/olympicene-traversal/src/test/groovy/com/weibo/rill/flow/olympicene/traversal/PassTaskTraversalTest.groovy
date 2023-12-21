@@ -29,10 +29,9 @@ class PassTaskTraversalTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "test one passTask dag should work well"() {
         given:
@@ -50,7 +49,7 @@ class PassTaskTraversalTest extends Specification {
                 "     - target: \$.context.key1\n" +
                 "       source: 'value1'"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit('xxx2', dag, ["key1": "value2"])
@@ -100,7 +99,7 @@ class PassTaskTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit('xxx1', dag, ["mediaUrl": "http://xxx"])

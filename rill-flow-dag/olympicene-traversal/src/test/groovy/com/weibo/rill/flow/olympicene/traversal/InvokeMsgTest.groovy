@@ -14,7 +14,6 @@ import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
@@ -29,10 +28,9 @@ class InvokeMsgTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "big flow taskInfo and small flow dagInfo and small flow taskInfo invokeMsg"() {
         given:
@@ -71,7 +69,7 @@ class InvokeMsgTest extends Specification {
         DAG bigFlow = dagParser.parse(bigFlowYaml)
         DAG smallFlow = dagParser.parse(smallFlowYaml)
         dispatcher.dispatch(*_) >> '{"execution_id":"smallFlow"}'
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit("bigFlow", bigFlow, [:])

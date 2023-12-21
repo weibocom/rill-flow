@@ -15,7 +15,6 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
@@ -31,10 +30,9 @@ class ConstMappingsTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "test const mappings should work well"() {
         given:
@@ -56,7 +54,6 @@ class ConstMappingsTest extends Specification {
                 "       source: \$.output.segments\n" +
                 "  next: "
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('xxx2', dag, [:])
@@ -118,7 +115,6 @@ class ConstMappingsTest extends Specification {
                 "    - source: \$.context.metaData\n" +
                 "      target: \$.input.metaData"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('xxx2', dag, [:])

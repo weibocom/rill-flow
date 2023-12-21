@@ -30,7 +30,6 @@ import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer;
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator;
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.ResourceDAGValidator;
 import com.weibo.rill.flow.olympicene.spring.boot.exception.OlympicenceStarterException;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.traversal.DAGOperations;
 import com.weibo.rill.flow.olympicene.traversal.DAGTraversal;
 import com.weibo.rill.flow.olympicene.traversal.Olympicene;
@@ -286,11 +285,10 @@ public class OlympiceneAutoConfiguration {
             @Autowired @Qualifier("dagCallback") Callback<DAGCallbackInfo> dagCallback,
             @Autowired @Qualifier("timeCheckRunner") TimeCheckRunner timeCheckRunner,
             @Autowired @Qualifier("runnerExecutor") ExecutorService runnerExecutor,
-            @Autowired(required = false) @Qualifier("dagResultHandler") DAGResultHandler dagResultHandler,
-            @Autowired @Qualifier("dagDefaultStorageRedisClient")RedisClient redisClient) {
+            @Autowired(required = false) @Qualifier("dagResultHandler") DAGResultHandler dagResultHandler) {
         log.info("begin to init default DAGOperations bean");
         DAGOperations dagOperations = new DAGOperations(runnerExecutor, taskRunners, dagRunner,
-                timeCheckRunner, dagTraversal, dagCallback, dagResultHandler, redisClient);
+                timeCheckRunner, dagTraversal, dagCallback, dagResultHandler);
         dagTraversal.setDagOperations(dagOperations);
         timeCheckRunner.setDagOperations(dagOperations);
         return dagOperations;

@@ -13,7 +13,6 @@ import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
@@ -28,11 +27,10 @@ class FunctionRetryTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     DefaultTimeChecker timeChecker = Mock(DefaultTimeChecker.class)
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, switcherManager)
     DAG dag
 
     def setup() {
@@ -62,7 +60,6 @@ class FunctionRetryTest extends Specification {
     def "function dispatch task fail retry test"() {
         given:
         ((FunctionTask) dag.getTasks().get(0)).getRetry().setIntervalInSeconds(interval)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('executionId', dag, [:])
@@ -91,7 +88,6 @@ class FunctionRetryTest extends Specification {
     def "function finish status fails retry test"() {
         given:
         ((FunctionTask) dag.getTasks().get(0)).getRetry().setIntervalInSeconds(interval)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('executionId', dag, [:])

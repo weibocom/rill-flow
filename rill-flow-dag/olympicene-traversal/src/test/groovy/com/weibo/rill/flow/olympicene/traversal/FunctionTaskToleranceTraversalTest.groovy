@@ -14,7 +14,6 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
@@ -29,10 +28,9 @@ class FunctionTaskToleranceTraversalTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "test one functionTask skip dag should work well"() {
         given:
@@ -56,7 +54,7 @@ class FunctionTaskToleranceTraversalTest extends Specification {
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments\n" +
                 "  next: "
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         DAG dag = dagParser.parse(text)
@@ -126,7 +124,7 @@ class FunctionTaskToleranceTraversalTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url\n"
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         DAG dag = dagParser.parse(text)
@@ -215,7 +213,7 @@ class FunctionTaskToleranceTraversalTest extends Specification {
                 "       source: \$.output.url\n" +
                 "  next: "
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit('xxx1', dag, ["mediaUrl": "http://xxx"])
@@ -303,7 +301,7 @@ class FunctionTaskToleranceTraversalTest extends Specification {
                 "       source: \$.output.url\n" +
                 "  next: "
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit('xxx1', dag, ["mediaUrl": "http://xxx"])
@@ -418,7 +416,7 @@ class FunctionTaskToleranceTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+      
 
         when:
         olympicene.submit('xxx1', dag, ["url": "http://test.com/test"])

@@ -16,7 +16,6 @@ import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.ForeachTaskValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
@@ -31,10 +30,9 @@ class SuspenseTaskTraversalTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "test suspense task"() {
         given:
@@ -71,7 +69,7 @@ class SuspenseTaskTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit('xxx1', dag, ["url": "http://test.com/test"])
@@ -130,7 +128,7 @@ class SuspenseTaskTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit('xxx1', dag, context)
@@ -166,7 +164,7 @@ class SuspenseTaskTraversalTest extends Specification {
                 "  interruptions:\n" +
                 "    - \$.input.[?(@.text == \"aaa\")]\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit('xxx1', dag, data)
@@ -207,7 +205,7 @@ class SuspenseTaskTraversalTest extends Specification {
                 "  interruptions:\n" +
                 "    - \$.input.[?(@.text == \"aaa\")]\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
+        
 
         when:
         olympicene.submit('xxx1', dag, [:])

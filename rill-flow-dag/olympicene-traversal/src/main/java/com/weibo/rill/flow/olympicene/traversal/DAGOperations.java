@@ -32,7 +32,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg.ExecutionInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.traversal.callback.CallbackInvoker;
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo;
 import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent;
@@ -42,7 +41,6 @@ import com.weibo.rill.flow.olympicene.traversal.helper.PluginHelper;
 import com.weibo.rill.flow.olympicene.traversal.runners.DAGRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TaskRunner;
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,9 +54,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class DAGOperations {
     private static final String EXECUTION_ID = "executionId";
-    private static final String INVALID_TRACE_ID = "00000000000000000000000000000000";
-    private static final int EXPIRE_7DAYS_SECOND = 7 * 24 * 60 * 60;
-    private static final String TRACE_ID_PREFIX = "trace_id_";
 
     @VisibleForTesting
     final ExecutorService runnerExecutor;
@@ -81,7 +76,6 @@ public class DAGOperations {
     @VisibleForTesting
     final DAGResultHandler dagResultHandler;
 
-    private final RedisClient redisClient;
 
     public static final BiConsumer<Runnable, Integer> OPERATE_WITH_RETRY = (operation, retryTimes) -> {
         int exceptionCatchTimes = retryTimes;
@@ -99,7 +93,7 @@ public class DAGOperations {
 
     public DAGOperations(ExecutorService runnerExecutor, Map<String, TaskRunner> taskRunners, DAGRunner dagRunner,
                          TimeCheckRunner timeCheckRunner, DAGTraversal dagTraversal, Callback<DAGCallbackInfo> callback,
-                         DAGResultHandler dagResultHandler, RedisClient redisClient) {
+                         DAGResultHandler dagResultHandler) {
         this.runnerExecutor = runnerExecutor;
         this.taskRunners = taskRunners;
         this.dagRunner = dagRunner;
@@ -107,7 +101,6 @@ public class DAGOperations {
         this.dagTraversal = dagTraversal;
         this.callback = callback;
         this.dagResultHandler = dagResultHandler;
-        this.redisClient = redisClient;
     }
 
     public void runTasks(String executionId, Collection<Pair<TaskInfo, Map<String, Object>>> taskInfoToContexts) {
@@ -255,30 +248,10 @@ public class DAGOperations {
 
     public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
-        // executionId 和traceId对应关系存储
-        storageTraceIdAndExecutionIdToRedis(executionId);
         ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                 .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));
         dagTraversal.submitTraversal(executionId, null);
-    }
-
-    private void storageTraceIdAndExecutionIdToRedis(String executionId) {
-        String cacheValue = redisClient.get(TRACE_ID_PREFIX + executionId);
-        if (StringUtils.isNotBlank(cacheValue)) {
-            return;
-        }
-        Span currentSpan = Span.current();
-        if (Objects.isNull(currentSpan)) {
-            log.warn("submitDAG currentSpan is null executionId:{}", executionId);
-            return;
-        }
-        String traceId = currentSpan.getSpanContext().getTraceId();
-        log.info("submitDAG executionId:{} traceId:{}", executionId, traceId);
-        if (StringUtils.isEmpty(traceId) || StringUtils.equals(traceId, INVALID_TRACE_ID)) {
-            return;
-        }
-        redisClient.setex(TRACE_ID_PREFIX + executionId, EXPIRE_7DAYS_SECOND, traceId);
     }
 
     public void finishDAG(String executionId, DAGInfo dagInfo, DAGStatus dagStatus, DAGInvokeMsg dagInvokeMsg) {
