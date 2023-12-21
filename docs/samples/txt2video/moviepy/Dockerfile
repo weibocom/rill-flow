@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y imagemagick vim
 # create project
 WORKDIR /media-processor
 COPY main.py main.py
-COPY subtitles.srt subtitles.srt
 COPY requirements.txt requirements.txt
 
 # install packages
