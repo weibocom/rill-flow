@@ -1,18 +1,10 @@
 package com.weibo.rill.flow.olympicene.ddl.task
 
-
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask
-import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLMapper
-import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
-import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
-import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
 import spock.lang.Specification
 
 class MappingsTest extends Specification {
-    DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new FunctionTaskValidator()])])
-
     def "test function task mapper"() {
         given:
         String text = "category: function\n" +

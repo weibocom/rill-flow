@@ -33,7 +33,7 @@ class DAGSerializationTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
                 "       source: segments\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
         String result = dagParser.serialize(dag)
 

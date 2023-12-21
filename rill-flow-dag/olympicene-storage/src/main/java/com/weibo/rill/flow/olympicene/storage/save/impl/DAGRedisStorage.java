@@ -16,18 +16,16 @@
 
 package com.weibo.rill.flow.olympicene.storage.save.impl;
 
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-@Slf4j
 public class DAGRedisStorage implements DAGInfoStorage, DAGContextStorage {
     protected DAGInfoDAO dagInfoDAO;
     protected ContextDAO contextDao;

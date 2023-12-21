@@ -12,7 +12,7 @@ public enum NodeType {
     FOREACH("foreach"),
     RETURN("return")
     ;
-    private String type;
+    private final String type;
 
     NodeType(String type) {
         this.type = type;

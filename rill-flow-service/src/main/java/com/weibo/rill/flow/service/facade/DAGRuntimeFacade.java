@@ -31,16 +31,12 @@ import com.weibo.rill.flow.interfaces.model.http.HttpParameter;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
-import com.weibo.rill.flow.interfaces.model.task.BaseTask;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
-import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.interfaces.model.task.*;
 import com.weibo.rill.flow.olympicene.core.helper.DAGInfoMaker;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLMapper;
@@ -96,7 +92,7 @@ public class DAGRuntimeFacade {
     @Autowired
     private OlympiceneFacade olympiceneFacade;
 
-    public Map convertDAGInfo(String dagDescriptor) {
+    public Map<String, Object> convertDAGInfo(String dagDescriptor) {
         try {
             DAG dag = dagStringParser.parse(dagDescriptor);
             DAGInfo dagInfo = new DAGInfoMaker().dag(dag).dagStatus(DAGStatus.NOT_STARTED).make();
@@ -185,7 +181,7 @@ public class DAGRuntimeFacade {
         return (int) (completeWeight * 100 / allWeight);
     }
 
-    public Map getBasicDAGInfo(String executionId, boolean brief) {
+    public Map<String, Object> getBasicDAGInfo(String executionId, boolean brief) {
         DAGInfo dagInfo = runtimeStorage.getBasicDAGInfo(executionId);
         if (dagInfo == null) {
             dagInfo = longTermStorage.getBasicDAGInfo(executionId);
@@ -197,7 +193,8 @@ public class DAGRuntimeFacade {
         return result;
     }
 
-    public Map getContext(String executionId, String taskName) {
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getContext(String executionId, String taskName) {
         if (StringUtils.isBlank(taskName) || dagWalkHelper.isAncestorTask(taskName)) {
             Map<String, Object> context = runtimeStorage.getContext(executionId);
             if (MapUtils.isEmpty(context)) {
@@ -212,16 +209,16 @@ public class DAGRuntimeFacade {
         if (MapUtils.isEmpty(groupedContext)) {
             groupedContext = longTermStorage.getContext(executionId, fields);
         }
-        return Optional.ofNullable(groupedContext).map(it -> (Map) it.get(subContextField)).orElse(Maps.newHashMap());
+        return Optional.ofNullable(groupedContext).map(it -> (Map<String, Object>) it.get(subContextField)).orElse(Maps.newHashMap());
     }
 
-    public Map getSubContext(String executionId, String parentTaskName, Integer groupIndex) {
+    public Map<String, Object> getSubContext(String executionId, String parentTaskName, Integer groupIndex) {
         String routeName = dagWalkHelper.buildTaskInfoRouteName(parentTaskName, String.valueOf(groupIndex));
         String taskName = dagWalkHelper.buildTaskInfoName(routeName, "x");
         return getContext(executionId, taskName);
     }
 
-    public Map getDAGInfoByParentName(String executionId, String parentTaskName, String groupIndex) {
+    public Map<String, Object> getDAGInfoByParentName(String executionId, String parentTaskName, String groupIndex) {
         String routeName = dagWalkHelper.buildTaskInfoRouteName(parentTaskName, groupIndex);
         String taskName = dagWalkHelper.buildTaskInfoName(routeName, "x");
 
@@ -275,7 +272,7 @@ public class DAGRuntimeFacade {
             return;
         }
 
-        Optional.ofNullable(context).filter(MapUtils::isEmpty).ifPresent(it -> it.putAll((Map<String, Object>) getContext(executionId, taskName)));
+        Optional.ofNullable(context).filter(MapUtils::isEmpty).ifPresent(it -> it.putAll(getContext(executionId, taskName)));
         TaskInfo taskInfo = getBasicTaskInfo(executionId, taskName);
 
         if (type.equals("input_eva")) {
@@ -354,7 +351,7 @@ public class DAGRuntimeFacade {
                 descriptorManager.getDagDescriptor(0L, Collections.emptyMap(), descriptorId) : descriptor;
         DAG dag = dagStringParser.parse(dagDescriptor);
         Map<String, List<String>> dependencies = dagWalkHelper.getDependedResources(dag);
-        List<Map> resourceToNames = dependencies.entrySet().stream()
+        List<Map<String, Object>> resourceToNames = dependencies.entrySet().stream()
                 .map(entry -> ImmutableMap.of("resource_name", entry.getKey(), "names", entry.getValue()))
                 .collect(Collectors.toList());
         return ImmutableMap.of("dependencies", resourceToNames);
@@ -397,7 +394,7 @@ public class DAGRuntimeFacade {
             executionItem.put("business_id", dagInfo.getDag().getWorkspace());
             executionItem.put("feature_id", dagInfo.getDag().getDagName());
             executionItem.put("status", dagInfo.getDagStatus());
-            return Map.of("total", 1, "items", Arrays.asList(executionItem));
+            return Map.of("total", 1, "items", List.of(executionItem));
         }
 
         List<DAGRecord> dagRecordList = new ArrayList<>();
@@ -407,7 +404,7 @@ public class DAGRuntimeFacade {
                     .featureId(feature)
                     .build());
         } else if (StringUtils.isNotEmpty(business) && StringUtils.isEmpty(feature)) {
-            descriptorManager.getFeature(business).stream().forEach(featureId -> {
+            descriptorManager.getFeature(business).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(business)
                         .featureId(featureId)
@@ -415,20 +412,18 @@ public class DAGRuntimeFacade {
                 dagRecordList.add(record);
             });
         } else {
-            descriptorManager.getBusiness().stream().forEach(businessId -> {
-                descriptorManager.getFeature(businessId).stream().forEach(featureId -> {
-                    DAGRecord record = DAGRecord.builder()
-                            .businessId(businessId)
-                            .featureId(featureId)
-                            .build();
-                    dagRecordList.add(record);
-                });
-            });
+            descriptorManager.getBusiness().forEach(businessId -> descriptorManager.getFeature(businessId).forEach(featureId -> {
+                DAGRecord record = DAGRecord.builder()
+                        .businessId(businessId)
+                        .featureId(featureId)
+                        .build();
+                dagRecordList.add(record);
+            }));
         }
         List<DAGStatus> dagStatuses = Lists.newArrayList();
         Optional.ofNullable(DAGStatus.parse(status))
                 .ifPresentOrElse(
-                        it -> dagStatuses.add(it),
+                        dagStatuses::add,
                         () -> dagStatuses.addAll(Arrays.asList(DAGStatus.values()))
                 );
         long time = Optional.ofNullable(endTime).orElse(System.currentTimeMillis());

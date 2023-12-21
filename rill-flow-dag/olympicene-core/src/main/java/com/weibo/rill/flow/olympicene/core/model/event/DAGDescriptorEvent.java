@@ -1,7 +1,6 @@
 package com.weibo.rill.flow.olympicene.core.model.event;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEvent;

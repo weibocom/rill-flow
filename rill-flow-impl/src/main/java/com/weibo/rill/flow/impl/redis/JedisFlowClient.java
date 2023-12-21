@@ -302,6 +302,7 @@ public class JedisFlowClient implements RedisClient {
         return eval(script, keys, args);
     }
 
+    @SuppressWarnings("unchecked")
     private Object turnStringToByteArray(Object object) {
         if (object == null) {
             return null;

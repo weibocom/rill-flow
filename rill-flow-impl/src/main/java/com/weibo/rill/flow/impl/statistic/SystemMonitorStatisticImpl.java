@@ -45,7 +45,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.Pipeline;
 
 import javax.annotation.PostConstruct;
 import java.text.DateFormat;
@@ -207,14 +206,7 @@ public class SystemMonitorStatisticImpl implements SystemMonitorStatistic {
     }
 
     public List<Pair<String, String>> getExecutionIds(String key, Long cursor, Integer offset, Integer count) {
-        Set<Pair<String, Double>> redisRet = runtimeRedisClients.zrevrangeByScoreWithScores(key, cursor, 0, offset, count);
-        return redisRet.stream()
-                .sorted((c1, c2) -> Double.compare(c2.getRight(), c1.getRight()))
-                .map(memberToScore -> {
-                    String executionId = memberToScore.getKey();
-                    String time = String.valueOf(memberToScore.getValue().longValue());
-                    return Pair.of(executionId, time);
-                }).toList();
+        return getExecutionIds(runtimeRedisClients.zrevrangeByScoreWithScores(key, cursor, 0, offset, count));
     }
 
     public List<Pair<String, String>> getExecutionIdsByStatus(String serviceId, DAGStatus dagStatus, Long cursor) {
@@ -222,15 +214,17 @@ public class SystemMonitorStatisticImpl implements SystemMonitorStatistic {
     }
 
     public List<Pair<String, String>> getExecutionIds(String key, Long cursor) {
-        Set<Pair<String, Double>> redisRet = runtimeRedisClients.zrangeByScoreWithScores(key, 0, cursor);
+        return getExecutionIds(runtimeRedisClients.zrangeByScoreWithScores(key, 0, cursor));
+    }
+
+    private List<Pair<String, String>> getExecutionIds(Set<Pair<String, Double>> redisRet) {
         return redisRet.stream()
                 .sorted((c1, c2) -> Double.compare(c2.getRight(), c1.getRight()))
                 .map(memberToScore -> {
                     String executionId = memberToScore.getKey();
                     String time = String.valueOf(memberToScore.getValue().longValue());
                     return Pair.of(executionId, time);
-                })
-                .toList();
+                }).toList();
     }
 
     private void initExecutionStatus(String executionId, String serviceId) {

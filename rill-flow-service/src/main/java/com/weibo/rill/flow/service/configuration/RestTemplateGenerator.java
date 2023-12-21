@@ -61,7 +61,7 @@ public class RestTemplateGenerator implements BeanGenerator<RestTemplate> {
         messageConverters.add(new ByteArrayHttpMessageConverter());
         messageConverters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
         messageConverters.add(new ResourceHttpMessageConverter());
-        messageConverters.add(new SourceHttpMessageConverter());
+        messageConverters.add(new SourceHttpMessageConverter<>());
         messageConverters.add(new AllEncompassingFormHttpMessageConverter());
         messageConverters.add(new MappingJackson2HttpMessageConverter());
         RestTemplate restTemplate = new RestTemplate(messageConverters);

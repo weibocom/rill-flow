@@ -1,10 +1,8 @@
 package com.weibo.rill.flow.olympicene.ddl.task
 
-
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.constant.DDLErrorCode
 import com.weibo.rill.flow.olympicene.ddl.exception.ValidationException
@@ -93,8 +91,8 @@ class FunctionTaskTest extends Specification {
                 "     source: url2\n" +
                 "outputMappings:\n" +
                 "   - target: segments\n" +
-                "     source: semgents\n" +
-                "next: ";
+                "     source: segments\n" +
+                "next: "
         when:
         FunctionTask ret = YAMLMapper.parseObject(text, FunctionTask.class)
 
@@ -122,10 +120,10 @@ class FunctionTaskTest extends Specification {
                 "  group: split\n" +
                 "  inputMappings:\n" +
                 "  outputMappings:\n" +
-                "  next: ";
+                "  next: "
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(ValidationException)
@@ -148,10 +146,10 @@ class FunctionTaskTest extends Specification {
                 "  group: split\n" +
                 "  inputMappings:\n" +
                 "  outputMappings:\n" +
-                "  next: ";
+                "  next: "
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(ValidationException)
@@ -161,7 +159,7 @@ class FunctionTaskTest extends Specification {
 
     def "function task should throw FUNTION_TASK_INVALID which because resourceName can not be empty"() {
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(ValidationException)
@@ -177,7 +175,7 @@ class FunctionTaskTest extends Specification {
 
     def "function task resource or resourceName test"() {
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         noExceptionThrown()

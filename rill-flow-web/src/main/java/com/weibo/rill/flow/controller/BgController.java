@@ -78,15 +78,14 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
-            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
-                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
-                    descriptorManager.getVersion(bussinessId, featureId, alia).forEach(version -> {
-                        Map versionMap = (Map) version;
-                        String descriptorId = String.valueOf(versionMap.get("descriptor_id"));
-                        long createTime = Long.parseLong(String.valueOf(versionMap.get("create_time")));
+        descriptorManager.getBusiness().forEach(businessId -> {
+            descriptorManager.getFeature(businessId).forEach(featureId -> {
+                descriptorManager.getAlias(businessId, featureId).forEach(alia -> {
+                    descriptorManager.getVersion(businessId, featureId, alia).forEach(version -> {
+                        String descriptorId = String.valueOf(version.get("descriptor_id"));
+                        long createTime = Long.parseLong(String.valueOf(version.get("create_time")));
                         DAGRecord record = DAGRecord.builder()
-                                .businessId(bussinessId)
+                                .businessId(businessId)
                                 .featureId(featureId)
                                 .alia(alia)
                                 .descriptorId(descriptorId)
@@ -168,7 +167,7 @@ public class BgController {
      */
     @GetMapping(value = "/edit/dag_op_groups.json")
     public Map<String, Object> getDagOpGroups() {
-        List<Map> groups = dagDescriptorFacade.getDagOpGroups();
+        List<Map<String, Object>> groups = dagDescriptorFacade.getDagOpGroups();
         return Map.of("data", groups, "message", "", "success", true);
     }
 
@@ -226,6 +225,7 @@ public class BgController {
 
     @RequestMapping(value = "get_business_options.json", method = RequestMethod.GET)
     public Map<String, Object> getBusinessOptions() {
+        @SuppressWarnings("unchecked")
         Set<String> businessIds = (Set<String>) dagDescriptorFacade.getBusiness().get(BUSINESS_IDS);
         return ImmutableMap.of(BUSINESS_IDS, businessIds.stream().map(item -> ImmutableMap.of("id", item, "name", item)).collect(Collectors.toList()));
     }

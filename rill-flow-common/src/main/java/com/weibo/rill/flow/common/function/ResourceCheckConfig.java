@@ -47,7 +47,7 @@ public class ResourceCheckConfig {
         KEY_RESOURCE("key_resource"),
         SKIP("skip");
 
-        private String value;
+        private final String value;
 
         @JsonCreator
         public CheckType parse(String type) {

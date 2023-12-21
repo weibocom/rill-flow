@@ -7,7 +7,6 @@ import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.trigger.triggers.Trigger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;

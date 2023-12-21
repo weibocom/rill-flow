@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
+import com.weibo.rill.flow.trigger.util.TriggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -145,23 +145,10 @@ public class ScheduleTrigger implements Trigger {
     private void insertCronDetailToRedis(Long uid, String descriptorId, String callback, String resourceCheck,
                                          String taskId, JSONObject context, String cron) {
         // insert detail infos into redis
-        JSONObject jsonDetails = buildCommonDetail(uid, descriptorId, callback, resourceCheck);
+        JSONObject jsonDetails = TriggerUtil.buildCommonDetail(uid, descriptorId, callback, resourceCheck);
         jsonDetails.put("cron", cron);
         jsonDetails.put("context", context);
         redisClient.hset(SCHEDULED_TASKS, taskId, jsonDetails.toJSONString());
     }
 
-    @NotNull
-    private static JSONObject buildCommonDetail(Long uid, String descriptorId, String callback, String resourceCheck) {
-        JSONObject jsonDetails = new JSONObject();
-        jsonDetails.put("descriptor_id", descriptorId);
-        jsonDetails.put("uid", uid);
-        if (jsonDetails.containsKey("callback")) {
-            jsonDetails.put("callback", callback);
-        }
-        if (jsonDetails.containsKey("resource_check")) {
-            jsonDetails.put("resource_check", resourceCheck);
-        }
-        return jsonDetails;
-    }
 }

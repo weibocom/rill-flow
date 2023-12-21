@@ -6,30 +6,30 @@ import spock.lang.Specification
 class YAMLMapperTest extends Specification {
 
     static class A {
-        String a;
-        String b;
-        List<B> c;
+        String a
+        String b
+        List<B> c
 
-        public A() {}
+        A() {}
 
         String getA() {
-            return a;
+            return a
         }
 
         String getB() {
-            return b;
+            return b
         }
 
         List<B> getC() {
-            return c;
+            return c
         }
     }
 
     static class B {
-        String d;
-        String e;
+        String d
+        String e
 
-        public B() {
+        B() {
         }
     }
 

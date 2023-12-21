@@ -18,13 +18,13 @@ package com.weibo.rill.flow.olympicene.ddl.validation.dag.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
-import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAGType;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
+import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGType;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.ddl.constant.DDLErrorCode;
 import com.weibo.rill.flow.olympicene.ddl.exception.DDLException;
 import com.weibo.rill.flow.olympicene.ddl.exception.ValidationException;
@@ -42,14 +42,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class FlowDAGValidator implements DAGValidator {
-    private final List<TaskValidator> taskValidators = Lists.newArrayList();
+    private final List<TaskValidator<?>> taskValidators = Lists.newArrayList();
     private final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+$");
 
     public FlowDAGValidator() {
         this.taskValidators.addAll(TaskValidators.allTaskValidations());
     }
 
-    public FlowDAGValidator(List<TaskValidator> taskValidators) {
+    public FlowDAGValidator(List<TaskValidator<?>> taskValidators) {
         Optional.ofNullable(taskValidators).ifPresent(this.taskValidators::addAll);
     }
 
