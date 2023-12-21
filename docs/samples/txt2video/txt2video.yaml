@@ -13,9 +13,9 @@ tasks:
     outputMappings:
       - target: $.context.text_array
         source: $.output.text_array
-    next: generate
+    next: generateLoop
   - category: foreach
-    name: generate
+    name: generateLoop
     iterationMapping:
       collection: $.input.text_array
       item: text
@@ -37,24 +37,37 @@ tasks:
         outputMappings:
           - source: $.output.audio_path
             target: $.context.audio_path
-        next: digital
+        next: wav2lip
       - category: function
-        name: digital
+        name: wav2lip
         pattern: task_async
         resourceName: http://<wav2lip-executor-host>:9002/wav2lip/generate
         inputMappings:
           - source: $.context.audio_path
             target: $.input.audio_path
         outputMappings:
+          - source: $.output.video_path
+            target: $.context.video_path
+        next: subtitles
+      - category: function
+        name: subtitles
+        pattern: task_async
+        resourceName: http://<moviepy-executor-host>:9003/moviepy/subtitles
+        inputMappings:
+          - source: $.context.text
+            target: $.input.text
+          - source: $.context.video_path
+            target: $.input.video_path
+        outputMappings:
           - source: $.output.segment
             target: $.context.segment
   - category: function
     name: processor
     pattern: task_async
-    resourceName: http://<mergevideo-executor-host>:9003/moviepy/generate
+    resourceName: http://<moviepy-executor-host>:9003/moviepy/concatenate
     inputMappings:
       - source: $.context.segments
         target: $.input.segments
     outputMappings:
-      - source: $.output.video_path
-        target: $.context.video_path
+      - source: $.output.result_video_path
+        target: $.context.result_video_path
