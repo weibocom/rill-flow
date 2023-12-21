@@ -20,7 +20,7 @@ import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author moqi
- * @date 2023/12/14 17:31
+ * Create on 2023/12/14 17:31
  */
 public class TriggerUtil {
 
