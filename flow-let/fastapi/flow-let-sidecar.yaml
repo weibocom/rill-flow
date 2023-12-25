@@ -1,0 +1,49 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: custom-executor
+  namespace: rill-flow
+spec:
+  selector:
+    rill-flow: custom-executor
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8002
+      protocol: TCP
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: custom-executor
+  namespace: rill-flow
+  labels:
+    rill-flow: custom-executor
+spec:
+  selector:
+    matchLabels:
+      rill-flow: custom-executor
+  template:
+    metadata:
+      labels:
+        rill-flow: custom-executor
+    spec:
+      containers:
+        - name: flow-let
+          image: 'weibocom/rill-flow-let:fastapi'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+              protocol: TCP
+          env:
+            - name: upstream_url
+              value: 'http://localhost:8000'
+        - name: custom-executor
+          image: 'weibocom/rill-flow-sample:flow-let-fastapi-executor'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirstWithHostNet

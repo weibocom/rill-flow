@@ -1,1 +1,1 @@
-docker buildx build -t weibocom/rill-flow-sample:sample-executor
+docker buildx build -t weibocom/rill-flow-sample:sample-executor .
