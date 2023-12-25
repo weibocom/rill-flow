@@ -23,7 +23,10 @@ import lombok.Data;
 @Builder
 public class DAGSettings {
 
+    @Builder.Default
     private boolean ignoreExist = false;
+
+    @Builder.Default
     private int dagMaxDepth = 3;
 
     public static final DAGSettings DEFAULT = DAGSettings.builder()

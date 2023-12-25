@@ -32,18 +32,18 @@ public class TaskValidators {
             new ForeachTaskValidator(),
             new FunctionTaskValidator()));
 
-    public static List<TaskValidator> allTaskValidations() {
+    public static List<TaskValidator<?>> allTaskValidations() {
         return ALL_TASK_VALIDATORS.getValidators();
     }
 
     @Getter
-    private final List<TaskValidator> validators = Lists.newArrayList();
+    private final List<TaskValidator<?>> validators = Lists.newArrayList();
 
     private TaskValidators() {
         // do nothing
     }
 
-    private TaskValidators(List<TaskValidator> validators) {
+    private TaskValidators(List<TaskValidator<?>> validators) {
         Optional.ofNullable(validators).ifPresent(this.validators::addAll);
     }
 }

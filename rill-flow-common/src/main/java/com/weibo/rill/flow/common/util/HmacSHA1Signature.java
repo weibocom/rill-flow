@@ -24,6 +24,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * 采用自阿里云OSS存储sdk中的加密方式
@@ -44,7 +45,7 @@ public class HmacSHA1Signature {
     private static final Object LOCK = new Object();
 
     /* Prototype of the Mac instance. */
-    private static Mac macInstance;
+    private static volatile Mac macInstance;
 
     static {
         try {
@@ -100,7 +101,7 @@ public class HmacSHA1Signature {
             throw new RuntimeException("Unsupported algorithm: " + ALGORITHM, ex);
         } catch (InvalidKeyException ex) {
             log.error("Invalid key: {}", key, ex);
-            throw new RuntimeException("Invalid key: " + key, ex);
+            throw new RuntimeException("Invalid key: " + Arrays.toString(key), ex);
         }
     }
 }

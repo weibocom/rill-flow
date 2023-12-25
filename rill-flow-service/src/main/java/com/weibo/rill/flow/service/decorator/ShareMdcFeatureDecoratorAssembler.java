@@ -34,17 +34,17 @@ public class ShareMdcFeatureDecoratorAssembler implements TaskDecoratorAssembler
     }
 
     private static final class ShareMdcTaskDecorator implements Runnable {
-        private final Map context;
+        private final Map<String, String> context;
         private final Runnable command;
 
-        ShareMdcTaskDecorator(Map context, Runnable command) {
+        ShareMdcTaskDecorator(Map<String, String> context, Runnable command) {
             this.context = context;
             this.command = command;
         }
 
         @Override
         public void run() {
-            Map previous = MDC.getCopyOfContextMap();
+            Map<String, String> previous = MDC.getCopyOfContextMap();
             if (context == null) {
                 MDC.clear();
             } else {

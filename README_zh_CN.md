@@ -141,11 +141,11 @@ http://127.0.0.1:8088/#/flow-instance/list
 
 ![preview](https://rill-flow.github.io/img/flow_sample.jpg)
 
-
 ## 文档
-* [中文文档](https://rill-flow.github.io/docs/intro)
 
-## 贡献者 
+- [中文文档](https://rill-flow.github.io/docs/intro)
+
+## 贡献者
 
 以下是项目贡献者及其 GitHub 链接：
 

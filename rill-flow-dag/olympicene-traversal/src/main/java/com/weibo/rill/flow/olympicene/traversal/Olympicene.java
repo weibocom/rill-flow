@@ -17,6 +17,7 @@
 package com.weibo.rill.flow.olympicene.traversal;
 
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.concurrent.ExecutionRunnable;
 import com.weibo.rill.flow.olympicene.core.constant.SystemConfig;
 import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
@@ -24,7 +25,6 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGResult;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInteraction;

@@ -1,13 +1,13 @@
 package com.weibo.rill.flow.olympicene.traversal
 
+import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo
+import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.event.Callback
 import com.weibo.rill.flow.olympicene.core.event.Event
 import com.weibo.rill.flow.olympicene.core.model.DAGSettings
-import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus
-import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
@@ -17,11 +17,11 @@ import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.FunctionTaskValidator
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
+import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
+import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
-import com.weibo.rill.flow.olympicene.traversal.callback.DAGCallbackInfo
-import com.weibo.rill.flow.olympicene.traversal.callback.DAGEvent
 import spock.lang.Specification
 
 class ConstMappingsTest extends Specification {
@@ -52,7 +52,7 @@ class ConstMappingsTest extends Specification {
                 "  outputMappings:\n" +
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments\n" +
-                "  next: ";
+                "  next: "
         DAG dag = dagParser.parse(text)
 
         when:
@@ -113,7 +113,7 @@ class ConstMappingsTest extends Specification {
                 "  pattern: task_scheduler\n" +
                 "  inputMappings:\n" +
                 "    - source: \$.context.metaData\n" +
-                "      target: \$.input.metaData";
+                "      target: \$.input.metaData"
         DAG dag = dagParser.parse(text)
 
         when:

@@ -20,20 +20,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.service.util.ValueExtractor;
+import com.weibo.rill.flow.common.exception.TaskException;
+import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.storage.constant.DAGRedisPrefix;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DagStorageSerializer;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
-import com.weibo.rill.flow.common.exception.TaskException;
-import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.service.dconfs.BizDConfs;
+import com.weibo.rill.flow.service.util.ExecutionIdUtil;
+import com.weibo.rill.flow.service.util.ValueExtractor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -240,7 +240,7 @@ public class DAGPikaDAO {
             }
 
             JsonNode jsonNode = DagStorageSerializer.MAPPER.readTree(contextRaw);
-            return DagStorageSerializer.MAPPER.convertValue(jsonNode, new TypeReference<Map<String, Object>>() {
+            return DagStorageSerializer.MAPPER.convertValue(jsonNode, new TypeReference<>() {
             });
         } catch (Exception e) {
             log.warn("getTotalContext fails, executionId:{}", executionId, e);

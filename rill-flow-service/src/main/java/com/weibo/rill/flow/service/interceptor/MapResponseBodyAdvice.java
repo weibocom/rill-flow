@@ -31,16 +31,16 @@ import java.util.Map;
 
 @Order(2)
 @ControllerAdvice("com.weibo.rill.flow")
-public class MapResponseBodyAdvice implements ResponseBodyAdvice<Map> {
+public class MapResponseBodyAdvice implements ResponseBodyAdvice<Map<String, Object>> {
     public static final String REQUEST_ID_KEY = "request_id";
 
     @Override
-    public boolean supports(MethodParameter returnType, Class converterType) {
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
         return returnType.getMethod().getReturnType().isAssignableFrom(Map.class);
     }
 
     @Override
-    public Map beforeBodyWrite(Map body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+    public Map<String, Object> beforeBodyWrite(Map<String, Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put(REQUEST_ID_KEY, MDC.get(REQUEST_ID_KEY));
         if (body != null) {
