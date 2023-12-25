@@ -136,9 +136,9 @@ public class IpUtils {
     public static Multimap<String, String> getConcreteLocalIpv4Addresses() {
         Multimap<String, String> result = ArrayListMultimap.create();
         try {
-            Enumeration allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
             while (allNetInterfaces.hasMoreElements()) {
-                NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+                NetworkInterface netInterface = allNetInterfaces.nextElement();
 
                 boolean isConcreteAliveNetworkInterface = netInterface.isUp() && !netInterface.isLoopback() &&
                         !netInterface.isVirtual();
@@ -146,9 +146,9 @@ public class IpUtils {
                     continue;
                 }
 
-                Enumeration addresses = netInterface.getInetAddresses();
+                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
-                    InetAddress ip = (InetAddress) addresses.nextElement();
+                    InetAddress ip = addresses.nextElement();
                     if (ip instanceof Inet4Address) {
                         result.put(netInterface.getName(), ip.getHostAddress());
                     }
@@ -164,9 +164,9 @@ public class IpUtils {
     public static Collection<String> getLocalIpv4Addresses() {
         List<String> result = new ArrayList<>();
         try {
-            Enumeration allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
             while (allNetInterfaces.hasMoreElements()) {
-                NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+                NetworkInterface netInterface = allNetInterfaces.nextElement();
 
                 boolean isConcreteAliveNetworkInterface = netInterface.isUp() && !netInterface.isLoopback() &&
                         !netInterface.isVirtual();
@@ -174,9 +174,9 @@ public class IpUtils {
                     continue;
                 }
 
-                Enumeration addresses = netInterface.getInetAddresses();
+                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
-                    InetAddress ip = (InetAddress) addresses.nextElement();
+                    InetAddress ip = addresses.nextElement();
                     if (ip instanceof Inet4Address) {
                         result.add(ip.getHostAddress());
                     }

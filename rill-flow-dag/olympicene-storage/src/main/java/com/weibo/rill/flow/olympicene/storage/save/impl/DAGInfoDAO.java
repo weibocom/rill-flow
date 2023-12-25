@@ -279,6 +279,7 @@ public class DAGInfoDAO {
         return getTaskInfo(executionId, chainNames.get(chainNames.size() - 2), subTaskPrefix);
     }
 
+    @SuppressWarnings("unchecked")
     private TaskInfo getTaskInfo(String executionId, String taskName, String subTaskPrefix) {
         log.info("getTaskInfo executionId:{} taskName:{} subTaskPrefix:{}", executionId, taskName, subTaskPrefix);
 
@@ -334,6 +335,7 @@ public class DAGInfoDAO {
         return taskInfo;
     }
 
+    @SuppressWarnings("unchecked")
     public DAG getDAGDescriptor(String executionId) {
         log.info("getDAGDescriptor executionId:{}", executionId);
 

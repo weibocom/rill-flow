@@ -20,10 +20,8 @@ import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.storage.redis.lock.Locker;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 
-@Slf4j
 public class RedisStorageProcedure implements DAGStorageProcedure {
     private final String instanceId;
     private final Locker locker;

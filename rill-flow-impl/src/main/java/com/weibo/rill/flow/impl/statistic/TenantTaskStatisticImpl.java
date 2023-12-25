@@ -18,23 +18,23 @@ package com.weibo.rill.flow.impl.statistic;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.common.model.ProfileType;
+import com.weibo.rill.flow.impl.redis.JedisFlowClient;
+import com.weibo.rill.flow.interfaces.model.resource.Resource;
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
+import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg;
 import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
+import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.interfaces.model.resource.Resource;
-import com.weibo.rill.flow.impl.redis.JedisFlowClient;
-import com.weibo.rill.flow.common.model.ProfileType;
 import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.RuntimeRedisClients;
-import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +43,6 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Pipeline;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -248,14 +247,14 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
                 log.info("setBusinessValue business aggregate switcher off, businessAggregate:{}", businessAggregate);
                 return;
             }
-            try (Pipeline pipeline = businessAggregateClient.pipelined()) {
+            businessAggregateClient.pipelined().accept(pipeline -> {
                 businessAggregate.forEach((businessKey, hash) -> {
                             hash.forEach((field, incrValue) -> pipeline.hincrBy(businessKey, field, incrValue));
                             pipeline.expire(businessKey, BUSINESS_AGGREGATE_EXPIRE_TIME_IN_SECOND);
                         }
                 );
                 pipeline.sync();
-            }
+            });
         } catch (Exception e) {
             log.warn("setBusinessValue fails, ", e);
         }
@@ -286,7 +285,7 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
         int reserveTime = ValueExtractor.getConfiguredValue(executionId, bizDConfs.getRedisBusinessIdToUnfinishedReserveSecond(), 86400);
 
         JedisFlowClient jedisFlowClient = (JedisFlowClient) runtimeRedisClients.choose(flowKey);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             if (waitTime > 0L) {
                 pipeline.hincrBy(flowKey, buildFlowResourceWaitTimeField(resourceType), waitTime);
             }
@@ -295,7 +294,7 @@ public class TenantTaskStatisticImpl implements TenantTaskStatistic {
             }
             pipeline.expire(flowKey, reserveTime);
             pipeline.sync();
-        }
+        });
     }
 
     private void businessResourceCount(String resourceName, String businessKey, String serviceId) {

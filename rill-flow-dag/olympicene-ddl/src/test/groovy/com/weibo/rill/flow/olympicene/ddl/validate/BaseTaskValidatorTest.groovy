@@ -1,11 +1,11 @@
 package com.weibo.rill.flow.olympicene.ddl.validate
 
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
-import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.constant.DDLErrorCode
 import com.weibo.rill.flow.olympicene.ddl.exception.DDLException
 import com.weibo.rill.flow.olympicene.ddl.exception.ValidationException
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
+import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.BaseTaskValidator
 import spock.lang.Specification
@@ -31,8 +31,8 @@ class BaseTaskValidatorTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: segmentForeach";
+                "       source: segments\n" +
+                "  next: segmentForeach"
         when:
         dagParser.parse(text)
 
@@ -60,8 +60,8 @@ class BaseTaskValidatorTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: segmentForeach";
+                "       source: segments\n" +
+                "  next: segmentForeach"
         when:
         dagParser.parse(text)
 
@@ -89,8 +89,8 @@ class BaseTaskValidatorTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: segmentForeach";
+                "       source: segments\n" +
+                "  next: segmentForeach"
         when:
         dagParser.parse(text)
 

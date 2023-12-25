@@ -17,23 +17,23 @@
 package com.weibo.rill.flow.service.storage;
 
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
-import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
-import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
+import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGRedisStorage;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.storage.dao.ContextRedisDAO;
 import com.weibo.rill.flow.service.storage.dao.DAGInfoRedisDAO;
-import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -272,7 +272,7 @@ public class RuntimeStorage implements DAGInfoStorage, DAGContextStorage {
             return redisOperation.get();
         }
 
-        T redisValue = null;
+        T redisValue;
         try {
             redisValue = redisOperation.get();
             if (isValueAcquired.apply(redisValue)) {

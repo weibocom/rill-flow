@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.rill.plugin.dispatcher;
 
 import com.alibaba.fastjson.JSON;
@@ -52,10 +68,10 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
             }
 
             if (TASK_ASYNC.equals(functionTask.getPattern())) {
-                THREAD_POOL_EXECUTOR.submit(() -> asyncExecute(resource, dispatchInfo));
+                THREAD_POOL_EXECUTOR.submit(() -> asyncExecute(dispatchInfo));
                 return "{\"result\": {\"err_msg\": \"success\"}}";
             } else {
-                return execute(resource, dispatchInfo);
+                return execute(dispatchInfo);
             }
 
         } catch (Exception e) {
@@ -83,11 +99,11 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
                 "yMTMxBzEB8uASKBKLgDqFxF08kI1lQAAAABJRU5ErkJggg==";
     }
 
-    private void asyncExecute(Resource resource, DispatchInfo dispatchInfo) {
+    private void asyncExecute(DispatchInfo dispatchInfo) {
         String resultTye = "SUCCESS";
         String result = null;
         try {
-            result = execute(resource, dispatchInfo);
+            result = execute(dispatchInfo);
         } catch (Exception e) {
             resultTye = "FAILED";
             logger.error("execute is failed. error:{}", e.getMessage());
@@ -118,7 +134,7 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
         }
     }
 
-    private String execute(Resource resource, DispatchInfo dispatchInfo) {
+    private String execute(DispatchInfo dispatchInfo) {
         Map<String, Object> input = dispatchInfo.getInput();
 
         String apiKey = (String) input.get("apikey");
@@ -126,7 +142,7 @@ public class ChatGPTDispatcherExtension implements DispatcherExtension {
         header.put("Authorization", "Bearer " + apiKey);
         header.put("Content-Type", "application/json");
 
-        HttpParameter httpParameter = HttpUtil.functionRequestParams(resource, dispatchInfo);
+        HttpParameter httpParameter = HttpUtil.functionRequestParams(dispatchInfo);
         String promptPrefix = (String) httpParameter.getBody().get("prompt_prefix");
         String promptSuffix = (String) httpParameter.getBody().get("prompt_suffix");
         String prompt = (String) httpParameter.getBody().get("prompt");

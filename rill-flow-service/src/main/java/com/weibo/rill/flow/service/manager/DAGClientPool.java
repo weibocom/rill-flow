@@ -18,11 +18,11 @@ package com.weibo.rill.flow.service.manager;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.service.configuration.BeanConfig;
-import com.weibo.rill.flow.service.configuration.BeanGenerator;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.configuration.BeanConfig;
+import com.weibo.rill.flow.service.configuration.BeanGenerator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -62,8 +62,10 @@ public class DAGClientPool implements ApplicationContextAware {
     private final Map<String, RestTemplate> httpClientIdToRestTemplate = Maps.newConcurrentMap();
 
     private ApplicationContext applicationContext;
+    
     @Autowired
-    private List<BeanGenerator> beanGenerators;
+    private List<BeanGenerator<?>> beanGenerators;
+    
     @Autowired
     @Qualifier("clientPoolExecutor")
     private ExecutorService clientPoolExecutor;
@@ -144,8 +146,9 @@ public class DAGClientPool implements ApplicationContextAware {
         beanFactory.registerSingleton(beanName, beanObject);
     }
 
-    private BeanGenerator getGenerator(Class<?> targetBeanType) {
-        return beanGenerators.stream()
+    @SuppressWarnings("unchecked")
+    private <T> BeanGenerator<T> getGenerator(Class<T> targetBeanType) {
+        return (BeanGenerator<T>) beanGenerators.stream()
                 .filter(it -> it.accept(targetBeanType))
                 .findFirst()
                 .orElseThrow(() -> new TaskException(BizError.ERROR_UNSUPPORTED, "can not find suitable beanGenerator"));

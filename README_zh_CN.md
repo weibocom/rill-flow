@@ -1,6 +1,6 @@
 # Rill Flow
 
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![EN doc](https://img.shields.io/badge/document-English-blue.svg)](README.md)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) ![codecov](https://codecov.io/gh/weibocom/rill-flow/branch/main/graph/badge.svg) [![EN doc](https://img.shields.io/badge/document-English-blue.svg)](README.md)
 
 ## 概述
 
@@ -40,6 +40,7 @@ services:
       - RILL_FLOW_DEFAULT_REDIS_HOST=cache
       - RILL_FLOW_TRACE_ENDPOINT=http://jaeger:4317
       - RILL_FLOW_CALLBACK_URL=http://rill-flow:8080/flow/finish.json
+      - RILL_FLOW_TRACE_QUERY_HOST=http://jaeger:16686
   cache:
     image: redis:6.2-alpine
     restart: always
@@ -53,13 +54,11 @@ services:
     image: weibocom/rill-flow-ui
     ports:
       - "8088:80"
-      - "8089:8089"
     depends_on:
       - rill-flow
       - jaeger
     environment:
       - BACKEND_SERVER=http://rill-flow:8080
-      - TRACE_SERVER=http://jaeger:16686
   sample-executor:
     image: weibocom/rill-flow-sample:sample-executor 
 EOF
@@ -129,7 +128,7 @@ tasks:
 - Step 2: 提交流程图执行任务
 
 ```curl
-curl -XPOST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple:greet'  -d '{"Bob":"Hello, I am Bob!", "Alice": "Hi, I am Alice"}' -H 'Content-Type:application/json'
+curl -X POST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple:greet'  -d '{"Bob":"Hello, I am Bob!", "Alice": "Hi, I am Alice"}' -H 'Content-Type:application/json'
 ```
 
 ### 查看运行结果
@@ -140,10 +139,13 @@ curl -XPOST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple
 http://127.0.0.1:8088/#/flow-instance/list
 ```
 
-## 文档
-* [中文文档](https://rill-flow.github.io/docs/intro)
+![preview](https://rill-flow.github.io/img/flow_sample.jpg)
 
-## 贡献者 
+## 文档
+
+- [中文文档](https://rill-flow.github.io/docs/intro)
+
+## 贡献者
 
 以下是项目贡献者及其 GitHub 链接：
 

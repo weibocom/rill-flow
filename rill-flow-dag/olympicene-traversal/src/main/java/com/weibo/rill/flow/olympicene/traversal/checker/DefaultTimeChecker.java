@@ -138,6 +138,7 @@ public class DefaultTimeChecker implements TimeChecker {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void doCheck(String redisKey, Consumer<String> action) {
         try {
             log.info("doCheck start redisKey:{}", redisKey);
