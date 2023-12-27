@@ -1,5 +1,6 @@
 package com.rill.plugin.dispatcher;
 
+import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
@@ -24,9 +25,9 @@ public class LocalTaskDispatcher implements DispatcherExtension {
             StringBuilder result = new StringBuilder();
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                result.append(line);
+                result.append(line).append("\n");
             }
-            return result.toString();
+            return new JSONObject(Map.of("result", result.toString())).toJSONString();
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
