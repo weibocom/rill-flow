@@ -83,8 +83,7 @@ public abstract class GroupedRedisClient implements RedisClient {
 
     @Override
     public int hdel(String key, String... fields) {
-        choose(key).hdel(key, fields);
-        return 0;
+        return choose(key).hdel(key, fields);
     }
 
     @Override
@@ -258,7 +257,18 @@ public abstract class GroupedRedisClient implements RedisClient {
         return choose(shardingKey).eval(script, shardingKey, keys, args);
     }
 
+    @Override
+    public Set<String> hkeys(String key) {
+        return choose(key).hkeys(key);
+    }
+
+    @Override
+    public String hget(String key, String field) {
+        return choose(key).hget(key, field);
+    }
+
     private RedisClient choose(byte[] shardingKey) {
         return choose(new String(shardingKey, StandardCharsets.UTF_8));
     }
+
 }

@@ -19,32 +19,25 @@ package com.weibo.rill.flow.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.weibo.rill.flow.common.constant.ReservedConstant;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.function.ResourceCheckConfig;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.User;
-import com.weibo.rill.flow.common.util.SerializerUtil;
-import com.weibo.rill.flow.service.dconfs.BizDConfs;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
+import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.service.util.ProfileActions;
-import com.weibo.rill.flow.service.util.PrometheusActions;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,10 +57,10 @@ public class FlowController {
 
     @Autowired
     private OlympiceneFacade olympiceneFacade;
-    @Autowired
-    private BizDConfs bizDConfs;
+
     @Autowired
     private ProfileRecordService profileRecordService;
+
     @Autowired
     private DAGSubmitChecker submitChecker;
 
@@ -76,7 +69,7 @@ public class FlowController {
     private RedisClient redisClient;
 
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGContextInitializer dagContextInitializer;
 
     /**
      * 任务提交接口
@@ -96,50 +89,13 @@ public class FlowController {
                                       @ApiParam(value = "用于检测资源是否可用的检测规则") @RequestParam(value = "resource_check", required = false) String resourceCheck,
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> submitActions = () -> {
-            ResourceCheckConfig resourceCheckConfig = getCheckConfig(resourceCheck);
-            JSONObject dataPassCheck = checkContext(data, descriptorId, bizDConfs.getRuntimeSubmitContextMaxSize());
+            ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
+            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder().withData(data).withIdentity(descriptorId).build();
 
-            Map<String, Object> result = olympiceneFacade.submit(flowUser, descriptorId, dataPassCheck, callback, resourceCheckConfig);
-            String executionId = (String) result.get("execution_id");
-            String dagDescriptor = descriptorManager.getDagDescriptor(flowUser.getUid(), dataPassCheck, descriptorId);
-            String md5 = DigestUtils.md5Hex(dagDescriptor);
-            String[] fields = StringUtils.isEmpty(descriptorId) ? new String[0] : descriptorId.trim().split(ReservedConstant.COLON);
-            String descriptorMd5Id = fields[0] + ":" + fields[1] + ":" + "md5_" + md5;
-            redisClient.set(executionId, descriptorMd5Id);
-            return result;
+            return olympiceneFacade.submit(flowUser, descriptorId, context, callback, resourceCheckConfig);
         };
 
-        return runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
-    }
-
-    private ResourceCheckConfig getCheckConfig(String resourceCheck) {
-        if (StringUtils.isBlank(resourceCheck)) {
-            return null;
-        }
-        try {
-            return SerializerUtil.deserialize(resourceCheck.getBytes(StandardCharsets.UTF_8), ResourceCheckConfig.class);
-        } catch (Exception e) {
-            throw new TaskException(BizError.ERROR_DATA_FORMAT, "resource_check content nonsupport");
-        }
-    }
-
-    /**
-     * 按业务类型分别统计 接口调用情况 运维配置的监控为接口总体调用情况
-     */
-    private Map<String, Object> runNotifyAndRecordProfile(String url, String id, Supplier<Map<String, Object>> notifyActions) {
-        long startTime = System.currentTimeMillis();
-        try {
-            Map<String, Object> ret = notifyActions.get();
-            ProfileActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, true, System.currentTimeMillis() - startTime);
-            return ret;
-        } catch (Exception e) {
-            ProfileActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            // 记录prometheus
-            PrometheusActions.recordHttpExecution(url, id, false, System.currentTimeMillis() - startTime);
-            throw e;
-        }
+        return profileRecordService.runNotifyAndRecordProfile("submit.json", descriptorId, submitActions);
     }
 
     @ApiOperation(value = "任务完成回调")
@@ -149,7 +105,7 @@ public class FlowController {
                                       @ApiParam(value = "任务名称") @RequestParam(TASK_NAME) String taskName,
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody JSONObject result) {
         Supplier<Map<String, Object>> finishActions = () -> {
-            JSONObject response = submitChecker.checkContext(result, executionId, bizDConfs.getRuntimeCallbackContextMaxSize());
+            Map<String, Object> context = dagContextInitializer.newCallbackContextBuilder().withData(result).withIdentity(executionId).build();
             JSONObject data = new JSONObject();
             data.put("response", result);
             data.put("result_type", result.getOrDefault("result_type", "SUCCESS"));
@@ -157,7 +113,7 @@ public class FlowController {
             passThrough.put(EXECUTION_ID, executionId);
             passThrough.put(TASK_NAME, taskName);
             data.put("passthrough", passThrough);
-            return olympiceneFacade.finish(executionId, response, data);
+            return olympiceneFacade.finish(executionId, context, data);
         };
         return profileRecordService.runNotifyAndRecordProfile("finish.json", executionId, finishActions);
     }
@@ -173,8 +129,8 @@ public class FlowController {
                 throw new TaskException(BizError.ERROR_DATA_FORMAT, executionId, "task_name is empty");
             }
 
-            JSONObject dataPassCheck = submitChecker.checkContext(data, executionId, bizDConfs.getRuntimeCallbackContextMaxSize());
-            return olympiceneFacade.wakeup(executionId, taskName, dataPassCheck);
+            Map<String, Object> context = dagContextInitializer.newWakeupContextBuilder().withData(data).withIdentity(executionId).build();
+            return olympiceneFacade.wakeup(executionId, taskName, context);
         };
 
         return profileRecordService.runNotifyAndRecordProfile("wakeup.json", executionId, wakeupActions);
@@ -187,8 +143,8 @@ public class FlowController {
                                     @ApiParam(value = "任务名称列表") @RequestParam(value = TASK_NAMES, required = false) List<String> taskNames,
                                     @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> redoActions = () -> {
-            JSONObject dataPassCheck = submitChecker.checkContext(data, executionId, bizDConfs.getRuntimeCallbackContextMaxSize());
-            return olympiceneFacade.redo(executionId, taskNames, dataPassCheck);
+            Map<String, Object> context = dagContextInitializer.newRedoContextBuilder().withData(data).withIdentity(executionId).build();
+            return olympiceneFacade.redo(executionId, taskNames, context);
         };
 
         return profileRecordService.runNotifyAndRecordProfile("redo.json", executionId, redoActions);
@@ -375,15 +331,5 @@ public class FlowController {
         return Map.of("data", JSONObject.parseObject(result), "message", "", "success", true);
     }
 
-    private JSONObject checkContext(JSONObject context, String executionId, int maxSize) {
-        if (context == null) {
-            return new JSONObject();
-        }
 
-        if (context.toJSONString().length() > maxSize) {
-            throw new TaskException(BizError.ERROR_DATA_FORMAT, executionId, "context size nonsupport");
-        }
-
-        return context;
-    }
 }

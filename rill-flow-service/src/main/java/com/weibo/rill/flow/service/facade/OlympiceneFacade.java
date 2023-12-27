@@ -27,6 +27,7 @@ import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.BusinessHeapStatus;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
+import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
@@ -98,13 +99,15 @@ public class OlympiceneFacade {
     private ProfileRecordService profileRecordService;
     @Autowired
     private DAGSubmitChecker submitChecker;
+    @Autowired
+    private DAGContextInitializer dagContextInitializer;
 
     public Map<String, Object> submit(Long uid, String descriptorId, String callback, String resourceCheck, JSONObject data, String url) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            JSONObject dataPassCheck = submitChecker.checkContext(data, descriptorId, bizDConfs.getRuntimeSubmitContextMaxSize());
+            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder().withData(data).withIdentity(descriptorId).build();
 
-            return submit(uid, descriptorId, dataPassCheck, callback, resourceCheckConfig);
+            return submit(uid, descriptorId, context, callback, resourceCheckConfig);
         };
 
         return profileRecordService.runNotifyAndRecordProfile(url, descriptorId, submitActions);

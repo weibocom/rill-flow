@@ -28,6 +28,7 @@ public class Crc32Sharding<T> implements Sharding<T> {
 
     private static final Crc32Sharding<?> INSTANCE = new Crc32Sharding<>();
 
+    @SuppressWarnings("unchecked")
     public static <T> Crc32Sharding<T> singleton() {
         return (Crc32Sharding<T>) INSTANCE;
     }

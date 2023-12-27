@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.rill.plugin.dispatcher;
 
 import com.alibaba.dashscope.aigc.conversation.Conversation;
@@ -36,7 +52,7 @@ public class AliyunAiDispatcherExtension implements DispatcherExtension {
         String executionId = dispatchInfo.getExecutionId();
         String taskInfoName = taskInfo.getName();
 
-        HttpParameter requestParams = HttpUtil.functionRequestParams(executionId, taskInfoName, resource, input);
+        HttpParameter requestParams = HttpUtil.functionRequestParams(executionId, taskInfoName, input);
 
         try {
             Map<String, Object> body = requestParams.getBody();
@@ -104,7 +120,6 @@ public class AliyunAiDispatcherExtension implements DispatcherExtension {
                 .prompt(prompt)
                 .apiKey(apikey)
                 .build();
-        GenerationResult result = generation.call(param);
-        return result;
+        return generation.call(param);
     }
 }

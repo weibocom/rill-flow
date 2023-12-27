@@ -61,18 +61,6 @@ public class DAGSubmitChecker {
     @Autowired
     private SwitcherManager switcherManagerImpl;
 
-    public JSONObject checkContext(JSONObject context, String executionId, int maxSize) {
-        if (context == null) {
-            return new JSONObject();
-        }
-
-        if (context.toJSONString().length() > maxSize) {
-            throw new TaskException(BizError.ERROR_DATA_FORMAT, executionId, "context size nonsupport");
-        }
-
-        return context;
-    }
-
     public ResourceCheckConfig getCheckConfig(String resourceCheck) {
         if (StringUtils.isBlank(resourceCheck)) {
             return null;

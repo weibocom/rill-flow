@@ -1,7 +1,6 @@
 package com.weibo.rill.flow.olympicene.ddl
 
 
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.constant.DDLErrorCode
 import com.weibo.rill.flow.olympicene.ddl.exception.DDLException
@@ -19,7 +18,7 @@ class DAGStringParserExceptionTest extends Specification {
         String text = null
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)
@@ -32,7 +31,7 @@ class DAGStringParserExceptionTest extends Specification {
         String text = ""
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)
@@ -50,7 +49,7 @@ class DAGStringParserExceptionTest extends Specification {
                 "type: flow\n"
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)
@@ -67,7 +66,7 @@ class DAGStringParserExceptionTest extends Specification {
                 "type: ttt\n"
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)
@@ -84,7 +83,7 @@ class DAGStringParserExceptionTest extends Specification {
                 "type: flow\n"
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)
@@ -111,11 +110,11 @@ class DAGStringParserExceptionTest extends Specification {
                 "       source: url2\n" +
                 "  outputMappings:\n" +
                 "     - target: segments\n" +
-                "       source: semgents\n" +
-                "  next: segmetn";
+                "       source: segments\n" +
+                "  next: segment"
 
         when:
-        DAG dag = dagParser.parse(text)
+        dagParser.parse(text)
 
         then:
         def e = thrown(DDLException)

@@ -11,7 +11,6 @@ import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
@@ -27,10 +26,9 @@ class ReturnTaskTraversalTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     def "if return task status is success then next tasks status should be skip"() {
         given:
@@ -62,7 +60,6 @@ class ReturnTaskTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit("executionIdSuccess", dag, ['text':'aaa', 'url':"bbb"])
@@ -108,7 +105,6 @@ class ReturnTaskTraversalTest extends Specification {
                 "     - target: \$.context.url\n" +
                 "       source: \$.output.url"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('executionIdSkip', dag, ['text':'aaa'])
@@ -181,7 +177,6 @@ class ReturnTaskTraversalTest extends Specification {
                 "     - target: \$.context.segments\n" +
                 "       source: \$.output.segments"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('executionIdNextCheck', dag, ['text':'aaa', 'url':"bbb"])
@@ -229,7 +224,6 @@ class ReturnTaskTraversalTest extends Specification {
                 "  name: E\n" +
                 "  next: D"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('executionIdNextCheck', dag, context)

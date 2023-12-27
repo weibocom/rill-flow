@@ -5,7 +5,7 @@ for keyIndex = 1, #KEYS, 1 do
     local key = KEYS[keyIndex];
     local args = {};
 
-    for i = argvIndex, #ARGV, 1 do
+    for _ = argvIndex, #ARGV, 1 do
         local arg = ARGV[argvIndex];
         argvIndex = argvIndex + 1;
         if (arg == "_placeholder_")

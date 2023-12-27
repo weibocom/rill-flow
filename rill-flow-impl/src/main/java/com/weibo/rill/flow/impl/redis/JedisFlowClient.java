@@ -21,288 +21,235 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.resps.Tuple;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JedisFlowClient implements RedisClient {
-    private final String host;
-    private final Integer port;
+    private JedisPool jedisPool;
 
     public JedisFlowClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+        jedisPool = new JedisPool(host, port);
+    }
+
+    public JedisFlowClient(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+
+    private <R> R doExecute(Function<Jedis, R> callable) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            return callable.apply(jedis);
+        } catch (Exception e) {
+            if (jedis != null) {
+                jedisPool.returnBrokenResource(jedis);
+                jedis = null;
+            }
+            throw e;
+        } finally {
+            if (jedis != null) {
+                jedisPool.returnResource(jedis);
+            }
+        }
     }
 
     @Override
     public String hmset(String key, Map<String, String> hash) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hmset(key, hash);
-        }
+        return doExecute(jedis -> jedis.hmset(key, hash));
     }
 
     @Override
     public String hmset(String shardingKey, String key, Map<String, String> hash) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hmset(key, hash);
-        }
+        return doExecute(jedis -> jedis.hmset(key, hash));
     }
 
     @Override
     public String hmset(byte[] key, Map<byte[], byte[]> hash) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hmset(key, hash);
-        }
+        return doExecute(jedis -> jedis.hmset(key, hash));
     }
 
     @Override
     public List<byte[]> hmget(byte[] key, byte[]... fields) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hmget(key, fields);
-        }
+        return doExecute((jedis -> jedis.hmget(key, fields)));
     }
 
     @Override
     public List<String> hmget(String key, String... fields) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hmget(key, fields);
-        }
+        return doExecute(jedis -> jedis.hmget(key, fields));
     }
 
     @Override
     public Map<String, String> hgetAll(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hgetAll(key);
-        }
+        return doExecute(jedis -> jedis.hgetAll(key));
     }
 
     @Override
     public Map<String, String> hgetAll(String shardingKey, String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hgetAll(key);
-        }
+        return doExecute(jedis -> jedis.hgetAll(key));
     }
 
     @Override
     public Map<byte[], byte[]> hgetAll(byte[] key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hgetAll(key);
-        }
+        return doExecute(jedis -> jedis.hgetAll(key));
     }
 
     @Override
     public void hdel(byte[] key, byte[]... fields) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            jedis.hdel(key, fields);
-        }
+        doExecute(jedis -> jedis.hdel(key, fields));
     }
 
     @Override
     public int hdel(String key, String... fields) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            jedis.hdel(key, fields);
-        }
+        doExecute(jedis -> jedis.hdel(key, fields));
         return 0;
     }
 
     @Override
     public void hdel(String shardingKey, String key, Collection<String> fields) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            jedis.hdel(key, fields.toArray(new String[0]));
-        }
+        doExecute(jedis -> jedis.hdel(key, fields.toArray(new String[0])));
     }
 
     @Override
     public Long expire(String key, int seconds) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.expire(key, seconds);
-        }
+        return doExecute(jedis -> jedis.expire(key, seconds));
     }
 
     @Override
     public Long expire(byte[] key, int seconds) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.expire(key, seconds);
-        }
+        return doExecute(jedis -> jedis.expire(key, seconds));
     }
 
     @Override
     public Boolean exists(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.exists(key);
-        }
+        return doExecute(jedis -> jedis.exists(key));
     }
 
     @Override
     public Boolean exists(byte[] key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.exists(key);
-        }
+        return doExecute(jedis -> jedis.exists(key));
     }
 
     @Override
     public String get(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.get(key);
-        }
+        return doExecute(jedis -> jedis.get(key));
     }
 
     @Override
     public String get(String shardingKey, String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.get(key);
-        }
+        return doExecute(jedis -> jedis.get(key));
     }
 
     @Override
     public byte[] get(byte[] key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.get(key);
-        }
+        return doExecute(jedis -> jedis.get(key));
     }
 
     @Override
     public String set(String key, String value) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.set(key, value);
-        }
+        return doExecute(jedis -> jedis.set(key, value));
     }
 
     @Override
     public String set(byte[] key, byte[] value) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.set(key, value);
-        }
+        return doExecute(jedis -> jedis.set(key, value));
     }
 
     @Override
     public String setex(String key, int seconds, String value) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.setex(key, seconds, value);
-        }
+        return doExecute(jedis -> jedis.setex(key, seconds, value));
     }
 
     @Override
     public Long setnx(String key, String value) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.setnx(key, value);
-        }
+        return doExecute(jedis -> jedis.setnx(key, value));
     }
 
     @Override
     public Long del(byte[] key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.del(key);
-        }
+        return doExecute(jedis -> jedis.del(key));
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public Long del(String... keys) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.del(keys);
-        }
+        return doExecute(jedis -> jedis.del(keys));
     }
 
     @Override
     public Long sadd(String key, String... members) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.sadd(key, members);
-        }
+        return doExecute(jedis -> jedis.sadd(key, members));
     }
 
     @Override
     public Long sadd(String shardingKey, String key, Collection<String> members) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.sadd(key, members.toArray(new String[0]));
-        }
+        return doExecute(jedis -> jedis.sadd(key, members.toArray(new String[0])));
     }
 
     @Override
     public Long srem(String key, String... members) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.srem(key, members);
-        }
+        return doExecute(jedis -> jedis.srem(key, members));
     }
 
     @Override
     public Long srem(String shardingKey, String key, Collection<String> members) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.srem(key, members.toArray(new String[0]));
-        }
+        return doExecute(jedis -> jedis.srem(key, members.toArray(new String[0])));
     }
 
     @Override
     public Set<String> smembers(String shardingKey, String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.smembers(key);
-        }
+        return doExecute(jedis -> jedis.smembers(key));
     }
 
     @Override
     public Long zadd(String key, double score, String member) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zadd(key, score, member);
-        }
+        return doExecute(jedis -> jedis.zadd(key, score, member));
     }
 
     @Override
     public Long zadd(String key, Map<Double, String> scoreMembers) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zadd(key, scoreMembers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey)));
-        }
+        return doExecute(jedis -> jedis.zadd(key, scoreMembers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))));
     }
 
     @Override
     public Long zrem(String key, String member) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zrem(key, member);
-        }
+        return doExecute(jedis -> jedis.zrem(key, member));
     }
 
     @Override
     public Long zremrangeByScore(String key, double start, double end) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zremrangeByScore(key, start, end);
-        }
+        return doExecute(jedis -> jedis.zremrangeByScore(key, start, end));
     }
 
     @Override
     public Set<String> zrange(String shardingKey, String key, int start, int end) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return new HashSet<>(jedis.zrange(key, start, end));
-        }
+        return new HashSet<>(doExecute(jedis -> jedis.zrange(key, start, end)));
     }
 
     @Override
     public Set<Pair<String, Double>> zrangeWithScores(String shardingKey, String key, int start, int end) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            List<Tuple> redisRes = jedis.zrangeWithScores(key, start, end);
-            return tupleListToPairSet(redisRes);
-        }
+        return tupleListToPairSet(doExecute(jedis -> jedis.zrangeWithScores(key, start, end)));
     }
 
     @Override
     public Set<String> zrangeByScore(String key, double min, double max) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return new HashSet<>(jedis.zrangeByScore(key, min, max));
-        }
+        return new HashSet<>(doExecute(jedis -> jedis.zrangeByScore(key, min, max)));
     }
 
     @Override
     public Set<Pair<String, Double>> zrangeByScoreWithScores(String key, double min, double max) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            List<Tuple> redisRes = jedis.zrangeByScoreWithScores(key, min, max);
-            return tupleListToPairSet(redisRes);
-        }
+        return tupleListToPairSet(doExecute(jedis -> jedis.zrangeByScoreWithScores(key, min, max)));
     }
 
     @NotNull
     private Set<Pair<String, Double>> tupleListToPairSet(List<Tuple> redisRes) {
         Set<Pair<String, Double>> result = new HashSet<>();
-        for (Tuple tuple: redisRes) {
+        for (Tuple tuple : redisRes) {
             Pair<String, Double> pair = ImmutablePair.of(tuple.getElement(), tuple.getScore());
             result.add(pair);
         }
@@ -311,24 +258,18 @@ public class JedisFlowClient implements RedisClient {
 
     @Override
     public Set<Pair<String, Double>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            List<Tuple> redisRes = jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
-            return tupleListToPairSet(redisRes);
-        }
+        return tupleListToPairSet(doExecute(jedis -> jedis.zrevrangeByScoreWithScores(key, max, min, offset, count)));
     }
 
     @Override
     public long incr(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.incr(key);
-        }
+        return doExecute(jedis -> jedis.incr(key));
     }
 
     @Override
     public long hset(String key, String field, String value) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hset(key, field, value);
-        }
+        return doExecute(jedis -> jedis.hset(key, field, value));
+
     }
 
     @Override
@@ -338,16 +279,12 @@ public class JedisFlowClient implements RedisClient {
 
     @Override
     public Long zcard(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zcard(key);
-        }
+        return doExecute(jedis -> jedis.zcard(key));
     }
 
     @Override
     public Long zcount(String key, double min, double max) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.zcount(key, min, max);
-        }
+        return doExecute(jedis -> jedis.zcount(key, min, max));
     }
 
     @Override
@@ -357,10 +294,7 @@ public class JedisFlowClient implements RedisClient {
 
     @Override
     public Object eval(String script, List<String> keys, List<String> args) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            Object object = jedis.eval(script, keys, args);
-            return turnStringToByteArray(object);
-        }
+        return turnStringToByteArray(doExecute(jedis -> jedis.eval(script, keys, args)));
     }
 
     @Override
@@ -368,6 +302,7 @@ public class JedisFlowClient implements RedisClient {
         return eval(script, keys, args);
     }
 
+    @SuppressWarnings("unchecked")
     private Object turnStringToByteArray(Object object) {
         if (object == null) {
             return null;
@@ -375,7 +310,7 @@ public class JedisFlowClient implements RedisClient {
         if (object instanceof List) {
             List<Object> result = new ArrayList<>();
             //noinspection unchecked
-            for (Object element: (List<Object>) object) {
+            for (Object element : (List<Object>) object) {
                 result.add(turnStringToByteArray(element));
             }
             return result;
@@ -386,21 +321,23 @@ public class JedisFlowClient implements RedisClient {
         }
     }
 
+    @Override
     public Set<String> hkeys(String key) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hkeys(key);
-        }
+        return doExecute(jedis -> jedis.hkeys(key));
     }
 
-    public Pipeline pipelined() {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.pipelined();
-        }
+    public Consumer<Consumer<Pipeline>> pipelined() {
+        return ((Consumer<Pipeline> consumer) -> doExecute(jedis -> {
+            try (Pipeline pipeline = jedis.pipelined()) {
+                consumer.accept(pipeline);
+            }
+            return 0;
+        }));
     }
 
+    @Override
     public String hget(String key, String field) {
-        try (Jedis jedis = new Jedis(host, port)) {
-            return jedis.hget(key, field);
-        }
+        return doExecute(jedis -> jedis.hget(key, field));
     }
+
 }

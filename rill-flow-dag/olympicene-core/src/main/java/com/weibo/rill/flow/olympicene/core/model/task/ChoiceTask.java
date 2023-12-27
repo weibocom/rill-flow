@@ -19,8 +19,8 @@ package com.weibo.rill.flow.olympicene.core.model.task;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
+import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
@@ -51,7 +51,7 @@ public class ChoiceTask extends BaseTask {
             @JsonProperty("timeline") Timeline timeline,
             @JsonProperty("isKeyCallback") boolean isKeyCallback,
             @JsonProperty("keyExp") String keyExp,
-            @JsonProperty("parameters") Map parameters) {
+            @JsonProperty("parameters") Map<String, Object> parameters) {
         super(name, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters);
         this.choices = choices;
     }
