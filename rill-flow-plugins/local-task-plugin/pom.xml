@@ -6,11 +6,23 @@
         <artifactId>rill-flow-plugins</artifactId>
         <version>0.1.6-SNAPSHOT</version>
     </parent>
+
     <artifactId>local-task-plugin</artifactId>
     <packaging>jar</packaging>
     <name>local-dispatcher Maven Webapp</name>
-    <url>http://maven.apache.org</url>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>com.weibo</groupId>
+            <artifactId>rill-flow-interfaces</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
