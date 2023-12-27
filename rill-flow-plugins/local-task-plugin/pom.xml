@@ -6,7 +6,7 @@
         <artifactId>rill-flow-plugins</artifactId>
         <version>0.1.6-SNAPSHOT</version>
     </parent>
-    <artifactId>local-task-dispatcher</artifactId>
+    <artifactId>local-task-plugin</artifactId>
     <packaging>jar</packaging>
     <name>local-dispatcher Maven Webapp</name>
     <url>http://maven.apache.org</url>
@@ -14,7 +14,7 @@
     </dependencies>
 
     <build>
-        <finalName>local-task-dispatcher</finalName>
+        <finalName>local-task-plugin</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
