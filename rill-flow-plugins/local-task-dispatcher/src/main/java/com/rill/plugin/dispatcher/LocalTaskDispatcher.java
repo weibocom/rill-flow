@@ -15,16 +15,16 @@ public class LocalTaskDispatcher implements DispatcherExtension {
         Map<String, Object> input = dispatchInfo.getInput();
         String cmd = input.get("cmd").toString();
 
-        BufferedReader br;
+        BufferedReader bufferedReader;
         try {
-            Process p = Runtime.getRuntime().exec(cmd);
-            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            StringBuilder sb = new StringBuilder();
+            Process process = Runtime.getRuntime().exec(cmd);
+            bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder result = new StringBuilder();
             String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
+            while ((line = bufferedReader.readLine()) != null) {
+                result.append(line);
             }
-            return sb.toString();
+            return result.toString();
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
