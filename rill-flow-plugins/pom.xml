@@ -12,7 +12,7 @@
     <modules>
         <module>aliyun-ai-plugin</module>
         <module>chatgpt-plugin</module>
-        <module>local-task-dispatcher</module>
+        <module>local-task-plugin</module>
     </modules>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
