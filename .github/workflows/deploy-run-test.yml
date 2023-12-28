@@ -33,9 +33,6 @@ jobs:
           cd docker
           docker-compose up -d
 
-      - name: Wait for service to start
-        run: sleep 2s
-
       - name: Run API Test
         run: mvn test -pl 'rill-flow-test' && echo "Run API Test succeeded"|| { echo "Run API Test failed."; exit 1; }
           
