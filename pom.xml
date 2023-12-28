@@ -63,6 +63,7 @@
         <module>rill-flow-interfaces</module>
         <module>rill-flow-plugins</module>
         <module>rill-flow-trigger</module>
+        <module>rill-flow-test</module>
     </modules>
 
     <properties>

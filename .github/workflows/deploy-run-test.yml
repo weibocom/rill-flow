@@ -13,21 +13,15 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Maven
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y maven
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: 'temurin'
 
-      - name: Build and package
-        run: mvn clean package -am && echo "Maven Build and package succeeded" || { echo "Maven Build and package failed."; exit 1; }
-
       - name: Run Internal Test
-        run: mvn test && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
+        run: mvn test -pl '!rill-flow-test' && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
 
       - name: Install Docker Compose
         run: |
@@ -43,132 +37,5 @@ jobs:
         run: sleep 2s
 
       - name: Run API Test
-        run: |
-          set response $(curl --location 'http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=choiceSample&alias=release' \
-          --header 'Content-Type: text/plain' \
-          --data-raw "$(cat docs/samples/choice-sample.yaml)")
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API choiceSample add descriptor test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API choiceSample add descriptor test succeeded."
-          else
-            echo "API choiceSample add descriptor test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample' \
-          --header 'Content-Type: application/json' \
-          --data '{"input_num":10}')
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API choiceSample submit test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API choiceSample submit test succeeded."
-          else
-            echo "API choiceSample submit test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=callApiSample&alias=release' \
-          --header 'Content-Type: text/plain' \
-          --data-raw "$(cat docs/samples/call-api-sample.yaml)")
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API callApiSample add descriptor test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API callApiSample add descriptor test succeeded."
-          else
-            echo "API callApiSample add descriptor test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:callApiSample' \
-          --header 'Content-Type: application/json' \
-          --data '{"input_num":10}')
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API callApiSample submit test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API callApiSample submit test succeeded."
-          else
-            echo "API callApiSample submit test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release' \
-          --header 'Content-Type: text/plain' \
-          --data-raw "$(cat docs/samples/parallel-async-dag.yaml)")
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API parallelAsyncTask add descriptor test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API parallelAsyncTask add descriptor test succeeded."
-          else
-            echo "API parallelAsyncTask add descriptor test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask' \
-          --header 'Content-Type: application/json' \
-          --data '{"rand_num":20}')
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API parallelAsyncTask submit test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API parallelAsyncTask submit test succeeded."
-          else
-            echo "API parallelAsyncTask submit test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release' \
-          --header 'Content-Type: text/plain' \
-          --data-raw "$(cat docs/samples/ref-dag.yaml)")
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API subdagTask add descriptor test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API subdagTask add descriptor test succeeded."
-          else
-            echo "API subdagTask add descriptor test failed. Response: $response"
-            exit 1
-          fi
-          
-          set response $(curl --location 'http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask' \
-          --header 'Content-Type: application/json' \
-          --data '{"parent_rand_num":20}')
-          
-          if [[ "$?" -ne 0 ]]; then
-          echo "Failed to connect to server. API subdagTask submit test failed."
-          exit 1
-          fi
-          
-          if [[ "$response" != *"\"error_code\":"* ]]; then
-            echo "API subdagTask submit test succeeded."
-          else
-            echo "API subdagTask submit test failed. Response: $response"
-            exit 1
-          fi
+        run: mvn test -pl 'rill-flow-test' && echo "Run API Test succeeded"|| { echo "Run API Test failed."; exit 1; }
           
