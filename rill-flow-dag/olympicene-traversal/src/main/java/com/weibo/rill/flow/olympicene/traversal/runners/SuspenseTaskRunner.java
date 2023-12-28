@@ -19,6 +19,9 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
+import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
+import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
 import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
@@ -32,7 +35,6 @@ import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
-import com.weibo.rill.flow.interfaces.model.task.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -187,7 +189,7 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
     private void taskInfoValid(String executionId, String taskInfoName, TaskInfo taskInfo) {
         if (taskInfo == null) {
             log.info("taskInfoValid taskInfo null, executionId:{}, taskInfoName:{}", executionId, taskInfoName);
-            throw new DAGTraversalException(TraversalErrorCode.DAG_ILLEGAL_STATE.getCode(), String.format("dag %s cann not get task %s", executionId, taskInfoName));
+            throw new DAGTraversalException(TraversalErrorCode.DAG_ILLEGAL_STATE.getCode(), String.format("dag %s can not get task %s", executionId, taskInfoName));
         }
 
         if (!Objects.equals(taskInfo.getTask().getCategory(), TaskCategory.SUSPENSE.getValue())) {

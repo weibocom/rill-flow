@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.weibo.rill.flow.trigger.triggers;
 
 import com.alibaba.fastjson.JSON;
@@ -8,10 +24,9 @@ import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.impl.model.FlowUser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
-import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
-import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
+import com.weibo.rill.flow.trigger.util.TriggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,7 +34,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,7 +106,7 @@ public class KafkaTrigger implements Trigger {
         log.info("kafka trigger add task, topic: {}, descriptor_id: {}, server: {}, group_id: {}",
                 topic, descriptorId, kafkaServer, groupId);
 
-        JSONObject jsonDetails = buildCommonDetail(uid, descriptorId, callback, resourceCheck);
+        JSONObject jsonDetails = TriggerUtil.buildCommonDetail(uid, descriptorId, callback, resourceCheck);
         jsonDetails.put("group_id", groupId);
         jsonDetails.put("kafka_server", kafkaServer);
         String taskKey = topic + "#" + descriptorId;
@@ -191,17 +205,4 @@ public class KafkaTrigger implements Trigger {
         }
     }
 
-    @NotNull
-    private static JSONObject buildCommonDetail(Long uid, String descriptorId, String callback, String resourceCheck) {
-        JSONObject jsonDetails = new JSONObject();
-        jsonDetails.put("descriptor_id", descriptorId);
-        jsonDetails.put("uid", uid);
-        if (jsonDetails.containsKey("callback")) {
-            jsonDetails.put("callback", callback);
-        }
-        if (jsonDetails.containsKey("resource_check")) {
-            jsonDetails.put("resource_check", resourceCheck);
-        }
-        return jsonDetails;
-    }
 }

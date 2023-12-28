@@ -26,7 +26,7 @@ class RedisStorageProcedureTest extends Specification {
         redisStorageProcedure.lockAndRun("lockName", new Runnable() {
             @Override
             void run() {
-                throw new Exception();
+                throw new Exception()
             }
         })
 

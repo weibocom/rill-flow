@@ -83,8 +83,7 @@ public abstract class GroupedRedisClient implements RedisClient {
 
     @Override
     public int hdel(String key, String... fields) {
-        choose(key).hdel(key, fields);
-        return 0;
+        return choose(key).hdel(key, fields);
     }
 
     @Override

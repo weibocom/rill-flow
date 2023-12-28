@@ -154,7 +154,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
     @Override
     public Map<String, Object> setValue(Map<String, Object> map, Object value, String path) {
         if (map == null) {
-            return map;
+            return null;
         }
 
         List<String> intermediateRoute = Lists.newArrayList();
@@ -176,7 +176,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
     @Override
     public Map<String, Map<String, Object>> delete(Map<String, Map<String, Object>> map, String path) {
         if (map == null) {
-            return map;
+            return null;
         }
 
         return JsonPath.using(conf).parse(map).delete(path).json();
