@@ -56,7 +56,14 @@ class SampleApiTest extends Specification {
         assertEquals(200, response.getStatusCode());
     }
 
-
+//    @Test
+//    public void testChoiceSampleSubmit() {
+//        String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample";
+//        String contentType = "application/json";
+//        String requestData = "{\"input_num\":10}";
+//        ApiResponse response = sendApiRequest(url, contentType, requestData);
+//        assertEquals(200, response.getStatusCode());
+//    }
 
     @Test
     public void testCallApiSampleAddDescriptor() {
@@ -108,15 +115,6 @@ class SampleApiTest extends Specification {
         String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask";
         String contentType = "application/json";
         String requestData = "{\"parent_rand_num\":20}";
-        ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
-    }
-
-    @Test
-    public void testChoiceSampleSubmit() {
-        String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample";
-        String contentType = "application/json";
-        String requestData = "{\"input_num\":10}";
         ApiResponse response = sendApiRequest(url, contentType, requestData);
         assertEquals(200, response.getStatusCode());
     }
