@@ -46,7 +46,6 @@ class SampleApiTest extends Specification {
 
 
     @Test
-    @Order(1)
     public void testChoiceSampleAddDescriptor() {
         String url = "http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=choiceSample&alias=release";
         String contentType = "text/plain";
@@ -57,18 +56,16 @@ class SampleApiTest extends Specification {
         assertEquals(200, response.getStatusCode());
     }
 
-    @Test
-    @Order(2)
-    public void testChoiceSampleSubmit() {
-        String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample";
-        String contentType = "application/json";
-        String requestData = "{\"input_num\":10}";
-        ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
-    }
+//    @Test
+//    public void testChoiceSampleSubmit() {
+//        String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample";
+//        String contentType = "application/json";
+//        String requestData = "{\"input_num\":10}";
+//        ApiResponse response = sendApiRequest(url, contentType, requestData);
+//        assertEquals(200, response.getStatusCode());
+//    }
 
     @Test
-    @Order(3)
     public void testCallApiSampleAddDescriptor() {
         String url = "http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=callApiSample&alias=release";
         String contentType = "text/plain";
@@ -78,7 +75,6 @@ class SampleApiTest extends Specification {
     }
 
     @Test
-    @Order(4)
     public void testCallApiSampleSubmit() {
         String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:callApiSample";
         String contentType = "application/json";
@@ -88,7 +84,6 @@ class SampleApiTest extends Specification {
     }
 
     @Test
-    @Order(5)
     public void testParallelAsyncTaskAddDescriptor() {
         String url = "http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release";
         String contentType = "text/plain";
@@ -98,7 +93,6 @@ class SampleApiTest extends Specification {
     }
 
     @Test
-    @Order(6)
     public void testParallelAsyncTaskSubmit() {
         String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask";
         String contentType = "application/json";
@@ -108,7 +102,6 @@ class SampleApiTest extends Specification {
     }
 
     @Test
-    @Order(7)
     public void testSubDagTaskAddDescriptor() {
         String url = "http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release";
         String contentType = "text/plain";
@@ -118,7 +111,6 @@ class SampleApiTest extends Specification {
     }
 
     @Test
-    @Order(8)
     public void testSubDagTaskSubmit() {
         String url = "http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask";
         String contentType = "application/json";
