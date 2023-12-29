@@ -59,7 +59,7 @@ class SampleApiTest extends Specification {
         // 执行 API 请求并获取响应
         ApiResponse response = sendApiRequest(url, contentType, requestData);
         // 使用测试断言来验证测试结果
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -79,7 +79,7 @@ class SampleApiTest extends Specification {
         String contentType = "text/plain";
         String requestData = readFileContent("../docs/samples/call-api-sample.yaml");
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -89,7 +89,7 @@ class SampleApiTest extends Specification {
         String contentType = "application/json";
         String requestData = "{\"input_num\":10}";
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -99,7 +99,7 @@ class SampleApiTest extends Specification {
         String contentType = "text/plain";
         String requestData = readFileContent("../docs/samples/parallel-async-dag.yaml");
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -109,7 +109,7 @@ class SampleApiTest extends Specification {
         String contentType = "application/json";
         String requestData = "{\"rand_num\":20}";
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -119,7 +119,7 @@ class SampleApiTest extends Specification {
         String contentType = "text/plain";
         String requestData = readFileContent("../docs/samples/ref-dag.yaml");
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
     @Test
@@ -129,7 +129,7 @@ class SampleApiTest extends Specification {
         String contentType = "application/json";
         String requestData = "{\"parent_rand_num\":20}";
         ApiResponse response = sendApiRequest(url, contentType, requestData);
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.getStatusCode(), response.getResponseContent());
     }
 
 
