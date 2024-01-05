@@ -19,14 +19,12 @@ package com.weibo.rill.flow.service.mapping;
 import com.googlecode.aviator.Expression;
 import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapping;
 import com.weibo.rill.flow.service.manager.AviatorCache;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 
-@Slf4j
 @Service
 public class JsonValueMapping extends JSONPathInputOutputMapping {
     @Autowired

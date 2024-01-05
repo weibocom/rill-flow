@@ -22,6 +22,7 @@ import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.event.Callback;
 import com.weibo.rill.flow.olympicene.core.model.task.*;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
+import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.serialize.ObjectMapperFactory;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.redis.lock.impl.RedisDistributedLocker;
@@ -45,9 +46,7 @@ import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeRedisClients;
 import com.weibo.rill.flow.service.storage.RuntimeStorage;
-import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.util.IpUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -59,7 +58,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
 
-@Slf4j
 @Configuration
 @AutoConfigureOrder(1)
 public class OlympiceneConfiguration {

@@ -18,14 +18,14 @@ package com.weibo.rill.flow.impl.service;
 
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
-import com.weibo.rill.flow.interfaces.model.resource.Resource;
-import com.weibo.rill.flow.interfaces.model.http.HttpParameter;
 import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.interfaces.model.http.HttpParameter;
+import com.weibo.rill.flow.interfaces.model.resource.Resource;
+import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.service.auth.AuthHeaderGenerator;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
-import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +63,7 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public HttpParameter functionRequestParams(String executionId, String taskInfoName, Resource resource, Map<String, Object> input) {
         HttpParameter httpParameter = buildRequestParams(executionId, input);
@@ -74,6 +75,7 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         return httpParameter;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public HttpParameter buildRequestParams(String executionId, Map<String, Object> input) {
 
@@ -88,13 +90,13 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         body.put("group_id", executionId);
         Optional.ofNullable(input).ifPresent(inputMap -> inputMap.forEach((key, value) -> {
             if (key.startsWith("query_params_") && value instanceof Map) {
-                queryParams.putAll((Map) value);
+                queryParams.putAll((Map<String, Object>) value);
             } else if (key.startsWith("request_config_") && value instanceof Map) {
-                body.putAll((Map) value);
+                body.putAll((Map<String, Object>) value);
             } else if (key.startsWith("request_callback_") && value instanceof Map) {
-                callback.putAll((Map) value);
+                callback.putAll((Map<String, Object>) value);
             } else if (key.startsWith("request_header_") && value instanceof Map) {
-                header.putAll((Map) value);
+                header.putAll((Map<String, String>) value);
             } else {
                 functionInput.put(key, value);
             }

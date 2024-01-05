@@ -1,29 +1,39 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.weibo.rill.flow.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableMap;
-import com.weibo.rill.flow.common.exception.TaskException;
-import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.DAGRecord;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
-import com.weibo.rill.flow.service.facade.OlympiceneFacade;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.trace.TraceableContextWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +51,9 @@ import java.util.stream.Collectors;
 public class BgController {
     private static final String EXECUTION_ID = "execution_id";
     private static final String BUSINESS_IDS = "business_ids";
-    private static final String TRACE_ID_PREFIX = "trace_id_";
+
+    @Value("${rill_flow_trace_query_host:}")
+    private String traceQueryHost;
 
     @Autowired
     private DescriptorManager descriptorManager;
@@ -51,10 +63,6 @@ public class BgController {
 
     @Autowired
     private DAGRuntimeFacade dagRuntimeFacade;
-
-    @Autowired
-    @Qualifier("dagDefaultStorageRedisClient")
-    private RedisClient redisClient;
 
     /**
      * 流程图的详情
@@ -86,15 +94,14 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
-            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
-                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
-                    descriptorManager.getVersion(bussinessId, featureId, alia).forEach(version -> {
-                        Map versionMap = (Map) version;
-                        String descriptorId = String.valueOf(versionMap.get("descriptor_id"));
-                        long createTime = Long.parseLong(String.valueOf(versionMap.get("create_time")));
+        descriptorManager.getBusiness().forEach(businessId -> {
+            descriptorManager.getFeature(businessId).forEach(featureId -> {
+                descriptorManager.getAlias(businessId, featureId).forEach(alia -> {
+                    descriptorManager.getVersion(businessId, featureId, alia).forEach(version -> {
+                        String descriptorId = String.valueOf(version.get("descriptor_id"));
+                        long createTime = Long.parseLong(String.valueOf(version.get("create_time")));
                         DAGRecord record = DAGRecord.builder()
-                                .businessId(bussinessId)
+                                .businessId(businessId)
                                 .featureId(featureId)
                                 .alia(alia)
                                 .descriptorId(descriptorId)
@@ -152,9 +159,21 @@ public class BgController {
     ) {
 
         Map<String, Object> result = dagRuntimeFacade.getBasicDAGInfo(executionId, false);
-        String traceId = redisClient.get(TRACE_ID_PREFIX + executionId);
-        result.put("trace_uri", "/trace/" + traceId);
+        appendTraceInfo(result);
         return result;
+    }
+
+    private void appendTraceInfo(Map<String, Object> result) {
+        try {
+            if (StringUtils.isBlank(traceQueryHost)) {
+                return;
+            }
+            Map<String, Object> context = (Map<String, Object>) result.get("context");
+            String traceId = new TraceableContextWrapper(context).getTraceId();
+            result.put("trace_url", traceQueryHost + "/trace/" + traceId);
+        } catch (Exception e) {
+            log.warn("append Trace Info error, original result:{}", result);
+        }
     }
 
     /**
@@ -164,7 +183,7 @@ public class BgController {
      */
     @GetMapping(value = "/edit/dag_op_groups.json")
     public Map<String, Object> getDagOpGroups() {
-        List<Map> groups = dagDescriptorFacade.getDagOpGroups();
+        List<Map<String, Object>> groups = dagDescriptorFacade.getDagOpGroups();
         return Map.of("data", groups, "message", "", "success", true);
     }
 
@@ -202,7 +221,7 @@ public class BgController {
 
     @GetMapping(value = "/user/currentUser.json")
     public Map<String, Object> currentUser() {
-        String user ="{\n" +
+        String user = "{\n" +
                 "\t\"realName\": \"admin\",\n" +
                 "\t\"password\": \"123456\",\n" +
                 "\t\"homePath\": \"/flow-instance/list\",\n" +
@@ -222,6 +241,7 @@ public class BgController {
 
     @RequestMapping(value = "get_business_options.json", method = RequestMethod.GET)
     public Map<String, Object> getBusinessOptions() {
+        @SuppressWarnings("unchecked")
         Set<String> businessIds = (Set<String>) dagDescriptorFacade.getBusiness().get(BUSINESS_IDS);
         return ImmutableMap.of(BUSINESS_IDS, businessIds.stream().map(item -> ImmutableMap.of("id", item, "name", item)).collect(Collectors.toList()));
     }

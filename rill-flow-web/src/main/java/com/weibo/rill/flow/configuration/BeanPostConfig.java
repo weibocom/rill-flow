@@ -237,6 +237,7 @@ public class BeanPostConfig {
         SystemConfig.TASK_RUN_CUSTOMIZED_PLUGINS.addAll(Lists.newArrayList(statisticLogPlugin));
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getParam(Map<String, Object> params, String paramName, Class<T> paramType) {
          return (T) Optional.ofNullable(params)
                 .map(it -> it.get(paramName))

@@ -17,11 +17,9 @@
 package com.weibo.rill.flow.olympicene.ddl.serialize;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
-@Slf4j
 public class YAMLMapper {
     private static final ObjectMapper MAPPER = ObjectMapperFactory.getYamlMapper();
 

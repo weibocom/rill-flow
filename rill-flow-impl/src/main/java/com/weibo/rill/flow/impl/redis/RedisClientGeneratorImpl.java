@@ -19,11 +19,9 @@ package com.weibo.rill.flow.impl.redis;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.configuration.BeanConfig;
 import com.weibo.rill.flow.service.configuration.RedisClientGenerator;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 
-@Slf4j
 @Component("redisClientGeneratorImpl")
 public class RedisClientGeneratorImpl implements RedisClientGenerator<RedisClient> {
 

@@ -12,7 +12,7 @@ import spock.lang.Specification
 class DemoTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new FunctionTaskValidator()])])
 
-    def "test one funtionTask dag should work well"() {
+    def "test one functionTask dag should work well"() {
         given:
         TaskInfo finishedTaskInfo = new TaskInfo()
         finishedTaskInfo.setTaskStatus(TaskStatus.SUCCEED)

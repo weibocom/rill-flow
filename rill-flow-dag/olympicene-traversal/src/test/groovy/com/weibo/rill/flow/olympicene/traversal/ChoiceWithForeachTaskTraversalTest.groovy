@@ -13,7 +13,6 @@ import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGLocalStorage
 import com.weibo.rill.flow.olympicene.storage.save.impl.LocalStorageProcedure
 import com.weibo.rill.flow.olympicene.traversal.checker.DefaultTimeChecker
@@ -28,10 +27,9 @@ class ChoiceWithForeachTaskTraversalTest extends Specification {
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
     DAGDispatcher dispatcher = Mock(DAGDispatcher.class)
-    RedisClient redisClient = Mock(RedisClient.class)
     DAGStorageProcedure dagStorageProcedure = new LocalStorageProcedure()
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
-    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), redisClient, switcherManager)
+    Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
     /**
      * A -> B -> C
@@ -147,7 +145,6 @@ class ChoiceWithForeachTaskTraversalTest extends Specification {
                 "     - target: \$.context.result\n" +
                 "       source: \$.output.result\n"
         DAG dag = dagParser.parse(text)
-        redisClient.get(*_) >> "aaaaaa"
 
         when:
         olympicene.submit('xxx1', dag, ["url": "http://test.com/test"])

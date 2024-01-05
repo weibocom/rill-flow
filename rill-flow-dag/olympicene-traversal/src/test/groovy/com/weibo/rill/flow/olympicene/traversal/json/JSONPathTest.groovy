@@ -16,7 +16,7 @@ class JSONPathTest extends Specification {
     Configuration conf2 = Configuration.builder()
             .options(Option.SUPPRESS_EXCEPTIONS)
             .options(Option.AS_PATH_LIST)
-            .build();
+            .build()
     String data = "{\n" +
             "    \"store\": {\n" +
             "        \"book\": [\n" +
@@ -135,7 +135,7 @@ class JSONPathTest extends Specification {
     @Unroll
     def "test json path get value should work well"() {
         when:
-        def result = JsonPath.using(conf).parse(data).read(path);
+        def result = JsonPath.using(conf).parse(data).read(path)
         then:
         expected == result
         where:
@@ -150,7 +150,7 @@ class JSONPathTest extends Specification {
     @Unroll
     def "test json path should match well"() {
         when:
-        List<String> result = JsonPath.using(conf2).parse(data).read(path);
+        List<String> result = JsonPath.using(conf2).parse(data).read(path)
         then:
         result.size() > 0
         where:
@@ -163,7 +163,7 @@ class JSONPathTest extends Specification {
     @Unroll
     def "test json path should not match "() {
         when:
-        List<String> result = JsonPath.using(conf2).parse(data).read(path);
+        List<String> result = JsonPath.using(conf2).parse(data).read(path)
         then:
         result.size() == 0
         where:

@@ -47,15 +47,15 @@ public class OlympiceneFacade {
     public static Olympicene build(DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage,
                                    Callback<DAGCallbackInfo> callback, DAGDispatcher dagDispatcher,
                                    DAGStorageProcedure dagStorageProcedure, TimeChecker timeChecker,
-                                   RedisClient redisClient, SwitcherManager switcherManager) {
+                                   SwitcherManager switcherManager) {
         ExecutorService executor = SameThreadExecutorService.INSTANCE;
         return build(dagInfoStorage, dagContextStorage, dagStorageProcedure, callback, null,
-                dagDispatcher, timeChecker, executor, redisClient, switcherManager);
+                dagDispatcher, timeChecker, executor, switcherManager);
     }
 
     public static Olympicene build(DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage, DAGStorageProcedure dagStorageProcedure,
                                    Callback<DAGCallbackInfo> callback, DAGResultHandler dagResultHandler, DAGDispatcher dagDispatcher,
-                                   TimeChecker timeChecker, ExecutorService executor, RedisClient redisClient, SwitcherManager switcherManager) {
+                                   TimeChecker timeChecker, ExecutorService executor, SwitcherManager switcherManager) {
         JSONPathInputOutputMapping jsonPathInputOutputMapping = new JSONPathInputOutputMapping();
 
         DefaultStasher stasher = new DefaultStasher();
@@ -66,7 +66,7 @@ public class OlympiceneFacade {
                 jsonPathInputOutputMapping, jsonPathInputOutputMapping, dagStorageProcedure, stasher, switcherManager);
 
         DAGTraversal dagTraversal = new DAGTraversal(dagContextStorage, dagInfoStorage, dagStorageProcedure, executor);
-        DAGOperations dagOperations = new DAGOperations(executor, taskRunners, dagRunner, timeCheckRunner, dagTraversal, callback, dagResultHandler, redisClient);
+        DAGOperations dagOperations = new DAGOperations(executor, taskRunners, dagRunner, timeCheckRunner, dagTraversal, callback, dagResultHandler);
         dagTraversal.setDagOperations(dagOperations);
         dagTraversal.setStasher(stasher);
         timeCheckRunner.setDagOperations(dagOperations);
@@ -74,13 +74,13 @@ public class OlympiceneFacade {
     }
 
     public static Map<String, TaskRunner> buildTaskRunners(DAGInfoStorage dagInfoStorage,
-                                                                 DAGContextStorage dagContextStorage,
-                                                                 DAGDispatcher dagDispatcher,
-                                                                 InputOutputMapping mapping,
-                                                                 JSONPath jsonPath,
-                                                                 DAGStorageProcedure dagStorageProcedure,
-                                                                 Stasher stasher,
-                                                                 SwitcherManager switcherManager) {
+                                                           DAGContextStorage dagContextStorage,
+                                                           DAGDispatcher dagDispatcher,
+                                                           InputOutputMapping mapping,
+                                                           JSONPath jsonPath,
+                                                           DAGStorageProcedure dagStorageProcedure,
+                                                           Stasher stasher,
+                                                           SwitcherManager switcherManager) {
         PassTaskRunner passTaskRunner = new PassTaskRunner(mapping, dagContextStorage, dagInfoStorage, dagStorageProcedure, switcherManager);
         FunctionTaskRunner functionTaskRunner = new FunctionTaskRunner(dagDispatcher, mapping, dagContextStorage, dagInfoStorage, dagStorageProcedure, switcherManager);
         SuspenseTaskRunner suspenseTaskRunner = new SuspenseTaskRunner(mapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);

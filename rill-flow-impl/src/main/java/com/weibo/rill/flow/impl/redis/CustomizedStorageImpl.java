@@ -18,11 +18,11 @@ package com.weibo.rill.flow.impl.redis;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.weibo.rill.flow.common.exception.TaskException;
+import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.service.manager.DAGClientPool;
-import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.service.storage.CustomizedStorage;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import com.weibo.rill.flow.service.util.ValueExtractor;
@@ -32,10 +32,12 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Pipeline;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -50,14 +52,14 @@ public class CustomizedStorageImpl implements CustomizedStorage {
         int reserveTimeInSecond = getReserveTimeInSecond(bucketName);
 
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             pipeline.hset(bucketName, "expire", String.valueOf(currentTimeSecond + reserveTimeInSecond));
             if (MapUtils.isNotEmpty(fieldToValues)) {
                 fieldToValues.forEach((field, value) -> pipeline.hset(bucketName, field, value.toString()));
             }
             pipeline.expire(bucketName, reserveTimeInSecond);
             pipeline.sync();
-        }
+        });
         return bucketName;
     }
 
@@ -67,10 +69,10 @@ public class CustomizedStorageImpl implements CustomizedStorage {
         }
 
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
-        try (Pipeline pipeline = jedisFlowClient.pipelined()) {
+        jedisFlowClient.pipelined().accept(pipeline -> {
             fieldToValues.forEach((field, value) -> pipeline.hset(bucketName, field, value.toString()));
             pipeline.sync();
-        }
+        });
     }
 
     public Map<String, String> load(String bucketName, boolean hGetAll, List<String> fieldNames, String fieldPrefix) {
@@ -105,9 +107,7 @@ public class CustomizedStorageImpl implements CustomizedStorage {
     public boolean remove(String bucketName, List<String> fieldNames) {
         JedisFlowClient jedisFlowClient = getJedisClient(bucketName);
         if (CollectionUtils.isNotEmpty(fieldNames)) {
-            try (Pipeline pipeline = jedisFlowClient.pipelined()) {
-                fieldNames.forEach(fieldName -> pipeline.hdel(bucketName, fieldName));
-            }
+            jedisFlowClient.pipelined().accept(pipeline -> fieldNames.forEach(fieldName -> pipeline.hdel(bucketName, fieldName)));
         }
         return true;
     }
