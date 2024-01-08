@@ -41,7 +41,8 @@ public class ExecutorWrapper {
     public ExecutorWrapper() {
         this.executor = Executors.newFixedThreadPool(10);
     }
-    public ExecutorWrapper (ExecutorService executorService) {
+
+    public ExecutorWrapper(ExecutorService executorService) {
         this.executor = executorService;
     }
 
@@ -58,16 +59,15 @@ public class ExecutorWrapper {
     }
 
     private void asyncExecute(ExecutorContext context, Function<ExecutorContext, Map<String, Object>> function) {
-        String resultType = "SUCCESS";
-        CallbackData.CallbackDataBuilder callbackBuilder = CallbackData.builder();
+        CallbackData.CallbackDataBuilder callbackBuilder = CallbackData.builder().url(context.getCallbackUrl());
         try {
             Map<String, Object> executorResponse = doExecute(context, function);
-            callbackBuilder.url(context.getCallbackUrl()).result(executorResponse);
+            executorResponse.put("result_type", "SUCCESS");
+            callbackBuilder.result(executorResponse);
         } catch (Exception e) {
-            resultType = "FAILED";
+            callbackBuilder.result(Map.of("result_type", "FAILED", "error_msg", e.getMessage()));
             log.error("execute is failed. error_msg:{}", e.getMessage());
         } finally {
-            callbackBuilder.resultType(resultType);
             callback.onCompletion(callbackBuilder.build());
         }
     }

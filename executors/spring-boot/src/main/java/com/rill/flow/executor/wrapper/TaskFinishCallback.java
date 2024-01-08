@@ -47,7 +47,7 @@ public class TaskFinishCallback {
 
     public void onCompletion(CallbackData callbackData) {
 
-        String requestBody = JSONObject.toJSONString(callbackData);
+        String requestBody = JSONObject.toJSONString(callbackData.getResult());
         Map<String, String> headers = Map.of("Content-Type", APPLICATION_JSON_VALUE);
 
         try {
