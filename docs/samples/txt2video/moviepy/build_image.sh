@@ -1,1 +1,1 @@
-docker build -t weibocom/rill-flow-processor .
+docker build -t weibocom/rill-flow-sample:processor .
