@@ -1,0 +1,38 @@
+version: '3'
+services:
+  rill-flow-textGatherer:
+    image: weibocom/rill-flow-sample:textgatherer
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/tmp:/tmp"
+    networks:
+      - rill-flow
+  rill-flow-bark:
+    image: weibocom/rill-flow-sample:bark
+    ports:
+      - "9001:9001"
+    volumes:
+      - "/tmp:/tmp"
+    networks:
+      - rill-flow
+  rill-flow-wav2lip:
+    image: weibocom/rill-flow-sample:wav2lip
+    ports:
+      - "9002:9002"
+    volumes:
+      - "/tmp:/tmp"
+    networks:
+      - rill-flow
+  rill-flow-media-processor:
+    image: weibocom/rill-flow-sample:processor
+    ports:
+      - "9003:9003"
+    volumes:
+      - "/tmp:/tmp"
+    networks:
+      - rill-flow
+networks:
+  rill-flow:
+    name: "<rill-flow-network>"
+    external: true
