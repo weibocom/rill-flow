@@ -1,1 +1,1 @@
-docker build -t weibocom/rill-flow-textgatherer .
+docker build -t weibocom/rill-flow-sample:textgatherer .
