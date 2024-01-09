@@ -1,8 +1,6 @@
 # coding:utf-8
 import asyncio
 import json
-import random
-import time
 
 import requests
 from fastapi import FastAPI, Request
@@ -17,6 +15,7 @@ logging.basicConfig(format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(leve
 
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=8)
+
 
 @app.post('/greet.json')
 async def greet_api(request: Request):
@@ -34,6 +33,7 @@ async def greet_api(request: Request):
         logging.error("greet processing failed. request body:%s", body_raw, e)
         return {"result_type": "FAILED", "error_msg": "greet processing failed"}
 
+
 @app.post('/executor.json')
 async def executor_api(request: Request):
     body_raw = {}
@@ -46,13 +46,12 @@ async def executor_api(request: Request):
         if mode is not None and mode == "async" and callbackUrl is not None:
             # 函数异步执行
             executor.submit(async_processor, body_raw, request)
-            result = {"result": {"err_msg": "success"}}
-            return result
+            return {"result_type": "SUCCESS"}
         else:
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(executor, processor, body_raw, request)
-            logging.info("response:%s", body_raw)
-            return {"result": result}
+            logging.info("executor response:%s", result)
+            return result
     except Exception as e:
         logging.error("executor processing failed. request body:%s", body_raw, e)
         return {"result_type": "FAILED", "error_msg": "Executor processing failed"}
@@ -166,22 +165,20 @@ def async_processor(request_body: dict, request: Request):
         executor_response = "executor processor is failed"
         result_type = "FAILED"
         logging.error("executor processor is failed. request body:%s", request_body, e)
-    callback(result_type, executor_response, request.headers.get("X-Callback-Url"))
+    executor_response["result_type"] = result_type
+    callback(executor_response, request.headers.get("X-Callback-Url"))
 
 
 def processor(request_body: dict, request: Request):
     if len(request_body) == 0:
         raise Exception("request body is empty")
 
-    time.sleep(random.randrange(1, 5))
     return {"executor_result": request_body["segment_item"] * 10}
 
 
-def callback(result_type, executor_response, callback_url):
-    callback_body = {"result_type": result_type, "result": executor_response}
-
+def callback(executor_response, callback_url):
     headers = {"Content-Type": "application/json"}
-    payload = json.dumps(callback_body)
+    payload = json.dumps(executor_response)
 
     try:
         response = requests.post(callback_url, headers=headers, data=payload)

@@ -38,7 +38,6 @@ public class CallbackData implements Serializable {
      */
     @JSONField(serialize = false)
     private String url;
-    @JSONField(name = "result_type")
-    private String resultType;
+
     private Map<String, Object> result;
 }
