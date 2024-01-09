@@ -1,7 +1,7 @@
 version: '3'
 services:
   rill-flow-textGatherer:
-    image: weibocom/rill-flow-textgatherer
+    image: weibocom/rill-flow-sample:textgatherer
     ports:
       - "9000:9000"
     volumes:
@@ -9,7 +9,7 @@ services:
     networks:
       - rill-flow
   rill-flow-bark:
-    image: weibocom/rill-flow-bark
+    image: weibocom/rill-flow-sample:bark
     ports:
       - "9001:9001"
     volumes:
@@ -17,7 +17,7 @@ services:
     networks:
       - rill-flow
   rill-flow-wav2lip:
-    image: weibocom/rill-flow-wav2lip
+    image: weibocom/rill-flow-sample:wav2lip
     ports:
       - "9002:9002"
     volumes:
@@ -25,7 +25,7 @@ services:
     networks:
       - rill-flow
   rill-flow-media-processor:
-    image: weibocom/rill-flow-processor
+    image: weibocom/rill-flow-sample:processor
     ports:
       - "9003:9003"
     volumes:
