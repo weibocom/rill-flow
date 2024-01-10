@@ -17,5 +17,14 @@
         <artifactId>httpclient</artifactId>
         <version>4.5.14</version>
     </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <classifier>jdk15</classifier>
+        </dependency>
     </dependencies>
 </project>

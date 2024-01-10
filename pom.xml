@@ -63,7 +63,6 @@
         <module>rill-flow-interfaces</module>
         <module>rill-flow-plugins</module>
         <module>rill-flow-trigger</module>
-        <module>rill-flow-test</module>
     </modules>
 
     <properties>
@@ -900,6 +899,12 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>flow_api_test</id>
+            <modules>
+                <module>rill-flow-test</module>
+            </modules>
         </profile>
     </profiles>
 </project>

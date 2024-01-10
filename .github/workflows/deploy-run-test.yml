@@ -14,6 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -21,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run Internal Test
-        run: mvn test -pl '!rill-flow-test' && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
+        run: mvn test && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
 
       - name: Install Docker Compose
         run: |
@@ -34,5 +35,5 @@ jobs:
           docker-compose up -d
 
       - name: Run API Test
-        run: mvn test -pl 'rill-flow-test' && echo "Run API Test succeeded"|| { echo "Run API Test failed."; exit 1; }
+        run:  mvn test -P flow_api_test && echo "Run API Test succeeded"|| { echo "Run API Test failed."; exit 1; }
           
