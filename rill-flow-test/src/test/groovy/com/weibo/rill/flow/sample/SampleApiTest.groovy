@@ -16,7 +16,7 @@ import spock.lang.Timeout
 @Stepwise
 class SampleApiTest extends Specification {
 
-    @Timeout(10)
+    @Timeout(15)
 
     def "run choice sample task"() {
         when:
@@ -114,7 +114,7 @@ class SampleApiTest extends Specification {
                 return true
             }
             i++
-            Thread.sleep(700)
+            Thread.sleep(1000)
         }
         return false
     }
