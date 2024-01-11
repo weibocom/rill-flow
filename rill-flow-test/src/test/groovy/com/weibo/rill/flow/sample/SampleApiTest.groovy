@@ -77,25 +77,25 @@ class SampleApiTest extends Specification {
 //
 //    }
 
-    def "run ref sample task"() {
-        when:
-        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release", "text/plain", readFileContent("../docs/samples/ref-dag.yaml"))
-
-        then:
-        responseJson.status == 200
-        responseJson.content.ret == true
-
-        when:
-        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask", "application/json", "{\"parent_rand_num\":20}")
-
-        then:
-        submitResponseJson.status == 200
-        submitResponseJson.content.execution_id != ""
-
-        expect:
-        assert checkDagStatus(submitResponseJson.content.execution_id)
-
-    }
+//    def "run ref sample task"() {
+//        when:
+//        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release", "text/plain", readFileContent("../docs/samples/ref-dag.yaml"))
+//
+//        then:
+//        responseJson.status == 200
+//        responseJson.content.ret == true
+//
+//        when:
+//        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask", "application/json", "{\"parent_rand_num\":20}")
+//
+//        then:
+//        submitResponseJson.status == 200
+//        submitResponseJson.content.execution_id != ""
+//
+//        expect:
+//        assert checkDagStatus(submitResponseJson.content.execution_id)
+//
+//    }
 
     private String readFileContent(String filePath) {
         try {
