@@ -108,13 +108,14 @@ class SampleApiTest extends Specification {
 
     private boolean checkDagStatus(String executionId) {
         def i = 0
-        while (i < 20) {
+        while (i < 10) {
             def getResponseJson = sendGetRequest("http://localhost:8080/flow/get.json?execution_id=" + executionId, "application/json")
             if (getResponseJson.content.ret.dag_status == "SUCCEED") {
                 return true
             }
             i++
-            Thread.sleep(3000)
+            println getResponseJson.content.ret.dag_status
+            Thread.sleep(1000)
         }
         return false
     }
