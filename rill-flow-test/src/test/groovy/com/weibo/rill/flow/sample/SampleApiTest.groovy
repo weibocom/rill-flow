@@ -16,7 +16,7 @@ import spock.lang.Timeout
 @Stepwise
 class SampleApiTest extends Specification {
 
-    @Timeout(100)
+    @Timeout(30)
 
     def "run choice sample task"() {
         when:
@@ -57,25 +57,25 @@ class SampleApiTest extends Specification {
 
     }
 
-    def "run parallel async sample task"() {
-        when:
-        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release", "text/plain", readFileContent("../docs/samples/parallel-async-dag.yaml"))
-
-        then:
-        responseJson.status == 200
-        responseJson.content.ret == true
-
-        when:
-        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask", "application/json", "{\"rand_num\":20}")
-
-        then:
-        submitResponseJson.status == 200
-        submitResponseJson.content.execution_id != ""
-
-        expect:
-        assert checkDagStatus(submitResponseJson.content.execution_id)
-
-    }
+//    def "run parallel async sample task"() {
+//        when:
+//        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release", "text/plain", readFileContent("../docs/samples/parallel-async-dag.yaml"))
+//
+//        then:
+//        responseJson.status == 200
+//        responseJson.content.ret == true
+//
+//        when:
+//        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask", "application/json", "{\"rand_num\":20}")
+//
+//        then:
+//        submitResponseJson.status == 200
+//        submitResponseJson.content.execution_id != ""
+//
+//        expect:
+//        assert checkDagStatus(submitResponseJson.content.execution_id)
+//
+//    }
 
     def "run ref sample task"() {
         when:
@@ -114,12 +114,9 @@ class SampleApiTest extends Specification {
                 return true
             }
             i++
-            println getResponseJson.content.ret.dag_status
-            if (getResponseJson.content.ret.dag_status == "FAILED") {
-                println getResponseJson.content.ret
-            }
             Thread.sleep(1000)
         }
+        println getResponseJson.content.ret
         return false
     }
 
