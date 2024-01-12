@@ -1,4 +1,4 @@
-name: Deploy and Test
+name: Docker Deploy and Test
 on:
   push:
     branches:
