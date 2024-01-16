@@ -16,18 +16,26 @@ import spock.lang.Timeout
 @Stepwise
 class SampleApiTest extends Specification {
 
+    
+    
+    String domain;
+    
+    def setup(){
+        domain = System.getProperty("api.url")
+    }
+
     @Timeout(30)
 
     def "run choice sample task"() {
         when:
-        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=choiceSample&alias=release", "text/plain", readFileContent("../docs/samples/choice-sample.yaml"))
+        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=choiceSample&alias=release", "text/plain", readFileContent("../docs/samples/choice-sample.yaml"))
 
         then:
         responseJson.status == 200
         responseJson.content.ret == true
 
         when:
-        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:choiceSample", "application/json", "{\"input_num\":10}")
+        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:choiceSample", "application/json", "{\"input_num\":10}")
 
         then:
         submitResponseJson.status == 200
@@ -39,14 +47,14 @@ class SampleApiTest extends Specification {
 
     def "run call api sample task"() {
         when:
-        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=callApiSample&alias=release", "text/plain", readFileContent("../docs/samples/call-api-sample.yaml"))
+        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=callApiSample&alias=release", "text/plain", readFileContent("../docs/samples/call-api-sample.yaml"))
 
         then:
         responseJson.status == 200
         responseJson.content.ret == true
 
         when:
-        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:callApiSample", "application/json", "{\"input_num\":10}")
+        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:callApiSample", "application/json", "{\"input_num\":10}")
 
         then:
         submitResponseJson.status == 200
@@ -57,45 +65,45 @@ class SampleApiTest extends Specification {
 
     }
 
-//    def "run parallel async sample task"() {
-//        when:
-//        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release", "text/plain", readFileContent("../docs/samples/parallel-async-dag.yaml"))
-//
-//        then:
-//        responseJson.status == 200
-//        responseJson.content.ret == true
-//
-//        when:
-//        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask", "application/json", "{\"rand_num\":20}")
-//
-//        then:
-//        submitResponseJson.status == 200
-//        submitResponseJson.content.execution_id != ""
-//
-//        expect:
-//        assert checkDagStatus(submitResponseJson.content.execution_id)
-//
-//    }
+    def "run parallel async sample task"() {
+        when:
+        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release", "text/plain", readFileContent("../docs/samples/parallel-async-dag.yaml"))
 
-//    def "run ref sample task"() {
-//        when:
-//        def responseJson = sendPostRequest("http://localhost:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release", "text/plain", readFileContent("../docs/samples/ref-dag.yaml"))
-//
-//        then:
-//        responseJson.status == 200
-//        responseJson.content.ret == true
-//
-//        when:
-//        def submitResponseJson = sendPostRequest("http://localhost:8080/flow/submit.json?descriptor_id=rillFlowSample:subdagTask", "application/json", "{\"parent_rand_num\":20}")
-//
-//        then:
-//        submitResponseJson.status == 200
-//        submitResponseJson.content.execution_id != ""
-//
-//        expect:
-//        assert checkDagStatus(submitResponseJson.content.execution_id)
-//
-//    }
+        then:
+        responseJson.status == 200
+        responseJson.content.ret == true
+
+        when:
+        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask", "application/json", "{\"rand_num\":20}")
+
+        then:
+        submitResponseJson.status == 200
+        submitResponseJson.content.execution_id != ""
+
+        expect:
+        assert checkDagStatus(submitResponseJson.content.execution_id)
+
+    }
+
+    def "run ref sample task"() {
+        when:
+        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release", "text/plain", readFileContent("../docs/samples/ref-dag.yaml"))
+
+        then:
+        responseJson.status == 200
+        responseJson.content.ret == true
+
+        when:
+        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:subdagTask", "application/json", "{\"parent_rand_num\":20}")
+
+        then:
+        submitResponseJson.status == 200
+        submitResponseJson.content.execution_id != ""
+
+        expect:
+        assert checkDagStatus(submitResponseJson.content.execution_id)
+
+    }
 
     private String readFileContent(String filePath) {
         try {
@@ -109,7 +117,7 @@ class SampleApiTest extends Specification {
     private boolean checkDagStatus(String executionId) {
         def i = 0
         while (i < 10) {
-            def getResponseJson = sendGetRequest("http://localhost:8080/flow/get.json?execution_id=" + executionId, "application/json")
+            def getResponseJson = sendGetRequest(domain + "/flow/get.json?execution_id=" + executionId, "application/json")
             if (getResponseJson.content.ret.dag_status == "SUCCEED") {
                 return true
             }
