@@ -124,7 +124,7 @@ class SampleApiTest extends Specification {
             i++
             Thread.sleep(1000)
         }
-        println getResponseJson.content.ret
+        println getResponseJson.content
         return false
     }
 
