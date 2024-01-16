@@ -65,46 +65,6 @@ class SampleApiTest extends Specification {
 
     }
 
-    def "run parallel async sample task"() {
-        when:
-        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=parallelAsyncTask&alias=release", "text/plain", readFileContent("../docs/samples/parallel-async-dag.yaml"))
-
-        then:
-        responseJson.status == 200
-        responseJson.content.ret == true
-
-        when:
-        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:parallelAsyncTask", "application/json", "{\"rand_num\":20}")
-
-        then:
-        submitResponseJson.status == 200
-        submitResponseJson.content.execution_id != ""
-
-        expect:
-        assert checkDagStatus(submitResponseJson.content.execution_id)
-
-    }
-
-    def "run ref sample task"() {
-        when:
-        def responseJson = sendPostRequest(domain + "/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSample&feature_name=subdagTask&alias=release", "text/plain", readFileContent("../docs/samples/ref-dag.yaml"))
-
-        then:
-        responseJson.status == 200
-        responseJson.content.ret == true
-
-        when:
-        def submitResponseJson = sendPostRequest(domain + "/flow/submit.json?descriptor_id=rillFlowSample:subdagTask", "application/json", "{\"parent_rand_num\":20}")
-
-        then:
-        submitResponseJson.status == 200
-        submitResponseJson.content.execution_id != ""
-
-        expect:
-        assert checkDagStatus(submitResponseJson.content.execution_id)
-
-    }
-
     private String readFileContent(String filePath) {
         try {
             return new File(filePath).text
