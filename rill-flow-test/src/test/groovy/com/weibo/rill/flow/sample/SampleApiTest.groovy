@@ -122,9 +122,12 @@ class SampleApiTest extends Specification {
                 return true
             }
             i++
+            println getResponseJson.content.ret.dag_status
+            if (getResponseJson.content.ret.dag_status == "FAILED") {
+                println getResponseJson.content.ret
+            }
             Thread.sleep(1000)
         }
-        println getResponseJson.content
         return false
     }
 
