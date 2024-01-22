@@ -54,6 +54,11 @@ public class ChoiceTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getCategory() {
+        return "choice";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("choice task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         ChoiceTask choiceTask = (ChoiceTask) taskInfo.getTask();

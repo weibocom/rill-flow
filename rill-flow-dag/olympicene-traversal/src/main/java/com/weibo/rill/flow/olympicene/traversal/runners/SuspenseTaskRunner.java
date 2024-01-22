@@ -62,6 +62,11 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getCategory() {
+        return "suspense";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("suspense task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 

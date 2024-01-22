@@ -33,7 +33,10 @@ public class TaskTemplateFacade {
         JSONArray metaDataList = new JSONArray();
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
             JSONObject metaData = new JSONObject();
-            metaData.put("name", taskRunnerEntry.getKey());
+            AbstractTaskRunner taskRunner = taskRunnerEntry.getValue();
+            metaData.put("category", taskRunner.getCategory());
+            metaData.put("icon", taskRunner.getIcon());
+            metaData.put("fields", taskRunner.getFields());
             metaDataList.add(metaData);
         }
         return metaDataList;

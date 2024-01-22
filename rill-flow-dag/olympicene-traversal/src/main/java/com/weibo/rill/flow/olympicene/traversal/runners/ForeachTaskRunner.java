@@ -65,6 +65,11 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
         this.jsonPath = jsonPath;
     }
 
+    @Override
+    public String getCategory() {
+        return "foreach";
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {

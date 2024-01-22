@@ -45,6 +45,11 @@ public class PassTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getCategory() {
+        return "pass";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("pass task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         if (CollectionUtils.isNotEmpty(taskInfo.getTask().getOutputMappings())) {

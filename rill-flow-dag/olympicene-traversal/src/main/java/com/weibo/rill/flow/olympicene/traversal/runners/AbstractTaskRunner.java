@@ -16,6 +16,8 @@
 
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.*;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -42,7 +44,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.*;
 
 @Slf4j
@@ -70,6 +75,25 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         this.dagStorageProcedure = dagStorageProcedure;
         this.switcherManager = switcherManager;
     }
+
+    public String getIcon() {
+        return "";
+    }
+
+    public JSONObject getFields() {
+        String category = getCategory();
+        try {
+            String configPath = "classpath:meta_data/fields/" + category + ".json";
+            File file = ResourceUtils.getFile(configPath);
+            String config = new String(Files.readAllBytes(file.toPath()));
+            return JSON.parseObject(config);
+        } catch (Exception e) {
+            log.warn("get fields error, category: {}", category, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public abstract String getCategory();
 
     protected abstract ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input);
 
