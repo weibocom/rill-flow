@@ -1,4 +1,4 @@
-CREATE TABLE `task_template` (
+CREATE TABLE IF NOT EXISTS `task_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `name` varchar(64) NOT NULL DEFAULT '' COMMENT '模板名称',
     `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT '模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板',
