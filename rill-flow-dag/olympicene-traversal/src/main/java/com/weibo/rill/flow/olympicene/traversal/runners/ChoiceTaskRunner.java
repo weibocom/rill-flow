@@ -59,6 +59,11 @@ public class ChoiceTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public boolean isEnable() {
+        return false;
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("choice task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         ChoiceTask choiceTask = (ChoiceTask) taskInfo.getTask();

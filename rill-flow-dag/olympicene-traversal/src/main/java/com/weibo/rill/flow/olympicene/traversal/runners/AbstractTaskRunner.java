@@ -91,6 +91,10 @@ public abstract class AbstractTaskRunner implements TaskRunner {
 
     public abstract String getCategory();
 
+    public boolean isEnable() {
+        return true;
+    }
+
     protected abstract ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input);
 
     @Override

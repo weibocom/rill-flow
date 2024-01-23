@@ -1,4 +1,10 @@
 {
+  "name": {
+    "type": "string",
+    "name": "任务名称",
+    "required": true,
+    "default_value": ""
+  },
   "resource_name": {
     "type": "string",
     "name": "资源名称",
