@@ -44,7 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -83,8 +82,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
     public JSONObject getFields() {
         String category = getCategory();
         try {
-            String configPath = category + ".json";
-            File file = ResourceUtils.getFile(configPath);
+            File file = new File(getClass().getResource(category + ".json").getFile());
             String config = new String(Files.readAllBytes(file.toPath()));
             return JSON.parseObject(config);
         } catch (Exception e) {
