@@ -18,7 +18,7 @@ package com.weibo.rill.flow.service.statistic;
 
 import com.google.common.collect.Lists;
 import com.weibo.rill.flow.service.storage.RuntimeRedisClients;
-import com.weibo.rill.flow.olympicene.storage.redis.lock.RedisScriptLoader;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class TrafficRateLimiter {
 
     static {
         try {
-            ACQUIRE_PERMISSION = RedisScriptLoader.loadResourceAsText("lua/traffic_rate_limit.lua");
+            ACQUIRE_PERMISSION = ResourceLoader.loadResourceAsText("lua/traffic_rate_limit.lua");
         } catch (IOException e) {
             throw new TaskException(BizError.ERROR_INTERNAL, "cannot load traffic_rate_limit.lua", e.getCause());
         }

@@ -18,7 +18,7 @@ package com.weibo.rill.flow.olympicene.storage.script;
 
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException;
-import com.weibo.rill.flow.olympicene.storage.redis.lock.RedisScriptLoader;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 
 import java.io.IOException;
 
@@ -33,13 +33,13 @@ public class RedisScriptManager {
 
     static {
         try {
-            REDIS_SET_WITH_EXPIRE = RedisScriptLoader.loadResourceAsText("lua/redis_set_with_expire.lua");
-            REDIS_GET = RedisScriptLoader.loadResourceAsText("lua/redis_get.lua");
-            REDIS_GET_BY_FIELD_AND_KEY = RedisScriptLoader.loadResourceAsText("lua/redis_get_by_field_and_key.lua");
-            REDIS_EXPIRE = RedisScriptLoader.loadResourceAsText("lua/redis_expire.lua");
-            DAG_INFO_SET = RedisScriptLoader.loadResourceAsText("lua/dag_info_set.lua");
-            DAG_INFO_GET = RedisScriptLoader.loadResourceAsText("lua/dag_info_get.lua");
-            DAG_INFO_GET_BY_FIELD = RedisScriptLoader.loadResourceAsText("lua/dag_info_get_by_field.lua");
+            REDIS_SET_WITH_EXPIRE = ResourceLoader.loadResourceAsText("lua/redis_set_with_expire.lua");
+            REDIS_GET = ResourceLoader.loadResourceAsText("lua/redis_get.lua");
+            REDIS_GET_BY_FIELD_AND_KEY = ResourceLoader.loadResourceAsText("lua/redis_get_by_field_and_key.lua");
+            REDIS_EXPIRE = ResourceLoader.loadResourceAsText("lua/redis_expire.lua");
+            DAG_INFO_SET = ResourceLoader.loadResourceAsText("lua/dag_info_set.lua");
+            DAG_INFO_GET = ResourceLoader.loadResourceAsText("lua/dag_info_get.lua");
+            DAG_INFO_GET_BY_FIELD = ResourceLoader.loadResourceAsText("lua/dag_info_get_by_field.lua");
         } catch (IOException e) {
             throw new StorageException(StorageErrorCode.RESOURCE_NOT_FOUND.getCode(), StorageErrorCode.RESOURCE_NOT_FOUND.getMessage());
         }

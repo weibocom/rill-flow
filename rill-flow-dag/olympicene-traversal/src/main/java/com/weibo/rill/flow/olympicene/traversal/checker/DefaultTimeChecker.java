@@ -18,7 +18,7 @@ package com.weibo.rill.flow.olympicene.traversal.checker;
 
 import com.google.common.collect.Lists;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.olympicene.storage.redis.lock.RedisScriptLoader;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.runners.TimeCheckRunner;
@@ -48,7 +48,7 @@ public class DefaultTimeChecker implements TimeChecker {
 
     static {
         try {
-            REDIS_GET_TIMEOUT = RedisScriptLoader.loadResourceAsText("lua/redis_get_timeout.lua");
+            REDIS_GET_TIMEOUT = ResourceLoader.loadResourceAsText("lua/redis_get_timeout.lua");
         } catch (IOException e) {
             throw new DAGTraversalException(TraversalErrorCode.OPERATION_UNSUPPORTED.getCode(), "cannot load redis_get_timeout.lua");
         }

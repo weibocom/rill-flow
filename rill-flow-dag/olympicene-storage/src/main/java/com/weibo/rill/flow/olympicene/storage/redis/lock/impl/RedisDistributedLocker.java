@@ -18,7 +18,7 @@ package com.weibo.rill.flow.olympicene.storage.redis.lock.impl;
 
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.redis.lock.Locker;
-import com.weibo.rill.flow.olympicene.storage.redis.lock.RedisScriptLoader;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,8 +32,8 @@ public class RedisDistributedLocker implements Locker {
     private static final String REDIS_UNLOCK;
     static {
         try {
-            REDIS_LOCK = RedisScriptLoader.loadResourceAsText("lua/redis_lock.lua");
-            REDIS_UNLOCK = RedisScriptLoader.loadResourceAsText("lua/redis_unlock.lua");
+            REDIS_LOCK = ResourceLoader.loadResourceAsText("lua/redis_lock.lua");
+            REDIS_UNLOCK = ResourceLoader.loadResourceAsText("lua/redis_unlock.lua");
         } catch (IOException e) {
             throw new RuntimeException("load script fails", e.getCause());
         }

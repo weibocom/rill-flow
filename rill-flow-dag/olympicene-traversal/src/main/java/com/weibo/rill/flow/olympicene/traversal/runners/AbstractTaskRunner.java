@@ -36,6 +36,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
@@ -45,8 +46,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.util.*;
 
 @Slf4j
@@ -82,8 +81,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
     public JSONObject getFields() {
         String category = getCategory();
         try {
-            File file = new File(getClass().getResource(category + ".json").getFile());
-            String config = new String(Files.readAllBytes(file.toPath()));
+            String config = ResourceLoader.loadResourceAsText("metadata/fields/" + category + ".json");
             return JSON.parseObject(config);
         } catch (Exception e) {
             log.warn("get fields error, category: {}", category, e);
