@@ -83,7 +83,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
     public JSONObject getFields() {
         String category = getCategory();
         try {
-            String configPath = "classpath:meta_data/fields/" + category + ".json";
+            String configPath = category + ".json";
             File file = ResourceUtils.getFile(configPath);
             String config = new String(Files.readAllBytes(file.toPath()));
             return JSON.parseObject(config);
