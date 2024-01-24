@@ -48,8 +48,8 @@ public class TaskTemplateController {
         return jsonObject;
     }
 
-    @ApiOperation(value = "查询元数据列表")
-    @RequestMapping(value = "get_meta_data_list.json", method = RequestMethod.GET)
+    @ApiOperation(value = "查询任务模板列表")
+    @RequestMapping(value = "get_task_templates.json", method = RequestMethod.GET)
     public JSONObject getTaskTemplates(User flowUser,
                                        @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                        @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "10") int pageSize) {
