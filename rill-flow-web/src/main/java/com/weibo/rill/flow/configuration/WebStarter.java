@@ -25,7 +25,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 
-@SpringBootApplication(scanBasePackages = {"com.weibo.rill.flow"}, exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = {"com.weibo.rill.flow", "com.weibo.rill.flow.olympicene.storage.dao.mapper"}, exclude = {DataSourceAutoConfiguration.class})
 @ImportResource({"classpath:spring/web.xml"})
 @EnableAsync
 @Import(OlympiceneConfiguration.class)
