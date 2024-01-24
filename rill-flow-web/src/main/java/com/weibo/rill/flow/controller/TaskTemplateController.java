@@ -20,12 +20,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.service.facade.TaskTemplateFacade;
+import com.weibo.rill.flow.service.model.TaskTemplate;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @Api(tags = {"任务模板相关接口"})
@@ -40,6 +45,17 @@ public class TaskTemplateController {
         JSONArray metaDataList = taskTemplateFacade.getTaskMetaDataList();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", metaDataList);
+        return jsonObject;
+    }
+
+    @ApiOperation(value = "查询元数据列表")
+    @RequestMapping(value = "get_meta_data_list.json", method = RequestMethod.GET)
+    public JSONObject getTaskTemplates(User flowUser,
+                                       @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                       @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "10") int pageSize) {
+        List<TaskTemplate> taskTemplates = taskTemplateFacade.getTaskTemplates(1, 10);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data", taskTemplates);
         return jsonObject;
     }
 }
