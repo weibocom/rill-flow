@@ -9,6 +9,7 @@ public class TaskTemplate {
     private Long id;
     private String name;
     private Integer type;
+    private String typeStr;
     private String nodeType;
     private String category;
     private String icon;

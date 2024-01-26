@@ -86,6 +86,7 @@ public class TaskTemplateFacade {
         result.setOutput("{}");
         result.setSchema("{}");
         result.setType("function".equals(taskRunner.getCategory())? 0: 2);
+        result.setTypeStr(result.getType() == 0? "函数节点": "逻辑节点");
         result.setNodeType("meta");
         result.setMetaData(MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build());
         return result;
