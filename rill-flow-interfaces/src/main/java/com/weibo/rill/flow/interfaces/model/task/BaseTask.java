@@ -48,6 +48,7 @@ public abstract class BaseTask {
     private boolean isKeyCallback = false;
     private String keyExp;
     private Map<String,Object> parameters;
+    private String templateId;
 
     public abstract List<BaseTask> subTasks();
 }
