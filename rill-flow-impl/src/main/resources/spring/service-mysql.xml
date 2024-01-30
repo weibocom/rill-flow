@@ -52,7 +52,7 @@
     </bean>
 
     <bean id="myBatisMapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.weibo.rill.flow.olympicene.storage.dao.mapper"/>
+        <property name="basePackage" value="com.weibo.rill.flow.olympicene.storage.dao"/>
         <property name="annotationClass" value="org.springframework.stereotype.Repository"/>
     </bean>
 </beans>
