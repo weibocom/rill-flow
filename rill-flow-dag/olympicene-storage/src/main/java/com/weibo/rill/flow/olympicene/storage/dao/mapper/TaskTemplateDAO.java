@@ -22,11 +22,11 @@ import com.weibo.rill.flow.olympicene.storage.dao.provider.TaskTemplateProvider;
 import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Component
+@Service
 public interface TaskTemplateDAO {
     @InsertProvider(type = TaskTemplateProvider.class, method = "insert")
     long insert(TaskTemplateDO taskTemplateDO);
