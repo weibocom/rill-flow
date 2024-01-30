@@ -100,6 +100,7 @@ public class TaskTemplateFacade {
                 taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
             }
         }
+        return taskTemplateList;
     }
 
     private TaskTemplate turnTaskTemplateDOToTaskTemplate(TaskTemplateDO taskTemplateDO) {
