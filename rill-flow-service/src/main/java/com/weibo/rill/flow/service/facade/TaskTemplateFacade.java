@@ -25,6 +25,7 @@ import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateTypeEnum;
 import com.weibo.rill.flow.olympicene.traversal.runners.AbstractTaskRunner;
 import com.weibo.rill.flow.service.model.MetaData;
 import com.weibo.rill.flow.service.model.TaskTemplate;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,8 +64,39 @@ public class TaskTemplateFacade {
             pageSize = 10;
         }
 
+        // 已展示元素数量
         int preSize = pageSize * (page - 1);
         List<TaskTemplate> taskTemplateList = new ArrayList<>();
+        List<AbstractTaskRunner> metaDataList = getTaskRunners(params);
+
+        // 已展示元素数量小于元数据列表数量，说明需要用元数据填充列表
+        if (preSize < metaDataList.size()) {
+            for (; preSize < metaDataList.size() && taskTemplateList.size() < pageSize; preSize++) {
+                taskTemplateList.add(turnMetaDataToTaskTemplate(metaDataList.get(preSize)));
+            }
+            pageSize -= taskTemplateList.size();
+        }
+
+        // 将 preSize 转化为数据库偏移量
+        preSize -= metaDataList.size();
+        if (pageSize <= 0) {
+            return taskTemplateList;
+        }
+
+        // 查询数据库，填充列表
+        params.setOffset(preSize);
+        params.setLimit(pageSize);
+        List<TaskTemplateDO> taskTemplateDOList = taskTemplateDAO.getTaskTemplateList(params);
+        if (taskTemplateDOList != null) {
+            for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
+                taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
+            }
+        }
+        return taskTemplateList;
+    }
+
+    @NotNull
+    private List<AbstractTaskRunner> getTaskRunners(TaskTemplateParams params) {
         List<AbstractTaskRunner> metaDataList = new ArrayList<>();
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
             AbstractTaskRunner taskRunner = taskRunnerEntry.getValue();
@@ -79,28 +111,7 @@ public class TaskTemplateFacade {
             }
             metaDataList.add(taskRunner);
         }
-        if (preSize <= metaDataList.size()) {
-            for (int i = preSize; i < metaDataList.size() && i < pageSize; i++) {
-                taskTemplateList.add(turnMetaDataToTaskTemplate(metaDataList.get(i)));
-            }
-            preSize = 0;
-            pageSize -= taskTemplateList.size();
-        } else {
-            preSize -= metaDataList.size();
-        }
-        if (pageSize <= 0) {
-            return taskTemplateList;
-        }
-        // TODO: 查询数据库，填充列表
-        params.setOffset(preSize);
-        params.setLimit(pageSize);
-        List<TaskTemplateDO> taskTemplateDOList = taskTemplateDAO.getTaskTemplateList(params);
-        if (taskTemplateDOList != null) {
-            for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
-                taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
-            }
-        }
-        return taskTemplateList;
+        return metaDataList;
     }
 
     private TaskTemplate turnTaskTemplateDOToTaskTemplate(TaskTemplateDO taskTemplateDO) {
