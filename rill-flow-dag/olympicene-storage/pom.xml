@@ -51,6 +51,12 @@
             <artifactId>mybatis-spring</artifactId>
             <version>3.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.7</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>
