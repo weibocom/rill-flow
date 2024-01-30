@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -146,5 +147,20 @@ public class TaskTemplateFacade {
         result.setNodeType("meta");
         result.setMetaData(MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build());
         return result;
+    }
+
+    public long createTaskTemplate(String taskTemplate) {
+        TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate, TaskTemplateDO.class);
+        return taskTemplateDAO.insert(taskTemplateDO);
+    }
+
+    public int updateTaskTemplate(String taskTemplate) {
+        TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate, TaskTemplateDO.class);
+        if (taskTemplateDO == null || taskTemplateDO.getId() == null) {
+            throw new IllegalArgumentException("task_template and id can't be null");
+        }
+        taskTemplateDO.setUpdateTime(new Date());
+        taskTemplateDO.setCreateTime(null);
+        return taskTemplateDAO.update(taskTemplateDO);
     }
 }

@@ -29,7 +29,7 @@ import java.util.List;
 @Component
 public interface TaskTemplateDAO {
     @InsertProvider(type = TaskTemplateProvider.class, method = "insert")
-    int insert(TaskTemplateDO taskTemplateDO);
+    long insert(TaskTemplateDO taskTemplateDO);
 
     @SelectProvider(type = TaskTemplateProvider.class, method = "getTaskTemplateList")
     List<TaskTemplateDO> getTaskTemplateList(TaskTemplateParams params);

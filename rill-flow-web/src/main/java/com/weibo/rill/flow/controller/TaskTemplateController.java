@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Api(tags = {"任务模板相关接口"})
@@ -63,5 +64,19 @@ public class TaskTemplateController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", taskTemplatePageInfo);
         return jsonObject;
+    }
+
+    @ApiOperation("插入模板接口")
+    @RequestMapping(value = "create_task_template.json", method = RequestMethod.POST)
+    public JSONObject createTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestParam(value = "task_template") String taskTemplate) {
+        long id = taskTemplateFacade.createTaskTemplate(taskTemplate);
+        return new JSONObject(Map.of("code", 0, "data", Map.of("id", id)));
+    }
+
+    @ApiOperation("更新模板接口")
+    @RequestMapping(value = "update_task_template.json", method = RequestMethod.POST)
+    public JSONObject updateTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestParam(value = "task_template") String taskTemplate) {
+        int num = taskTemplateFacade.updateTaskTemplate(taskTemplate);
+        return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 }
