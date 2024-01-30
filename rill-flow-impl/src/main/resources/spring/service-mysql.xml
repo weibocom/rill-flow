@@ -50,9 +50,4 @@
         <property name="acquireRetryAttempts" value="${rill.flow.swap.jdbc.acquireRetryAttempts:50}"/>
         <property name="acquireRetryDelay" value="${rill.flow.swap.jdbc.acquireRetryDelay:1000}"/>
     </bean>
-
-    <bean id="myBatisMapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.weibo.rill.flow.olympicene.storage.dao"/>
-        <property name="annotationClass" value="org.springframework.stereotype.Repository"/>
-    </bean>
 </beans>
