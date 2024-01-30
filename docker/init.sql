@@ -1,3 +1,4 @@
+CREATE DATABASE IF NOT EXISTS rill_flow;
 USE rill_flow;
 CREATE TABLE IF NOT EXISTS `task_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
