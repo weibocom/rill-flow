@@ -19,6 +19,7 @@ package com.weibo.rill.flow.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.common.model.User;
+import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateParams;
 import com.weibo.rill.flow.service.facade.TaskTemplateFacade;
 import com.weibo.rill.flow.service.model.TaskTemplate;
 import io.swagger.annotations.Api;
@@ -52,10 +53,15 @@ public class TaskTemplateController {
     @RequestMapping(value = "get_task_templates.json", method = RequestMethod.GET)
     public JSONObject getTaskTemplates(User flowUser,
                                        @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                       @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "10") int pageSize) {
-        List<TaskTemplate> taskTemplates = taskTemplateFacade.getTaskTemplates(1, 10);
+                                       @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "10") int pageSize,
+                                       @ApiParam(value = "模板id") @RequestParam(value = "id", required = false) Long id,
+                                       @ApiParam(value = "模板名称") @RequestParam(value = "name", required = false) String name,
+                                       @ApiParam(value = "元数据类别") @RequestParam(value = "category", required = false) String category,
+                                       @ApiParam(value = "模板类型") @RequestParam(value = "type", required = false) Integer type) {
+        TaskTemplateParams params = TaskTemplateParams.builder().id(id).name(name).category(category).type(type).build();
+        List<TaskTemplate> taskTemplatePageInfo = taskTemplateFacade.getTaskTemplates(params, page, pageSize);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("data", taskTemplates);
+        jsonObject.put("data", taskTemplatePageInfo);
         return jsonObject;
     }
 }

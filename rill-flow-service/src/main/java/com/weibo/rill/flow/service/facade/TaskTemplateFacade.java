@@ -18,6 +18,10 @@ package com.weibo.rill.flow.service.facade;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.weibo.rill.flow.olympicene.storage.dao.mapper.TaskTemplateDAO;
+import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateDO;
+import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateParams;
+import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateTypeEnum;
 import com.weibo.rill.flow.olympicene.traversal.runners.AbstractTaskRunner;
 import com.weibo.rill.flow.service.model.MetaData;
 import com.weibo.rill.flow.service.model.TaskTemplate;
@@ -32,6 +36,8 @@ import java.util.Map;
 public class TaskTemplateFacade {
     @Autowired
     private Map<String, AbstractTaskRunner> taskRunnerMap;
+    @Autowired
+    private TaskTemplateDAO taskTemplateDAO;
 
     public JSONArray getTaskMetaDataList() {
         JSONArray metaDataList = new JSONArray();
@@ -49,7 +55,7 @@ public class TaskTemplateFacade {
         return metaDataList;
     }
 
-    public List<TaskTemplate> getTaskTemplates(int page, int pageSize) {
+    public List<TaskTemplate> getTaskTemplates(TaskTemplateParams params, int page, int pageSize) {
         if (page <= 0) {
             page = 1;
         }
@@ -62,18 +68,56 @@ public class TaskTemplateFacade {
         List<AbstractTaskRunner> metaDataList = new ArrayList<>();
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
             AbstractTaskRunner taskRunner = taskRunnerEntry.getValue();
-            if (!taskRunner.isEnable()) {
+            if (!taskRunner.isEnable() || params.getId() != null
+                    || params.getName() != null && !taskRunner.getCategory().contains(params.getName())
+                    || params.getCategory() != null && !taskRunner.getCategory().equals(params.getCategory())
+                    || params.getType() != null && params.getType() == 1
+                    || params.getType() != null && params.getType() == 0 && !"function".equals(taskRunner.getCategory())
+                    || params.getType() != null && params.getType() == 2 && "function".equals(taskRunner.getCategory())
+            ) {
                 continue;
             }
             metaDataList.add(taskRunner);
         }
-        if (preSize < metaDataList.size()) {
-            for (int i = preSize; i < metaDataList.size(); i++) {
+        if (preSize <= metaDataList.size()) {
+            for (int i = preSize; i < metaDataList.size() && i < pageSize; i++) {
                 taskTemplateList.add(turnMetaDataToTaskTemplate(metaDataList.get(i)));
             }
+            preSize = 0;
+            pageSize -= taskTemplateList.size();
+        } else {
+            preSize -= metaDataList.size();
+        }
+        if (pageSize <= 0) {
+            return taskTemplateList;
         }
         // TODO: 查询数据库，填充列表
-        return taskTemplateList;
+        params.setOffset(preSize);
+        params.setLimit(pageSize);
+        List<TaskTemplateDO> taskTemplateDOList = taskTemplateDAO.getTaskTemplateList(params);
+        if (taskTemplateDOList != null) {
+            for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
+                taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
+            }
+        }
+    }
+
+    private TaskTemplate turnTaskTemplateDOToTaskTemplate(TaskTemplateDO taskTemplateDO) {
+        TaskTemplate result = new TaskTemplate();
+        result.setId(taskTemplateDO.getId());
+        result.setCategory(taskTemplateDO.getCategory());
+        result.setIcon(taskTemplateDO.getIcon());
+        result.setTaskYaml(taskTemplateDO.getTaskYaml());
+        result.setName(taskTemplateDO.getName());
+        result.setOutput(taskTemplateDO.getOutput());
+        result.setSchema(taskTemplateDO.getSchema());
+        result.setType(taskTemplateDO.getType());
+        result.setTypeStr(TaskTemplateTypeEnum.getEnumByType(taskTemplateDO.getType()).getDesc());
+        result.setNodeType("template");
+        AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory());
+        MetaData metaData = MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build();
+        result.setMetaData(metaData);
+        return result;
     }
 
     private TaskTemplate turnMetaDataToTaskTemplate(AbstractTaskRunner taskRunner) {

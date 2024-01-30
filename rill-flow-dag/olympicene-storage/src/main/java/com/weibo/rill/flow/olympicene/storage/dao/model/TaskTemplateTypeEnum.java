@@ -16,20 +16,31 @@
 
 package com.weibo.rill.flow.olympicene.storage.dao.model;
 
-import lombok.Data;
+import lombok.Getter;
 
-import java.util.Date;
+/**
+ * 模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板
+ */
+@Getter
+public enum TaskTemplateTypeEnum {
+    FUNCTION(0, "函数模板"),
+    PLUGIN(1, "插件模板"),
+    LOGIC(2, "逻辑模板");
 
-@Data
-public class TaskTemplateDO {
-    private Long id;
-    private String name;
-    private Integer type; // 模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板
-    private String category;
-    private String icon;
-    private String taskYaml;
-    private String schema;
-    private String output;
-    private Date createTime;
-    private Date updateTime;
+    private final int type;
+    private final String desc;
+
+    TaskTemplateTypeEnum(int type, String desc) {
+        this.type = type;
+        this.desc = desc;
+    }
+
+    public static TaskTemplateTypeEnum getEnumByType(int type) {
+        return switch (type) {
+            case 0 -> FUNCTION;
+            case 1 -> PLUGIN;
+            case 2 -> LOGIC;
+            default -> null;
+        };
+    }
 }

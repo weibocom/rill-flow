@@ -16,20 +16,23 @@
 
 package com.weibo.rill.flow.olympicene.storage.dao.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
+/**
+ * 作为查询 TaskTemplateDO 时的参数
+ */
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
-public class TaskTemplateDO {
+@Builder
+public class TaskTemplateParams {
     private Long id;
     private String name;
-    private Integer type; // 模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板
     private String category;
-    private String icon;
-    private String taskYaml;
-    private String schema;
-    private String output;
-    private Date createTime;
-    private Date updateTime;
+    private Integer type;
+    private int offset;
+    private int limit;
 }
