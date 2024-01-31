@@ -17,3 +17,6 @@ CREATE TABLE IF NOT EXISTS `task_template` (
     KEY `idx_update_time` (`update_time`),
     KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Rill Flow 任务模板表';
+
+grant all on *.* to 'root'@'%' identified by 'secret';
+flush privileges;
