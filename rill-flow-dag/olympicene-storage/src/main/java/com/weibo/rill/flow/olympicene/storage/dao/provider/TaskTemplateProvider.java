@@ -101,9 +101,9 @@ public class TaskTemplateProvider {
                 if (params.getCategory() != null) {
                     WHERE("category = #{category}");
                 }
-                ORDER_BY("id asc");
                 OFFSET(params.getOffset());
                 LIMIT(params.getLimit());
+                ORDER_BY("id asc");
             }
         }.toString();
     }
