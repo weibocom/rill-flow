@@ -127,7 +127,7 @@ public class TaskTemplateFacade {
         result.setType(taskTemplateDO.getType());
         result.setTypeStr(TaskTemplateTypeEnum.getEnumByType(taskTemplateDO.getType()).getDesc());
         result.setNodeType("template");
-        AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory());
+        AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory() + "TaskRunner");
         MetaData metaData = MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build();
         result.setMetaData(metaData);
         return result;
