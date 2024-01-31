@@ -37,10 +37,10 @@ public class TaskTemplateProvider {
                 INSERT_INTO(TABLE_NAME);
                 for (String column : COLUMNS) {
                     if (!column.equals("id")) {
-                        VALUES(column, "#{" + castUnderlineToCamel(column) + "}");
+                        VALUES("`" + column + "`", "#{" + castUnderlineToCamel(column) + "}");
                     }
                     if (Arrays.asList("create_time", "update_time").contains(column)) {
-                        SET(column + " = now()");
+                        SET("`" + column + "` = now()");
                     }
                 }
             }
@@ -68,7 +68,7 @@ public class TaskTemplateProvider {
                     try {
                         Object value = field.get(taskTemplateDO);
                         if (value != null) {
-                            SET(castCamelToUnderline(fieldName) + " = #{" + fieldName + "}");
+                            SET("`" + castCamelToUnderline(fieldName) + "` = #{" + fieldName + "}");
                         }
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException("get field value failed");
@@ -89,23 +89,23 @@ public class TaskTemplateProvider {
     public String getTaskTemplateList(TaskTemplateParams params) {
         SQL sql = new SQL() {
             {
-                SELECT(String.join(",", COLUMNS));
+                SELECT("`" + String.join("`,`", COLUMNS) + "`");
                 FROM(TABLE_NAME);
                 if (params.getId() != null) {
-                    WHERE("id = #{id}");
+                    WHERE("`id` = #{id}");
                 }
                 if (params.getType() != null) {
-                    WHERE("type = #{type}");
+                    WHERE("`type` = #{type}");
                 }
                 if (params.getName() != null) {
-                    WHERE("name like '%' #{name} '%'");
+                    WHERE("`name` like '%' #{name} '%'");
                 }
                 if (params.getCategory() != null) {
-                    WHERE("category = #{category}");
+                    WHERE("`category` = #{category}");
                 }
                 OFFSET(params.getOffset());
                 LIMIT(params.getLimit());
-                ORDER_BY("id asc");
+                ORDER_BY("`id` asc");
             }
         };
         return sql.toString();
