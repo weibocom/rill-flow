@@ -32,7 +32,7 @@ public class TaskTemplateProvider {
 
     @ResultType(Integer.class)
     public String insert(TaskTemplateDO taskTemplateDO) {
-        return new SQL() {
+        SQL sql = new SQL() {
             {
                 INSERT_INTO(TABLE_NAME);
                 for (String column : COLUMNS) {
@@ -44,7 +44,8 @@ public class TaskTemplateProvider {
                     }
                 }
             }
-        }.toString();
+        };
+        return sql.toString();
     }
 
     /**
@@ -55,7 +56,7 @@ public class TaskTemplateProvider {
         if (taskTemplateDO.getId() == null) {
             throw new RuntimeException("id cannot be null when update task template");
         }
-        return new SQL() {
+        SQL sql = new SQL() {
             {
                 UPDATE(TABLE_NAME);
                 Field[] fields = taskTemplateDO.getClass().getFields();
@@ -75,7 +76,8 @@ public class TaskTemplateProvider {
                 }
                 WHERE("id = #{id}");
             }
-        }.toString();
+        };
+        return sql.toString();
     }
 
     /**
@@ -85,7 +87,7 @@ public class TaskTemplateProvider {
      */
     @ResultType(TaskTemplateDO.class)
     public String getTaskTemplateList(TaskTemplateParams params) {
-        return new SQL() {
+        SQL sql = new SQL() {
             {
                 SELECT(String.join(",", COLUMNS));
                 FROM(TABLE_NAME);
@@ -105,7 +107,8 @@ public class TaskTemplateProvider {
                 LIMIT(params.getLimit());
                 ORDER_BY("id asc");
             }
-        }.toString();
+        };
+        return sql.toString();
     }
 
     private String castUnderlineToCamel(String underscoreName) {
