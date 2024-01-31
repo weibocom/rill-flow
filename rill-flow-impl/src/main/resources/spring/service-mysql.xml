@@ -19,7 +19,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <property name="dataSource" ref="taskTemplateDataSource" />
+        <property name="dataSource" ref="taskTemplateMasterDataSource" />
         <property name="typeAliasesPackage" value="com.weibo.rill.flow.olympicene.storage.dao.model"/>
         <property name="configuration" ref="mybatisConfiguration"/>
     </bean>
