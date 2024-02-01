@@ -3,7 +3,7 @@ FROM tomcat:9.0.58-jdk17-openjdk-slim
 MAINTAINER Weibo, Inc.
 
 RUN rm -rf /usr/local/tomcat/webapps/*
-COPY docker/sources.list /etc/apt/sources.list
+#COPY docker/sources.list /etc/apt/sources.list
 COPY docker/opentelemetry-javaagent.jar /usr/local/tomcat/temp/opentelemetry-javaagent.jar
 
 COPY rill-flow-plugins/*/target/*-all.jar /usr/local/rill_flow/plugins/
