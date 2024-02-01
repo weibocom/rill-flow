@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `task_template` (
     `task_yaml` TEXT NOT NULL COMMENT '默认填充的任务 yaml 数据',
     `schema` TEXT NOT NULL COMMENT '用来渲染的 json schema',
     `output` TEXT NOT NULL COMMENT '用户输入的 output 字段',
+    `enable` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` datetime NOT NULL DEFAULT '1970-01-01 08:00:00' COMMENT '更新时间',
     PRIMARY KEY (`id`),
