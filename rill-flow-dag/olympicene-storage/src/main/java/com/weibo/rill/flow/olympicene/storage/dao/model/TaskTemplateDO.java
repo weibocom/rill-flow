@@ -29,6 +29,7 @@ public class TaskTemplateDO {
     private String icon;
     private String taskYaml;
     private String schema;
+    private Integer enable;
     private String output;
     private Date createTime;
     private Date updateTime;

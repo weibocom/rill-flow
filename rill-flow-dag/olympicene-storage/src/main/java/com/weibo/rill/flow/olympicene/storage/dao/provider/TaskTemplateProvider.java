@@ -104,6 +104,7 @@ public class TaskTemplateProvider {
                 if (params.getCategory() != null) {
                     WHERE("`category` = #{category}");
                 }
+                WHERE("`enable` = 1");
                 OFFSET(params.getOffset());
                 LIMIT(params.getLimit());
                 ORDER_BY("`id` asc");
