@@ -59,13 +59,14 @@ public class TaskTemplateProvider {
         SQL sql = new SQL() {
             {
                 UPDATE(TABLE_NAME);
-                Field[] fields = taskTemplateDO.getClass().getFields();
+                Field[] fields = taskTemplateDO.getClass().getDeclaredFields();
                 for (Field field : fields) {
                     String fieldName = field.getName();
                     if (fieldName.equals("id")) {
                         continue;
                     }
                     try {
+                        field.setAccessible(true);
                         Object value = field.get(taskTemplateDO);
                         if (value != null) {
                             SET("`" + castCamelToUnderline(fieldName) + "` = #{" + fieldName + "}");

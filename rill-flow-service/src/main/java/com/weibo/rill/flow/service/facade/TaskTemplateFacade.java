@@ -25,6 +25,7 @@ import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateTypeEnum;
 import com.weibo.rill.flow.olympicene.traversal.runners.AbstractTaskRunner;
 import com.weibo.rill.flow.service.model.MetaData;
 import com.weibo.rill.flow.service.model.TaskTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class TaskTemplateFacade {
     @Autowired
     private Map<String, AbstractTaskRunner> taskRunnerMap;
@@ -149,18 +151,28 @@ public class TaskTemplateFacade {
         return result;
     }
 
-    public long createTaskTemplate(String taskTemplate) {
-        TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate, TaskTemplateDO.class);
-        return taskTemplateDAO.insert(taskTemplateDO);
+    public long createTaskTemplate(JSONObject taskTemplate) {
+        try {
+            TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate.toJSONString(), TaskTemplateDO.class);
+            return taskTemplateDAO.insert(taskTemplateDO);
+        } catch (Exception e) {
+            log.warn("create task template error", e);
+            throw e;
+        }
     }
 
-    public int updateTaskTemplate(String taskTemplate) {
-        TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate, TaskTemplateDO.class);
-        if (taskTemplateDO == null || taskTemplateDO.getId() == null) {
-            throw new IllegalArgumentException("task_template and id can't be null");
+    public int updateTaskTemplate(JSONObject taskTemplate) {
+        try {
+            TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate.toJSONString(), TaskTemplateDO.class);
+            if (taskTemplateDO == null || taskTemplateDO.getId() == null) {
+                throw new IllegalArgumentException("task_template and id can't be null");
+            }
+            taskTemplateDO.setUpdateTime(new Date());
+            taskTemplateDO.setCreateTime(null);
+            return taskTemplateDAO.update(taskTemplateDO);
+        } catch (Exception e) {
+            log.warn("update task template error", e);
+            throw e;
         }
-        taskTemplateDO.setUpdateTime(new Date());
-        taskTemplateDO.setCreateTime(null);
-        return taskTemplateDAO.update(taskTemplateDO);
     }
 }

@@ -26,10 +26,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -68,14 +65,14 @@ public class TaskTemplateController {
 
     @ApiOperation("插入模板接口")
     @RequestMapping(value = "create_task_template.json", method = RequestMethod.POST)
-    public JSONObject createTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestParam(value = "task_template") String taskTemplate) {
+    public JSONObject createTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestBody() JSONObject taskTemplate) {
         long id = taskTemplateFacade.createTaskTemplate(taskTemplate);
         return new JSONObject(Map.of("code", 0, "data", Map.of("id", id)));
     }
 
     @ApiOperation("更新模板接口")
     @RequestMapping(value = "update_task_template.json", method = RequestMethod.POST)
-    public JSONObject updateTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestParam(value = "task_template") String taskTemplate) {
+    public JSONObject updateTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestBody() JSONObject taskTemplate) {
         int num = taskTemplateFacade.updateTaskTemplate(taskTemplate);
         return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
