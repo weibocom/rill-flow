@@ -154,6 +154,22 @@ public class TaskTemplateFacade {
     public long createTaskTemplate(JSONObject taskTemplate) {
         try {
             TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate.toJSONString(), TaskTemplateDO.class);
+            if (taskTemplateDO == null) {
+                throw new IllegalArgumentException("task_template can't be null");
+            }
+            // set default value if field is null
+            if (taskTemplateDO.getIcon() == null) {
+                taskTemplateDO.setIcon("");
+            }
+            if (taskTemplateDO.getOutput() == null) {
+                taskTemplateDO.setOutput("{}");
+            }
+            if (taskTemplateDO.getTaskYaml() == null) {
+                taskTemplateDO.setTaskYaml("");
+            }
+            if (taskTemplateDO.getSchema() == null) {
+                taskTemplateDO.setSchema("{}");
+            }
             return taskTemplateDAO.insert(taskTemplateDO);
         } catch (Exception e) {
             log.warn("create task template error", e);
