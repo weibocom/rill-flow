@@ -33,6 +33,7 @@ public class TaskTemplateParams {
     private String name;
     private String category;
     private Integer type;
+    private String nodeType;
     private int offset;
     private int limit;
 }

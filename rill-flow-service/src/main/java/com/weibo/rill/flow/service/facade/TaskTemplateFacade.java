@@ -70,7 +70,10 @@ public class TaskTemplateFacade {
         // 已展示元素数量
         int preSize = pageSize * (page - 1);
         List<TaskTemplate> taskTemplateList = new ArrayList<>();
-        List<AbstractTaskRunner> metaDataList = getTaskRunners(params);
+        List<AbstractTaskRunner> metaDataList = new ArrayList<>();
+        if (params.getNodeType() == null || params.getNodeType().equals("meta")) {
+            metaDataList = getTaskRunners(params);
+        }
 
         // 已展示元素数量小于元数据列表数量，说明需要用元数据填充列表
         if (preSize < metaDataList.size()) {
@@ -87,13 +90,25 @@ public class TaskTemplateFacade {
         }
 
         // 查询数据库，填充列表
+        List<TaskTemplate> taskTemplatesFromDB = getTaskTemplatesFromDB(params, pageSize, preSize);
+        taskTemplateList.addAll(taskTemplatesFromDB);
+
+        return taskTemplateList;
+    }
+
+    private List<TaskTemplate> getTaskTemplatesFromDB(TaskTemplateParams params, int pageSize, int preSize) {
+        List<TaskTemplate> taskTemplateList = new ArrayList<>();
+        if (params.getNodeType() != null && !"template".equals(params.getNodeType())) {
+            return taskTemplateList;
+        }
         params.setOffset(preSize);
         params.setLimit(pageSize);
         List<TaskTemplateDO> taskTemplateDOList = taskTemplateDAO.getTaskTemplateList(params);
-        if (taskTemplateDOList != null) {
-            for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
-                taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
-            }
+        if (taskTemplateDOList == null) {
+            return taskTemplateList;
+        }
+        for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
+            taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
         }
         return taskTemplateList;
     }
@@ -158,23 +173,29 @@ public class TaskTemplateFacade {
                 throw new IllegalArgumentException("task_template can't be null");
             }
             // set default value if field is null
-            if (taskTemplateDO.getIcon() == null) {
-                taskTemplateDO.setIcon("");
-            }
-            if (taskTemplateDO.getOutput() == null) {
-                taskTemplateDO.setOutput("{}");
-            }
-            if (taskTemplateDO.getTaskYaml() == null) {
-                taskTemplateDO.setTaskYaml("");
-            }
-            if (taskTemplateDO.getSchema() == null) {
-                taskTemplateDO.setSchema("{}");
-            }
+            setTemplateDOBeforeCreate(taskTemplateDO);
             return taskTemplateDAO.insert(taskTemplateDO);
         } catch (Exception e) {
             log.warn("create task template error", e);
             throw e;
         }
+    }
+
+    private static void setTemplateDOBeforeCreate(TaskTemplateDO taskTemplateDO) {
+        if (taskTemplateDO.getIcon() == null) {
+            taskTemplateDO.setIcon("");
+        }
+        if (taskTemplateDO.getOutput() == null) {
+            taskTemplateDO.setOutput("{}");
+        }
+        if (taskTemplateDO.getTaskYaml() == null) {
+            taskTemplateDO.setTaskYaml("");
+        }
+        if (taskTemplateDO.getSchema() == null) {
+            taskTemplateDO.setSchema("{}");
+        }
+        taskTemplateDO.setCreateTime(new Date());
+        taskTemplateDO.setUpdateTime(new Date());
     }
 
     public int updateTaskTemplate(JSONObject taskTemplate) {
