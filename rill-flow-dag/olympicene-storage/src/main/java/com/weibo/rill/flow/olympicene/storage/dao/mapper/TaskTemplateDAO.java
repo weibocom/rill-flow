@@ -38,5 +38,8 @@ public interface TaskTemplateDAO {
     int update(TaskTemplateDO taskTemplateDO);
 
     @UpdateProvider(type = TaskTemplateProvider.class, method = "disable")
-    int delete(Long id);
+    int disable(Long id);
+
+    @UpdateProvider(type = TaskTemplateProvider.class, method = "enable")
+    int enable(Long id);
 }

@@ -64,10 +64,17 @@ public class TaskTemplateController {
         return jsonObject;
     }
 
-    @ApiOperation("删除模板接口")
-    @PostMapping("delete_template.json")
+    @ApiOperation("禁用模板接口")
+    @PostMapping("disable_task_template.json")
     public JSONObject deleteTaskTemplate(User user, @ApiParam(value = "任务模板id") @RequestParam(value = "id") Long id) {
-        int num = taskTemplateFacade.deleteTaskTemplate(id);
+        int num = taskTemplateFacade.disableTaskTemplate(id);
+        return new JSONObject(Map.of("code", num > 0? 0: 1));
+    }
+
+    @ApiOperation("启用模板接口")
+    @PostMapping("enable_task_template.json")
+    public JSONObject enableTaskTemplateFacade(User user, @ApiParam(value = "任务模板id") @RequestParam(value = "id") Long id) {
+        int num = taskTemplateFacade.enableTaskTemplate(id);
         return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 

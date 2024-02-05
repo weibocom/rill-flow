@@ -17,6 +17,7 @@ public class TaskTemplate {
     private MetaData metaData;
     private String schema;
     private String output;
+    private Integer enable;
     private Date createTime;
     private Date updateTime;
 }

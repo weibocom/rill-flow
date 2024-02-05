@@ -104,7 +104,9 @@ public class TaskTemplateProvider {
                 if (params.getCategory() != null) {
                     WHERE("`category` = #{category}");
                 }
-                WHERE("`enable` = 1");
+                if (params.getEnable() != null) {
+                    WHERE("`enable` = #{enable}");
+                }
                 OFFSET(params.getOffset());
                 LIMIT(params.getLimit());
                 ORDER_BY("`id` asc");
@@ -116,19 +118,36 @@ public class TaskTemplateProvider {
 
     /**
      * 将任务模板设为不可用
-     * @param id
-     * @return
+     * @param id 任务模板id
+     * @return sql语句
      */
     @ResultType(Integer.class)
     public String disable(Long id) {
-        String sql = new SQL() {
+        SQL sql = new SQL() {
             {
                 UPDATE(TABLE_NAME);
                 SET("`enable` = 0");
                 WHERE("`id` = #{id}");
             }
-        }.toString();
-        return sql;
+        };
+        return sql.toString();
+    }
+
+    /**
+     * 将任务模板设为启用
+     * @param id 任务模板id
+     * @return sql语句
+     */
+    @ResultType(Integer.class)
+    public String enable(Long id) {
+        SQL sql = new SQL() {
+            {
+                UPDATE(TABLE_NAME);
+                SET("`enable` = 1");
+                WHERE("`id` = #{id}");
+            }
+        };
+        return sql.toString();
     }
 
     private String castUnderlineToCamel(String underscoreName) {

@@ -71,7 +71,7 @@ public class TaskTemplateFacade {
         int preSize = pageSize * (page - 1);
         List<TaskTemplate> taskTemplateList = new ArrayList<>();
         List<AbstractTaskRunner> metaDataList = new ArrayList<>();
-        if (params.getNodeType() == null || params.getNodeType().equals("meta")) {
+        if ((params.getNodeType() == null || params.getNodeType().equals("meta")) && (params.getEnable() == null || params.getEnable() == 1)) {
             metaDataList = getTaskRunners(params);
         }
 
@@ -142,6 +142,7 @@ public class TaskTemplateFacade {
         result.setOutput(taskTemplateDO.getOutput());
         result.setSchema(taskTemplateDO.getSchema());
         result.setType(taskTemplateDO.getType());
+        result.setEnable(taskTemplateDO.getEnable());
         result.setTypeStr(TaskTemplateTypeEnum.getEnumByType(taskTemplateDO.getType()).getDesc());
         result.setNodeType("template");
         AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory() + "TaskRunner");
@@ -159,6 +160,7 @@ public class TaskTemplateFacade {
         result.setName(taskRunner.getCategory());
         result.setOutput("{}");
         result.setSchema("{}");
+        result.setEnable(1);
         result.setType("function".equals(taskRunner.getCategory())? 0: 2);
         result.setTypeStr(result.getType() == 0? "函数模板（元数据）": "逻辑模板（元数据）");
         result.setNodeType("meta");
@@ -214,15 +216,29 @@ public class TaskTemplateFacade {
     }
 
     /**
-     * 删除任务模板
+     * 禁用任务模板
      * @param id 任务模板id
-     * @return 删除条数
+     * @return 更新条数
      */
-    public int deleteTaskTemplate(Long id) {
+    public int disableTaskTemplate(Long id) {
         try {
-            return taskTemplateDAO.delete(id);
+            return taskTemplateDAO.disable(id);
         } catch (Exception e) {
-            log.warn("delete task template error, id: {}", id, e);
+            log.warn("disable task template error, id: {}", id, e);
+            throw e;
+        }
+    }
+
+    /**
+     * 启用任务模板
+     * @param id 任务模板id
+     * @return 更新条数
+     */
+    public int enableTaskTemplate(Long id) {
+        try {
+            return taskTemplateDAO.enable(id);
+        } catch (Exception e) {
+            log.warn("enable task template error, id: {}", id, e);
             throw e;
         }
     }
