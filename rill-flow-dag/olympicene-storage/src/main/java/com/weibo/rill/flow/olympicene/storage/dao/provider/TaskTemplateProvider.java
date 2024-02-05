@@ -119,6 +119,7 @@ public class TaskTemplateProvider {
      * @param id
      * @return
      */
+    @ResultType(Integer.class)
     public String disable(Long id) {
         String sql = new SQL() {
             {

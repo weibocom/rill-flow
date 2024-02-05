@@ -222,7 +222,7 @@ public class TaskTemplateFacade {
         try {
             return taskTemplateDAO.delete(id);
         } catch (Exception e) {
-            log.warn("delete task template error", e);
+            log.warn("delete task template error, id: {}", id, e);
             throw e;
         }
     }
