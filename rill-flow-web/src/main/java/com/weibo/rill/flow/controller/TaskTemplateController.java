@@ -56,8 +56,9 @@ public class TaskTemplateController {
                                        @ApiParam(value = "模板名称") @RequestParam(value = "name", required = false) String name,
                                        @ApiParam(value = "元数据类别") @RequestParam(value = "category", required = false) String category,
                                        @ApiParam(value = "模板类型") @RequestParam(value = "type", required = false) Integer type,
-                                       @ApiParam(value = "节点类型") @RequestParam(value = "node_type", required = false) String nodeType) {
-        TaskTemplateParams params = TaskTemplateParams.builder().id(id).name(name).category(category).type(type).nodeType(nodeType).build();
+                                       @ApiParam(value = "节点类型") @RequestParam(value = "node_type", required = false) String nodeType,
+                                       @ApiParam(value = "是否启用") @RequestParam(value = "enable", required = false) Integer enable) {
+        TaskTemplateParams params = TaskTemplateParams.builder().id(id).name(name).category(category).type(type).nodeType(nodeType).enable(enable).build();
         List<TaskTemplate> taskTemplatePageInfo = taskTemplateFacade.getTaskTemplates(params, page, pageSize);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", taskTemplatePageInfo);
