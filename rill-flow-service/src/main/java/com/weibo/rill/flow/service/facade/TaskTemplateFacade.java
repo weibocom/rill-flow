@@ -212,4 +212,18 @@ public class TaskTemplateFacade {
             throw e;
         }
     }
+
+    /**
+     * 删除任务模板
+     * @param id 任务模板id
+     * @return 删除条数
+     */
+    public int deleteTaskTemplate(Long id) {
+        try {
+            return taskTemplateDAO.delete(id);
+        } catch (Exception e) {
+            log.warn("delete task template error", e);
+            throw e;
+        }
+    }
 }

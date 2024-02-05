@@ -113,6 +113,23 @@ public class TaskTemplateProvider {
         return sql.toString();
     }
 
+
+    /**
+     * 将任务模板设为不可用
+     * @param id
+     * @return
+     */
+    public String disable(Long id) {
+        String sql = new SQL() {
+            {
+                UPDATE(TABLE_NAME);
+                SET("`enable` = 0");
+                WHERE("`id` = #{id}");
+            }
+        }.toString();
+        return sql;
+    }
+
     private String castUnderlineToCamel(String underscoreName) {
         StringBuilder result = new StringBuilder();
         if (underscoreName != null && !underscoreName.isEmpty()) {

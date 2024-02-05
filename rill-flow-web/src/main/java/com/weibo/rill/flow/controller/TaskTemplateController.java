@@ -38,7 +38,7 @@ public class TaskTemplateController {
     @Autowired
     private TaskTemplateFacade taskTemplateFacade;
 
-    @ApiOperation(value = "查询元数据列表")
+    @ApiOperation("查询元数据列表")
     @RequestMapping(value = "get_meta_data_list.json", method = RequestMethod.GET)
     public JSONObject getMetaDataList(User flowUser) {
         JSONArray metaDataList = taskTemplateFacade.getTaskMetaDataList();
@@ -47,7 +47,7 @@ public class TaskTemplateController {
         return jsonObject;
     }
 
-    @ApiOperation(value = "查询任务模板列表")
+    @ApiOperation("查询任务模板列表")
     @RequestMapping(value = "get_task_templates.json", method = RequestMethod.GET)
     public JSONObject getTaskTemplates(User flowUser,
                                        @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -62,6 +62,13 @@ public class TaskTemplateController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", taskTemplatePageInfo);
         return jsonObject;
+    }
+
+    @ApiOperation("删除模板接口")
+    @PostMapping("delete_template.json")
+    public JSONObject deleteTaskTemplate(User user, @ApiParam(value = "任务模板id") @RequestParam(value = "id") Long id) {
+        int num = taskTemplateFacade.deleteTaskTemplate(id);
+        return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 
     @ApiOperation("插入模板接口")
