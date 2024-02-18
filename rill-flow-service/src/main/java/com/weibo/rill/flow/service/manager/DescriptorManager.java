@@ -542,4 +542,11 @@ public class DescriptorManager {
         Optional.ofNullable(thirdPart).ifPresent(ids::add);
         return StringUtils.join(ids, ReservedConstant.COLON);
     }
+
+    /**
+     * cast a descriptorId into businessId
+     */
+    public static String changeDescriptorIdToBusinessId(String descriptorId) {
+        return StringUtils.substringBefore(descriptorId, ReservedConstant.COLON);
+    }
 }

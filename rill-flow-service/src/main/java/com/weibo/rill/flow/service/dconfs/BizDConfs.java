@@ -58,4 +58,7 @@ public interface BizDConfs {
     Map<String, String> getHttpClientBusinessIdToClientId();
     Map<String, String> getAuthSourceToKeyMap();
     Map<String, String> getTaskScoreExpWhenPop();
+
+    Map<String, Integer> getRedisBusinessIdToRuntimeSubmitContextMaxSize();
+    Map<String, Integer> getRedisBusinessIdToRuntimeCallbackContextMaxSize();
 }

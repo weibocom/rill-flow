@@ -105,7 +105,8 @@ public class OlympiceneFacade {
     public Map<String, Object> submit(Long uid, String descriptorId, String callback, String resourceCheck, JSONObject data, String url) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder().withData(data).withIdentity(descriptorId).build();
+            String businessId = DescriptorManager.changeDescriptorIdToBusinessId(descriptorId);
+            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return submit(uid, descriptorId, context, callback, resourceCheckConfig);
         };
