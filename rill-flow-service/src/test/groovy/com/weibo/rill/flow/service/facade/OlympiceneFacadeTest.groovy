@@ -25,7 +25,7 @@ class OlympiceneFacadeTest extends Specification {
 
     def setup() {
         facade.profileRecordService = profileRecordService
-        facade.submitChecker = submitChecker
+        facade.dagSubmitChecker = submitChecker
         facade.dagContextInitializer = dagContextInitializer
         facade.olympicene = olympicene
         facade.dagStringParser = dagStringParser
@@ -42,14 +42,14 @@ class OlympiceneFacadeTest extends Specification {
         given:
         bizDConfs.getRuntimeSubmitContextMaxSize() >> 10240
         expect:
-        facade.submit(1L, "testBusiness:testFeatureName", null, null, new JSONObject(["a": 1]), null)
+        facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
     }
 
     def "test submit exception by limit max context size"() {
         given:
         bizDConfs.getRuntimeSubmitContextMaxSize() >> 0
         when:
-        facade.submit(1L, "testBusiness:testFeatureName", null, null, new JSONObject(["a": 1]), null)
+        facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
         then:
         thrown TaskException
     }
