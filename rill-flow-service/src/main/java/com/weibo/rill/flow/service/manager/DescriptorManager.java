@@ -544,7 +544,7 @@ public class DescriptorManager {
     }
 
     /**
-     * cast a descriptorId into businessId
+     * change descriptorId to businessId
      */
     public static String changeDescriptorIdToBusinessId(String descriptorId) {
         return StringUtils.substringBefore(descriptorId, ReservedConstant.COLON);
