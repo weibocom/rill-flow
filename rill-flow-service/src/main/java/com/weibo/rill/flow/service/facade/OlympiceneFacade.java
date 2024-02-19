@@ -96,13 +96,13 @@ public class OlympiceneFacade {
     @Autowired
     private ProfileRecordService profileRecordService;
     @Autowired
-    private DAGSubmitChecker submitChecker;
+    private DAGSubmitChecker dagSubmitChecker;
     @Autowired
     private DAGContextInitializer dagContextInitializer;
 
     public Map<String, Object> submit(Long uid, String descriptorId, String callback, String resourceCheck, JSONObject data, String url) {
         Supplier<Map<String, Object>> submitActions = () -> {
-            ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
+            ResourceCheckConfig resourceCheckConfig = dagSubmitChecker.getCheckConfig(resourceCheck);
             String businessId = DescriptorManager.changeDescriptorIdToBusinessId(descriptorId);
             Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
@@ -122,7 +122,7 @@ public class OlympiceneFacade {
         DAG dag = dagStringParser.parse(dagDescriptor);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
-        submitChecker.check(executionId, resourceCheckConfig);
+        dagSubmitChecker.check(executionId, resourceCheckConfig);
 
         NotifyInfo notifyInfo = null;
         if (StringUtils.isNotBlank(callback)) {
@@ -339,7 +339,7 @@ public class OlympiceneFacade {
         String featureName = fields[1];
         String serviceId = businessId + ReservedConstant.COLON + featureName;
 
-        Map<String, Object> submitStatus = submitChecker.getCheckRet(businessId, serviceId, resourceCheckConfig);
+        Map<String, Object> submitStatus = dagSubmitChecker.getCheckRet(businessId, serviceId, resourceCheckConfig);
 
         return ImmutableMap.of("descriptor_id", descriptorId,
                 "submit_status", submitStatus,
