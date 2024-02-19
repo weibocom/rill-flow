@@ -88,8 +88,6 @@ public class OlympiceneFacade {
     @Autowired
     private LongTermStorage longTermStorage;
     @Autowired
-    private DAGSubmitChecker dagSubmitChecker;
-    @Autowired
     private DAGResourceStatistic dagResourceStatistic;
     @Autowired
     private CustomizedStorage customizedStorage;
@@ -124,7 +122,7 @@ public class OlympiceneFacade {
         DAG dag = dagStringParser.parse(dagDescriptor);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
-        dagSubmitChecker.check(executionId, resourceCheckConfig);
+        submitChecker.check(executionId, resourceCheckConfig);
 
         NotifyInfo notifyInfo = null;
         if (StringUtils.isNotBlank(callback)) {
@@ -341,7 +339,7 @@ public class OlympiceneFacade {
         String featureName = fields[1];
         String serviceId = businessId + ReservedConstant.COLON + featureName;
 
-        Map<String, Object> submitStatus = dagSubmitChecker.getCheckRet(businessId, serviceId, resourceCheckConfig);
+        Map<String, Object> submitStatus = submitChecker.getCheckRet(businessId, serviceId, resourceCheckConfig);
 
         return ImmutableMap.of("descriptor_id", descriptorId,
                 "submit_status", submitStatus,
