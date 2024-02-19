@@ -1,14 +1,54 @@
 package com.weibo.rill.flow.service.context
 
+import com.alibaba.fastjson.JSONObject
+import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.service.dconfs.BizDConfs
+import com.weibo.rill.flow.service.trace.ContextTraceHook
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DAGContextInitializerTest extends Specification {
     DAGContextInitializer initializer = new DAGContextInitializer()
     BizDConfs bizDConfs = Mock(BizDConfs)
+    ContextTraceHook contextTraceHook = Mock(ContextTraceHook)
 
     def setup() {
         initializer.bizDConfs = bizDConfs
+        contextTraceHook.initialize(_) >> ['hello': 'world']
+    }
+
+    @Unroll
+    def "test newSubmitContextBuilder with data"() {
+        given:
+        bizDConfs.getRuntimeSubmitContextMaxSize() >> maxSize
+        expect:
+        result == initializer.newSubmitContextBuilder().withData(data).build()
+        where:
+        data                        | maxSize   | result
+        null                        | 1024      | [:]
+        new JSONObject(["a": 1])    | 1024      | ["a": 1]
+    }
+
+    @Unroll
+    def "test newSubmitContextBuilder with hooks"() {
+        given:
+        bizDConfs.getRuntimeSubmitContextMaxSize() >> maxSize
+        contextTraceHook.initialize(_) >> ['hello': 'world']
+        expect:
+        result == initializer.newSubmitContextBuilder().withData(data).withHooks([contextTraceHook]).build()
+        where:
+        data                        | maxSize   | result
+        new JSONObject(["a": 1])    | 1024      | ["hello": "world"]
+    }
+
+    @Unroll
+    def "test newSubmitContextBuilder throw exception"() {
+        given:
+        bizDConfs.getRuntimeSubmitContextMaxSize() >> 2
+        when:
+        initializer.newSubmitContextBuilder().withData(new JSONObject(["a": 1])).withHooks(null).build()
+        then:
+        thrown TaskException
     }
 
     def "test newSubmitContextBuilder"() {
