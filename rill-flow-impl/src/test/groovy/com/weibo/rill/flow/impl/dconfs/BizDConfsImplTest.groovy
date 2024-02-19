@@ -1,7 +1,6 @@
 package com.weibo.rill.flow.impl.dconfs
 
 import com.weibo.rill.flow.impl.configuration.TestConfig
-import com.weibo.rill.flow.service.dconfs.BizDConfs
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
@@ -10,25 +9,25 @@ import spock.lang.Specification
 class BizDConfsImplTest extends Specification {
 
     @Autowired
-    BizDConfs bizDConfs
+    BizDConfsImpl bizDConfsImpl
 
     def "test getRuntimeSubmitContextMaxSize"() {
         expect:
-        bizDConfs.getRuntimeSubmitContextMaxSize() == 1024
+        bizDConfsImpl.getRuntimeSubmitContextMaxSize() == 1024
     }
 
     def "test getRuntimeCallbackContextMaxSize"() {
         expect:
-        bizDConfs.getRuntimeCallbackContextMaxSize() == 2048
+        bizDConfsImpl.getRuntimeCallbackContextMaxSize() == 2048
     }
 
     def "test getRedisBusinessIdToRuntimeSubmitContextMaxSize"() {
         expect:
-        bizDConfs.getRedisBusinessIdToRuntimeSubmitContextMaxSize() == ['testBusiness01':4096, 'testBusiness02':8192]
+        bizDConfsImpl.getRedisBusinessIdToRuntimeSubmitContextMaxSize() == ['testBusiness01':4096, 'testBusiness02':8192]
     }
 
     def "test getRedisBusinessIdToRuntimeCallbackContextMaxSize"() {
         expect:
-        bizDConfs.getRedisBusinessIdToRuntimeCallbackContextMaxSize() == ['testBusiness01':3188, 'testBusiness02':9216]
+        bizDConfsImpl.getRedisBusinessIdToRuntimeCallbackContextMaxSize() == ['testBusiness01':3188, 'testBusiness02':9216]
     }
 }
