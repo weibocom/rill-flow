@@ -19,12 +19,12 @@ class OlympiceneFacadeTest extends Specification {
         facade.profileRecordService = profileRecordService
         facade.submitChecker = submitChecker
         facade.dagContextInitializer = dagContextInitializer
-        submitChecker.getCheckConfig(_) >> null
         dagContextInitializer.bizDConfs = bizDConfs
     }
 
     def "test submit exception by limit max context size"() {
         given:
+        submitChecker.getCheckConfig(_) >> null
         bizDConfs.getRuntimeSubmitContextMaxSize() >> 0
         when:
         facade.submit(1L, "testBusiness:testFeatureName", "testCallbackUrl", null, new JSONObject(["a": 1]), null)
