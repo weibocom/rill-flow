@@ -128,13 +128,6 @@ public class ExecutionIdUtil {
         return bucketName.replaceFirst(BUCKET_NAME_PREFIX, StringUtils.EMPTY);
     }
 
-    /**
-     * change descriptorId to businessId
-     */
-    public static String changeDescriptorIdToBusinessId(String descriptorId) {
-        return StringUtils.substringBefore(descriptorId, ReservedConstant.COLON);
-    }
-
     private ExecutionIdUtil() {
 
     }

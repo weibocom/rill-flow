@@ -27,9 +27,9 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
+import com.weibo.rill.flow.service.util.DescriptorIdUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,7 +91,7 @@ public class FlowController {
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            String businessId = ExecutionIdUtil.changeDescriptorIdToBusinessId(descriptorId);
+            String businessId = DescriptorIdUtil.changeDescriptorIdToBusinessId(descriptorId);
             Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return olympiceneFacade.submit(flowUser, descriptorId, context, callback, resourceCheckConfig);

@@ -53,6 +53,7 @@ import com.weibo.rill.flow.service.statistic.SystemMonitorStatistic;
 import com.weibo.rill.flow.service.storage.CustomizedStorage;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeStorage;
+import com.weibo.rill.flow.service.util.DescriptorIdUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -103,7 +104,7 @@ public class OlympiceneFacade {
     public Map<String, Object> submit(Long uid, String descriptorId, String callback, String resourceCheck, JSONObject data, String url) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = dagSubmitChecker.getCheckConfig(resourceCheck);
-            String businessId = ExecutionIdUtil.changeDescriptorIdToBusinessId(descriptorId);
+            String businessId = DescriptorIdUtil.changeDescriptorIdToBusinessId(descriptorId);
             Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return submit(uid, descriptorId, context, callback, resourceCheckConfig);
