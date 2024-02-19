@@ -2,6 +2,7 @@ package com.weibo.rill.flow.service.facade
 
 import com.alibaba.fastjson.JSONObject
 import com.weibo.rill.flow.common.exception.TaskException
+import com.weibo.rill.flow.common.model.User
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.traversal.Olympicene
@@ -43,6 +44,8 @@ class OlympiceneFacadeTest extends Specification {
         bizDConfs.getRuntimeSubmitContextMaxSize() >> 10240
         expect:
         facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
+        facade.submit(1L, "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
+        facade.submit(new FlowUser(1L), "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
     }
 
     def "test submit exception by limit max context size"() {
@@ -52,5 +55,18 @@ class OlympiceneFacadeTest extends Specification {
         facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
         then:
         thrown TaskException
+    }
+
+    class FlowUser implements User {
+        private Long uid
+
+        FlowUser(Long uid) {
+            this.uid = uid
+        }
+
+        @Override
+        long getUid() {
+            return uid
+        }
     }
 }
