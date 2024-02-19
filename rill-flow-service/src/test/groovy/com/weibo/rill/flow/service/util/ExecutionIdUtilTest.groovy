@@ -1,11 +1,12 @@
-package com.weibo.rill.flow.service.manager
+package com.weibo.rill.flow.service.util
+
 
 import spock.lang.Specification
 
-class DescriptorManagerTest extends Specification {
+class ExecutionIdUtilTest extends Specification {
     def "ChangeDescriptorIdToBusinessId"() {
         expect:
-        DescriptorManager.changeDescriptorIdToBusinessId(descriptorId) == businessId
+        ExecutionIdUtil.changeDescriptorIdToBusinessId(descriptorId) == businessId
         where:
         descriptorId                 | businessId
         "business"                   | "business"

@@ -25,8 +25,8 @@ import com.weibo.rill.flow.impl.model.FlowUser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
+import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import com.weibo.rill.flow.trigger.util.TriggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -193,7 +193,7 @@ public class KafkaTrigger implements Trigger {
                     log.info("kafka trigger consume, topic: {}, descriptor_id: {}, message: {}", topic, descriptorId, message);
                     JSONObject context = JSON.parseObject(message);
                     ResourceCheckConfig resourceCheckConfig = JSON.parseObject(resourceCheck, ResourceCheckConfig.class);
-                    String businessId = DescriptorManager.changeDescriptorIdToBusinessId(descriptorId);
+                    String businessId = ExecutionIdUtil.changeDescriptorIdToBusinessId(descriptorId);
                     Map<String, Object> contextMap = dagContextInitializer.newSubmitContextBuilder(businessId).withData(context).withIdentity(descriptorId).build();
 
                     Map<String, Object> result = olympiceneFacade.submit(new FlowUser(uid), descriptorId, contextMap, callback, resourceCheckConfig);

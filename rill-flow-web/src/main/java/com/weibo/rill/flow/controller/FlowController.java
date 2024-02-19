@@ -91,7 +91,7 @@ public class FlowController {
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            String businessId = DescriptorManager.changeDescriptorIdToBusinessId(descriptorId);
+            String businessId = ExecutionIdUtil.changeDescriptorIdToBusinessId(descriptorId);
             Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return olympiceneFacade.submit(flowUser, descriptorId, context, callback, resourceCheckConfig);
