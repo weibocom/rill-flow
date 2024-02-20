@@ -276,6 +276,7 @@ class OlympiceneFacadeTest extends Specification {
         dagResourceStatistic.updateUrlTypeResourceStatus(*_) >> null
         expect:
         ["ret": "ok"] == facade.storeAndNotify("testBucketName", null, "testName", new JSONObject(["passthrough": ["task_name": "testTask"], "result_type": "SUCCESS"]).toJSONString())
+        ["ret": "ok"] == facade.storeAndNotify("testBucketName", null, null, new JSONObject(["passthrough": ["task_name": "testTask"], "result_type": "SUCCESS"]).toJSONString())
     }
 
     def "test storeAndNotify to suspense"() {
