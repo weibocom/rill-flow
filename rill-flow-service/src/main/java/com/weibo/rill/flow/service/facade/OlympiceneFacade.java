@@ -239,7 +239,10 @@ public class OlympiceneFacade {
             baseTask = tasks.stream()
                     .filter(task -> baseName.equals(task.getName()))
                     .findFirst()
-                    .orElseThrow(() -> new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "can not find base task: " + baseName));
+                    .orElse(null);
+            if (baseTask == null) {
+                break;
+            }
             tasks = baseTask.subTasks();
         }
         if (baseTask == null) {
