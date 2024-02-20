@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage  -DskipITs=false -Dmaven.test.skip=false -Dsonar.projectKey=weibocom_rill-flow -Dsonar.coverage.jacoco.xmlReportPaths=${project.build.directory}/site/jacoco/jacoco.xml
+        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage  -DskipITs=false -Dmaven.test.skip=false -Dsonar.projectKey=weibocom_rill-flow -Dsonar.coverage.jacoco.xmlReportPaths=${project.buildDir}/reports/jacoco.xml
         if: env.SONAR_TOKEN != ''
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
