@@ -118,6 +118,22 @@ class OlympiceneFacadeTest extends Specification {
         thrown DAGTraversalException
     }
 
+    def "test getExecutionIdsForBg"() {
+        given:
+        Pair<String, String> pair1 = new ImmutablePair<String, String>("testExecutionId1", "123")
+        Pair<String, String> pair2 = new ImmutablePair<String, String>("testExecutionId2", "456")
+        systemMonitorStatistic.getExecutionIdsByStatus(*_) >> [pair1]
+        systemMonitorStatistic.getExecutionIdsByCode(*_) >> [pair2]
+        when:
+        var result1 = facade.getExecutionIdsForBg("testBusiness:testService", DAGStatus.RUNNING, null, 0L, 0, 1)
+        var result2 = facade.getExecutionIdsForBg("testBusiness:testService", DAGStatus.RUNNING, "0", 0L, 0, 1)
+        then:
+        result1.get("execution_ids") == [["execution_id": "testExecutionId1", "submit_time": 123L]]
+        result1.get("type") == "running"
+        result2.get("execution_ids") == [["execution_id": "testExecutionId2", "submit_time": 456L]]
+        result2.get("type") == "0"
+    }
+
     def "test redo when dag can be found in long term storage"() {
         given:
         olympicene.redo(*_) >> null
