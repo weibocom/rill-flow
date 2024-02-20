@@ -80,4 +80,9 @@ class BizDConfsImplTest extends Specification {
         expect:
         bizDConfsImpl.getRuntimeRedisStorageIdToMaxUsage() == ['testRedisClient':85]
     }
+
+    def "test runtimeRedisDefaultStorageMaxUsage"() {
+        expect:
+        bizDConfsImpl.getRuntimeRedisDefaultStorageMaxUsage() == 85
+    }
 }
