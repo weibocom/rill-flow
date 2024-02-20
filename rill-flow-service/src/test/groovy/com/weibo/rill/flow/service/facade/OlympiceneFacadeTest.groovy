@@ -210,6 +210,7 @@ class OlympiceneFacadeTest extends Specification {
         systemMonitorStatistic.getExecutionCountByCode(*_) >> ["code": "hello"]
         expect:
         ["code": ["code": "hello"], "dag": ["dag": "world"], "collect_time": 315L] == facade.getExecutionCount("testBusiness:testService", DAGStatus.SUCCEED, "0", 0, 100)
+        ["code": ["code": "hello"], "dag": ["dag": "world"], "collect_time": 315L] == facade.getExecutionCount("testBusiness:testService", null, null, 0, 100)
     }
 
     def "test getExecutionIds by status"() {
