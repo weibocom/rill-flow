@@ -70,10 +70,12 @@ class OlympiceneFacadeTest extends Specification {
     def "test submit"() {
         given:
         bizDConfs.getRuntimeSubmitContextMaxSize() >> 10240
+        User user = Mock(User)
+        user.getUid() >> 1L
         expect:
         facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
         facade.submit(1L, "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
-        facade.submit(new FlowUser(1L), "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
+        facade.submit(user, "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
     }
 
     def "test submit exception by limit max context size"() {
@@ -319,18 +321,5 @@ class OlympiceneFacadeTest extends Specification {
         expect:
         ["ret": true] == facade.remove("testBucketName")
         ["ret": true] == facade.remove("testBucketName", ["testField"])
-    }
-
-    class FlowUser implements User {
-        private Long uid
-
-        FlowUser(Long uid) {
-            this.uid = uid
-        }
-
-        @Override
-        long getUid() {
-            return uid
-        }
     }
 }
