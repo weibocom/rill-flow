@@ -144,6 +144,14 @@ class OlympiceneFacadeTest extends Specification {
         facade.multiRedo("testBusiness:testService", DAGStatus.FAILED, "0", 0L, 1, ["testTaskName"], 5)
     }
 
+    def "test businessHeapMonitor"() {
+        given:
+        JSONObject result = new JSONObject(["a": 1])
+        systemMonitorStatistic.businessHeapMonitor(*_) >> result
+        expect:
+        facade.businessHeapMonitor(["testBusiness:testService"], 0, 100) == result
+    }
+
     class FlowUser implements User {
         private Long uid
 
