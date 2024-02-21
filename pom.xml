@@ -870,12 +870,13 @@
                     </execution>
                     <execution>
                         <id>report</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
                         <configuration>
                             <dataFile>target/jacoco.exec</dataFile>
-                            <outputDirectory>target/jacoco-ut</outputDirectory>
+                            <outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
