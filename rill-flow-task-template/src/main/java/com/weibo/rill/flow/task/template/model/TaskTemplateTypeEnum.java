@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.olympicene.storage.dao.model;
+package com.weibo.rill.flow.task.template.model;
 
 import lombok.Getter;
 

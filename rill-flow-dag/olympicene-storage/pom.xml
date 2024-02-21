@@ -39,28 +39,12 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>6.0.6</version>
-        </dependency>
-        <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
         </dependency>
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>olympicene-ddl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis-spring</artifactId>
-            <version>2.0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.5.7</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

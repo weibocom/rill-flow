@@ -14,17 +14,18 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.facade;
+package com.weibo.rill.flow.impl.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.weibo.rill.flow.olympicene.storage.dao.mapper.TaskTemplateDAO;
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateDO;
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateParams;
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateTypeEnum;
+import com.weibo.rill.flow.task.template.dao.mapper.TaskTemplateDAO;
+import com.weibo.rill.flow.task.template.dao.model.TaskTemplateDO;
+import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
+import com.weibo.rill.flow.task.template.model.TaskTemplateTypeEnum;
 import com.weibo.rill.flow.olympicene.traversal.runners.AbstractTaskRunner;
-import com.weibo.rill.flow.service.model.MetaData;
-import com.weibo.rill.flow.service.model.TaskTemplate;
+import com.weibo.rill.flow.task.template.model.MetaData;
+import com.weibo.rill.flow.task.template.model.TaskTemplate;
+import com.weibo.rill.flow.task.template.service.TaskTemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class TaskTemplateFacade {
+public class TaskTemplateServiceImpl implements TaskTemplateService {
     @Autowired
     private Map<String, AbstractTaskRunner> taskRunnerMap;
     @Autowired

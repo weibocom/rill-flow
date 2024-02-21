@@ -29,7 +29,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication(scanBasePackages = {"com.weibo.rill.flow"}, exclude = {DataSourceAutoConfiguration.class})
 @ImportResource({"classpath:spring/web.xml"})
 @EnableAsync
-@MapperScan("com.weibo.rill.flow.olympicene.storage.dao.mapper")
+@MapperScan("com.weibo.rill.flow.task.template.dao.mapper")
 @Import(OlympiceneConfiguration.class)
 public class WebStarter extends SpringBootServletInitializer {
     public static void main(String[] args) {

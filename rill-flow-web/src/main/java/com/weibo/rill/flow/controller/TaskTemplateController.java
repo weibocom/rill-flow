@@ -19,9 +19,9 @@ package com.weibo.rill.flow.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.common.model.User;
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateParams;
-import com.weibo.rill.flow.service.facade.TaskTemplateFacade;
-import com.weibo.rill.flow.service.model.TaskTemplate;
+import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
+import com.weibo.rill.flow.task.template.service.TaskTemplateService;
+import com.weibo.rill.flow.task.template.model.TaskTemplate;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -36,12 +36,12 @@ import java.util.Map;
 @RequestMapping("/template")
 public class TaskTemplateController {
     @Autowired
-    private TaskTemplateFacade taskTemplateFacade;
+    private TaskTemplateService taskTemplateService;
 
     @ApiOperation("查询元数据列表")
     @RequestMapping(value = "get_meta_data_list.json", method = RequestMethod.GET)
     public JSONObject getMetaDataList(User flowUser) {
-        JSONArray metaDataList = taskTemplateFacade.getTaskMetaDataList();
+        JSONArray metaDataList = taskTemplateService.getTaskMetaDataList();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", metaDataList);
         return jsonObject;
@@ -59,7 +59,7 @@ public class TaskTemplateController {
                                        @ApiParam(value = "节点类型") @RequestParam(value = "node_type", required = false) String nodeType,
                                        @ApiParam(value = "是否启用") @RequestParam(value = "enable", required = false) Integer enable) {
         TaskTemplateParams params = TaskTemplateParams.builder().id(id).name(name).category(category).type(type).nodeType(nodeType).enable(enable).build();
-        List<TaskTemplate> taskTemplatePageInfo = taskTemplateFacade.getTaskTemplates(params, page, pageSize);
+        List<TaskTemplate> taskTemplatePageInfo = taskTemplateService.getTaskTemplates(params, page, pageSize);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", taskTemplatePageInfo);
         return jsonObject;
@@ -68,28 +68,28 @@ public class TaskTemplateController {
     @ApiOperation("禁用模板接口")
     @PostMapping("disable_task_template.json")
     public JSONObject deleteTaskTemplate(User user, @ApiParam(value = "任务模板id") @RequestParam(value = "id") Long id) {
-        int num = taskTemplateFacade.disableTaskTemplate(id);
+        int num = taskTemplateService.disableTaskTemplate(id);
         return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 
     @ApiOperation("启用模板接口")
     @PostMapping("enable_task_template.json")
     public JSONObject enableTaskTemplateFacade(User user, @ApiParam(value = "任务模板id") @RequestParam(value = "id") Long id) {
-        int num = taskTemplateFacade.enableTaskTemplate(id);
+        int num = taskTemplateService.enableTaskTemplate(id);
         return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 
     @ApiOperation("插入模板接口")
     @RequestMapping(value = "create_task_template.json", method = RequestMethod.POST)
     public JSONObject createTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestBody() JSONObject taskTemplate) {
-        long id = taskTemplateFacade.createTaskTemplate(taskTemplate);
+        long id = taskTemplateService.createTaskTemplate(taskTemplate);
         return new JSONObject(Map.of("code", 0, "data", Map.of("id", id)));
     }
 
     @ApiOperation("更新模板接口")
     @RequestMapping(value = "update_task_template.json", method = RequestMethod.POST)
     public JSONObject updateTaskTemplate(User user, @ApiParam(value = "任务模板对象") @RequestBody() JSONObject taskTemplate) {
-        int num = taskTemplateFacade.updateTaskTemplate(taskTemplate);
+        int num = taskTemplateService.updateTaskTemplate(taskTemplate);
         return new JSONObject(Map.of("code", num > 0? 0: 1));
     }
 }

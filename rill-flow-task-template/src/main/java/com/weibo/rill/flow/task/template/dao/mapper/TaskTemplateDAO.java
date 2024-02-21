@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.olympicene.storage.dao.mapper;
+package com.weibo.rill.flow.task.template.dao.mapper;
 
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateDO;
-import com.weibo.rill.flow.olympicene.storage.dao.model.TaskTemplateParams;
-import com.weibo.rill.flow.olympicene.storage.dao.provider.TaskTemplateProvider;
+import com.weibo.rill.flow.task.template.dao.model.TaskTemplateDO;
+import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
+import com.weibo.rill.flow.task.template.dao.provider.TaskTemplateProvider;
 import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;

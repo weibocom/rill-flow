@@ -1,4 +1,4 @@
-package com.weibo.rill.flow.service.model;
+package com.weibo.rill.flow.task.template.model;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;

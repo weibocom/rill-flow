@@ -35,21 +35,16 @@
             <artifactId>rill-flow-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.weibo</groupId>
+            <artifactId>rill-flow-task-template</artifactId>
+        </dependency>
+        <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>c3p0</groupId>-->
-<!--            <artifactId>c3p0</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.5.7</version>
         </dependency>
     </dependencies>
     <build>

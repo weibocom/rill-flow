@@ -14,27 +14,23 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.olympicene.storage.dao.model;
+package com.weibo.rill.flow.task.template.dao.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-/**
- * 作为查询 TaskTemplateDO 时的参数
- */
-@NoArgsConstructor
-@AllArgsConstructor
+import java.util.Date;
+
 @Data
-@Builder
-public class TaskTemplateParams {
+public class TaskTemplateDO {
     private Long id;
     private String name;
+    private Integer type; // 模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板
     private String category;
-    private Integer type;
-    private String nodeType;
+    private String icon;
+    private String taskYaml;
+    private String schema;
     private Integer enable;
-    private int offset;
-    private int limit;
+    private String output;
+    private Date createTime;
+    private Date updateTime;
 }

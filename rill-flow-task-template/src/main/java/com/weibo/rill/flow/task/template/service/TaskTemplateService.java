@@ -14,23 +14,20 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.olympicene.storage.dao.model;
+package com.weibo.rill.flow.task.template.service;
 
-import lombok.Data;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
+import com.weibo.rill.flow.task.template.model.TaskTemplate;
 
-import java.util.Date;
+import java.util.List;
 
-@Data
-public class TaskTemplateDO {
-    private Long id;
-    private String name;
-    private Integer type; // 模板类型，0. 函数模板，1. 插件模板，2. 逻辑模板
-    private String category;
-    private String icon;
-    private String taskYaml;
-    private String schema;
-    private Integer enable;
-    private String output;
-    private Date createTime;
-    private Date updateTime;
+public interface TaskTemplateService {
+    JSONArray getTaskMetaDataList();
+    List<TaskTemplate> getTaskTemplates(TaskTemplateParams params, int page, int pageSize);
+    long createTaskTemplate(JSONObject taskTemplate);
+    int updateTaskTemplate(JSONObject taskTemplate);
+    int disableTaskTemplate(Long id);
+    int enableTaskTemplate(Long id);
 }
