@@ -20,7 +20,7 @@ class DAGWalkHelperTest extends Specification {
 
     def "task status of parent task should be correct"() {
         given:
-        ForeachTask baseTask = new ForeachTask('base_1', TaskCategory.FOREACH.getValue(), null, null, null, null, null, null, null, null, null, false, null, null)
+        ForeachTask baseTask = new ForeachTask('base_1', TaskCategory.FOREACH.getValue(), null, null, null, null, null, null, null, null, null, false, null, null, null)
 
         TaskInfo parentTask = new TaskInfo(name: 'parent',
                 task: baseTask,
