@@ -1,0 +1,73 @@
+version: 0.0.1
+type: flow
+workspace: rillFlow
+dagName: digitalHuman
+tasks:
+  - category: function
+    name: textGatherer
+    pattern: task_async
+    resourceName: http://<textGatherer-executor-host>:9000/scrape
+    inputMappings:
+      - target: $.input.paragraph_limit
+        source: $.context.paragraph_limit
+    outputMappings:
+      - target: $.context.text_array
+        source: $.output.text_array
+    next: generateLoop
+  - category: foreach
+    name: generateLoop
+    iterationMapping:
+      collection: $.input.text_array
+      item: text
+    inputMappings:
+      - target: $.input.text_array
+        source: $.context.text_array
+    outputMappings:
+      - target: $.context.segments
+        source: $.output.sub_context.[*].segment
+    next: processor
+    tasks:
+      - category: function
+        name: bark
+        pattern: task_async
+        resourceName: http://<bark-executor-host>:9001/bark/generate
+        inputMappings:
+          - source: $.context.text
+            target: $.input.text
+        outputMappings:
+          - source: $.output.audio_path
+            target: $.context.audio_path
+        next: wav2lip
+      - category: function
+        name: wav2lip
+        pattern: task_async
+        resourceName: http://<wav2lip-executor-host>:9002/wav2lip/generate
+        inputMappings:
+          - source: $.context.audio_path
+            target: $.input.audio_path
+        outputMappings:
+          - source: $.output.video_path
+            target: $.context.video_path
+        next: subtitles
+      - category: function
+        name: subtitles
+        pattern: task_async
+        resourceName: http://<moviepy-executor-host>:9003/moviepy/subtitles
+        inputMappings:
+          - source: $.context.text
+            target: $.input.text
+          - source: $.context.video_path
+            target: $.input.video_path
+        outputMappings:
+          - source: $.output.segment
+            target: $.context.segment
+  - category: function
+    name: processor
+    pattern: task_async
+    resourceName: http://<moviepy-executor-host>:9003/moviepy/concatenate
+    inputMappings:
+      - source: $.context.segments
+        target: $.input.segments
+    outputMappings:
+      - source: $.output.result_video_path
+        target: $.context.result_video_path
