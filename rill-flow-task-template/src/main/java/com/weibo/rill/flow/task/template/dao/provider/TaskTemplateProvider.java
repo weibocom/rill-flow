@@ -32,19 +32,17 @@ public class TaskTemplateProvider {
 
     @ResultType(Integer.class)
     public String insert(TaskTemplateDO taskTemplateDO) {
-        SQL sql = new SQL() {
-            {
-                INSERT_INTO(TABLE_NAME);
-                for (String column : COLUMNS) {
-                    if (!column.equals("id")) {
-                        VALUES("`" + column + "`", "#{" + castUnderlineToCamel(column) + "}");
-                    }
-                    if (Arrays.asList("create_time", "update_time").contains(column)) {
-                        SET("`" + column + "` = now()");
-                    }
+        SQL sql = new SQL() {{
+            INSERT_INTO(TABLE_NAME);
+            for (String column : COLUMNS) {
+                if (!column.equals("id")) {
+                    VALUES("`" + column + "`", "#{" + castUnderlineToCamel(column) + "}");
+                }
+                if (Arrays.asList("create_time", "update_time").contains(column)) {
+                    SET("`" + column + "` = now()");
                 }
             }
-        };
+        }};
         return sql.toString();
     }
 
@@ -56,28 +54,26 @@ public class TaskTemplateProvider {
         if (taskTemplateDO.getId() == null) {
             throw new RuntimeException("id cannot be null when update task template");
         }
-        SQL sql = new SQL() {
-            {
-                UPDATE(TABLE_NAME);
-                Field[] fields = taskTemplateDO.getClass().getDeclaredFields();
-                for (Field field : fields) {
-                    String fieldName = field.getName();
-                    if (fieldName.equals("id")) {
-                        continue;
-                    }
-                    try {
-                        field.setAccessible(true);
-                        Object value = field.get(taskTemplateDO);
-                        if (value != null) {
-                            SET("`" + castCamelToUnderline(fieldName) + "` = #{" + fieldName + "}");
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException("get field value failed");
-                    }
+        SQL sql = new SQL() {{
+            UPDATE(TABLE_NAME);
+            Field[] fields = taskTemplateDO.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                if (fieldName.equals("id")) {
+                    continue;
                 }
-                WHERE("id = #{id}");
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(taskTemplateDO);
+                    if (value != null) {
+                        SET("`" + castCamelToUnderline(fieldName) + "` = #{" + fieldName + "}");
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("get field value failed");
+                }
             }
-        };
+            WHERE("id = #{id}");
+        }};
         return sql.toString();
     }
 
@@ -88,30 +84,28 @@ public class TaskTemplateProvider {
      */
     @ResultType(TaskTemplateDO.class)
     public String getTaskTemplateList(TaskTemplateParams params) {
-        SQL sql = new SQL() {
-            {
-                SELECT("`" + String.join("`,`", COLUMNS) + "`");
-                FROM(TABLE_NAME);
-                if (params.getId() != null) {
-                    WHERE("`id` = #{id}");
-                }
-                if (params.getType() != null) {
-                    WHERE("`type` = #{type}");
-                }
-                if (params.getName() != null) {
-                    WHERE("`name` like '%' #{name} '%'");
-                }
-                if (params.getCategory() != null) {
-                    WHERE("`category` = #{category}");
-                }
-                if (params.getEnable() != null) {
-                    WHERE("`enable` = #{enable}");
-                }
-                OFFSET(params.getOffset());
-                LIMIT(params.getLimit());
-                ORDER_BY("`id` asc");
+        SQL sql = new SQL() {{
+            SELECT("`" + String.join("`,`", COLUMNS) + "`");
+            FROM(TABLE_NAME);
+            if (params.getId() != null) {
+                WHERE("`id` = #{id}");
             }
-        };
+            if (params.getType() != null) {
+                WHERE("`type` = #{type}");
+            }
+            if (params.getName() != null) {
+                WHERE("`name` like '%' #{name} '%'");
+            }
+            if (params.getCategory() != null) {
+                WHERE("`category` = #{category}");
+            }
+            if (params.getEnable() != null) {
+                WHERE("`enable` = #{enable}");
+            }
+            OFFSET(params.getOffset());
+            LIMIT(params.getLimit());
+            ORDER_BY("`id` asc");
+        }};
         return sql.toString();
     }
 
@@ -123,13 +117,11 @@ public class TaskTemplateProvider {
      */
     @ResultType(Integer.class)
     public String disable(Long id) {
-        SQL sql = new SQL() {
-            {
-                UPDATE(TABLE_NAME);
-                SET("`enable` = 0");
-                WHERE("`id` = #{id}");
-            }
-        };
+        SQL sql = new SQL() {{
+            UPDATE(TABLE_NAME);
+            SET("`enable` = 0");
+            WHERE("`id` = #{id}");
+        }};
         return sql.toString();
     }
 
@@ -140,13 +132,11 @@ public class TaskTemplateProvider {
      */
     @ResultType(Integer.class)
     public String enable(Long id) {
-        SQL sql = new SQL() {
-            {
-                UPDATE(TABLE_NAME);
-                SET("`enable` = 1");
-                WHERE("`id` = #{id}");
-            }
-        };
+        SQL sql = new SQL() {{
+            UPDATE(TABLE_NAME);
+            SET("`enable` = 1");
+            WHERE("`id` = #{id}");
+        }};
         return sql.toString();
     }
 
