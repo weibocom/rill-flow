@@ -67,8 +67,8 @@ class TaskTemplateProviderTest extends Specification {
         then:
         sql == "SELECT `id`,`name`,`type`,`category`,`icon`,`task_yaml`,`schema`,`output`,`enable`,`create_time`,`update_time`\n" +
                 "FROM task_template\n" +
-                "WHERE (`type` = #{type} AND `category` = #{category})\n" +
-                "ORDER BY `id` asc LIMIT 0 OFFSET 0"
+                "WHERE (`id` = #{id} AND `type` = #{type} AND `name` like '%' #{name} '%' AND `category` = #{category} AND `enable` = #{enable})\n" +
+                "ORDER BY `id` asc LIMIT 10 OFFSET 0"
     }
 
     def "test getTaskTemplateList by default"() {
