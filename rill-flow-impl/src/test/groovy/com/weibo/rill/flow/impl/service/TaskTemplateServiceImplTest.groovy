@@ -106,6 +106,10 @@ class TaskTemplateServiceImplTest extends Specification {
         TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
         taskTemplateDO.setCategory("function")
         taskTemplateDO.setName("function template")
+        taskTemplateDO.setIcon("function template base64 icon code")
+        taskTemplateDO.setSchema("{}")
+        taskTemplateDO.setOutput("{}")
+        taskTemplateDO.setTaskYaml("resourceName: function_template")
         taskTemplateDO.setEnable(1)
         taskTemplateDO.setType(0)
         taskTemplateDO.setCreateTime(new Date())
@@ -113,6 +117,27 @@ class TaskTemplateServiceImplTest extends Specification {
         taskTemplateDAO.insert(_) >> 5L
         expect:
         5L == taskTemplateService.createTaskTemplate(JSON.toJSON(taskTemplateDO) as JSONObject)
+    }
+
+    def "test createTaskTemplate by setting default values"() {
+        given:
+        TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
+        taskTemplateDO.setCategory("function")
+        taskTemplateDO.setName("function template")
+        taskTemplateDO.setEnable(1)
+        taskTemplateDO.setType(0)
+        taskTemplateDO.setCreateTime(new Date())
+        taskTemplateDO.setUpdateTime(new Date())
+        taskTemplateDAO.insert(_) >> 5L
+        expect:
+        5L == taskTemplateService.createTaskTemplate(JSON.toJSON(taskTemplateDO) as JSONObject)
+    }
+
+    def "test createTaskTemplate with exception"() {
+        when:
+        taskTemplateService.createTaskTemplate(new JSONObject(["hello": "world"]))
+        then:
+        thrown Exception
     }
 
     def "test updateTaskTemplate without id"() {
@@ -126,6 +151,13 @@ class TaskTemplateServiceImplTest extends Specification {
         taskTemplateDO.setUpdateTime(new Date())
         when:
         taskTemplateService.updateTaskTemplate(JSON.toJSON(taskTemplateDO) as JSONObject)
+        then:
+        thrown IllegalArgumentException
+    }
+
+    def "test updateTaskTemplate when input cannot be parsed"() {
+        when:
+        taskTemplateService.updateTaskTemplate(new JSONObject(["hello": "world"]))
         then:
         thrown IllegalArgumentException
     }
