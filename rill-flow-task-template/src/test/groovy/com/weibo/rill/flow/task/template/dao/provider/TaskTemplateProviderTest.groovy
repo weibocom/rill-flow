@@ -33,11 +33,12 @@ class TaskTemplateProviderTest extends Specification {
         taskTemplateDO.setCategory("function")
         taskTemplateDO.setId(1L)
         taskTemplateDO.setType(0)
+        taskTemplateDO.setTaskYaml("{}")
         when:
         String sql = provider.update(taskTemplateDO)
         then:
         sql == "UPDATE task_template\n" +
-                "SET `type` = #{type}, `category` = #{category}\n" +
+                "SET `type` = #{type}, `category` = #{category}, `task_yaml` = #{taskYaml}\n" +
                 "WHERE (id = #{id})"
     }
 
