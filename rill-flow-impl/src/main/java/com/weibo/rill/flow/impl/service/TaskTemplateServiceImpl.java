@@ -176,7 +176,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     public long createTaskTemplate(JSONObject taskTemplate) {
         try {
             TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate.toJSONString(), TaskTemplateDO.class);
-            if (taskTemplateDO == null) {
+            if (taskTemplateDO == null || taskTemplateDO.getName() == null || taskTemplateDO.getType() == null) {
                 throw new IllegalArgumentException("task_template can't be null");
             }
             // set default value if field is null
