@@ -103,18 +103,17 @@ async def sub_callback_api(request: Request):
 
 @app.post('/choice.json')
 async def choice_api(request: Request):
-    body_raw = {}
     try:
-        body_raw = await request.json()
-        logging.info("header:%s, request body:%s", request.headers.items(), body_raw)
-        if len(body_raw) == 0:
-            return {"result_type": "FAILED", "error_msg": "body is empty"}
+        input_num = int(request.query_params.get("input_num"))
+        logging.info("header:%s, query_params:%s", request.headers.items(), request.query_params)
+        if not isinstance(input_num, int):
+            return {"result_type": "FAILED", "error_msg": "input_num is null"}
         total = 0
-        for i in range(body_raw["input_num"]):
+        for i in range(input_num):
             total += i * i
         return {"sum": total}
     except Exception as e:
-        logging.error("choice processing failed. request body:%s", body_raw, e)
+        logging.error("choice processing failed. request params:%s", request.query_params, e)
         return {"result_type": "FAILED", "error_msg": "choice processing failed"}
 
 
