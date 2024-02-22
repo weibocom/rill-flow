@@ -127,9 +127,6 @@ public class TaskTemplateProvider {
 
     private String castUnderlineToCamel(String underscoreName) {
         StringBuilder result = new StringBuilder();
-        if (underscoreName == null || underscoreName.isEmpty()) {
-            return "";
-        }
         boolean flag = false;
         for (int i = 0; i < underscoreName.length(); i++) {
             char ch = underscoreName.charAt(i);
@@ -150,10 +147,6 @@ public class TaskTemplateProvider {
      */
     private String castCamelToUnderline(String camelCase) {
         StringBuilder result = new StringBuilder();
-        if (camelCase == null || camelCase.isEmpty()) {
-            return "";
-        }
-
         for (int i = 0; i < camelCase.length(); i++) {
             char currentChar = camelCase.charAt(i);
 
