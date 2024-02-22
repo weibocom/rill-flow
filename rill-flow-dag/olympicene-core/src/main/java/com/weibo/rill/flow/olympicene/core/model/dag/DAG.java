@@ -47,6 +47,7 @@ public class DAG {
     private Map<String, String> defaultContext;
     @Setter
     private Map<String, List<Mapping>> commonMapping;
+    private String inputSchema;
 
     @JsonCreator
     public DAG(@JsonProperty("workspace") String workspace,
@@ -60,7 +61,8 @@ public class DAG {
                @JsonProperty("defaultContext") Map<String, String> defaultContext,
                @JsonProperty("commonMapping") Map<String, List<Mapping>> commonMapping,
                @JsonProperty("namespace") String namespace,
-               @JsonProperty("service") String service) {
+               @JsonProperty("service") String service,
+               @JsonProperty("inputSchema") String inputSchema) {
         this.workspace = StringUtils.isBlank(workspace) ? namespace : workspace;
         this.dagName = StringUtils.isBlank(dagName) ? service : dagName;
         this.version = version;
@@ -71,5 +73,6 @@ public class DAG {
         this.callbackConfig = callbackConfig;
         this.defaultContext = defaultContext;
         this.commonMapping = commonMapping;
+        this.inputSchema = inputSchema;
     }
 }
