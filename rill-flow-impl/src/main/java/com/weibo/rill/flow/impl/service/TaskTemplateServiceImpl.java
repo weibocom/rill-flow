@@ -44,6 +44,10 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     @Autowired
     private TaskTemplateDAO taskTemplateDAO;
 
+    private final static int minPage = 1;
+    private final static int minPageSize = 10;
+    private final static int maxPageSize = 50;
+
     public JSONArray getTaskMetaDataList() {
         JSONArray metaDataList = new JSONArray();
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
@@ -61,11 +65,11 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     }
 
     public List<TaskTemplate> getTaskTemplates(TaskTemplateParams params, int page, int pageSize) {
-        if (page <= 0) {
-            page = 1;
+        if (page < minPage) {
+            page = minPage;
         }
-        if (pageSize < 10 || pageSize > 50) {
-            pageSize = 10;
+        if (pageSize < minPageSize || pageSize > maxPageSize) {
+            pageSize = minPageSize;
         }
 
         // 已展示元素数量
