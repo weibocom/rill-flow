@@ -55,6 +55,12 @@ public class BizDConfsImpl implements BizDConfs {
     @Value("#{${weibo.flow.runtime.redis.storage.business.id.to.context.max.length:{:}}}")
     private Map<String, Integer> redisBusinessIdToContextMaxLength;
 
+    @Value("#{${weibo.flow.business.id.to.runtime.submit.context.max.size:{:}}}")
+    private Map<String, Integer> redisBusinessIdToRuntimeSubmitContextMaxSize;
+
+    @Value("#{${weibo.flow.business.id.to.runtime.callback.context.max.size:{:}}}")
+    private Map<String, Integer> redisBusinessIdToRuntimeCallbackContextMaxSize;
+
     @Value("#{${weibo.flow.runtime.redis.storage.business.id.to.dag.info.max.length:{:}}}")
     private Map<String, Integer> redisBusinessIdToDAGInfoMaxLength;
 
