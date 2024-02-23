@@ -113,6 +113,9 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
                             header.putAll((Map<String, String>) value);
                             functionInput.remove("header");
                             break;
+                        case "body":
+                            body.putAll((Map<String, Object>) value);
+                            functionInput.remove("body");
                         default:
                             functionInput.putAll((Map<String, Object>) value);
                             break;

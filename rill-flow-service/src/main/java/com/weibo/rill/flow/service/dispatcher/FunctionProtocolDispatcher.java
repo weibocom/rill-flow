@@ -29,8 +29,11 @@ import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -64,9 +67,25 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             HttpMethod method = Optional.ofNullable(requestType).map(String::toUpperCase).map(HttpMethod::resolve).orElse(HttpMethod.POST);
-            Map<String, Object> body = method != HttpMethod.POST ? null : requestParams.getBody();
+            Object body = null;
+            if (method == HttpMethod.POST) {
+                boolean isApplicationFormUrlencodedValue = Optional.ofNullable(header.get(HttpHeaders.CONTENT_TYPE))
+                        .map(it -> it.contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                        .isPresent();
+                if (isApplicationFormUrlencodedValue) {
+                    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+                    requestParams.getBody().forEach((key, value) -> {
+                        if (value instanceof String) {
+                            params.add(key, (String) value);
+                        }
+                    });
+                    body = params;
+                } else {
+                    body = requestParams.getBody();
+                }
+            }
 
-            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, header);
+            HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
             String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, method, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
