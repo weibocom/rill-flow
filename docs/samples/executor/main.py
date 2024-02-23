@@ -1,12 +1,12 @@
 # coding:utf-8
 import asyncio
 import json
+import logging
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
-from fastapi import FastAPI, Request
 import uvicorn
-from concurrent.futures import ThreadPoolExecutor
-import logging
+from fastapi import FastAPI, Request
 
 file_directory = "/data1/executor/src/"
 
@@ -103,17 +103,18 @@ async def sub_callback_api(request: Request):
 
 @app.post('/choice.json')
 async def choice_api(request: Request):
+    body_raw = {}
     try:
-        input_num = int(request.query_params.get("input_num"))
-        logging.info("header:%s, query_params:%s", request.headers.items(), request.query_params)
-        if not isinstance(input_num, int):
-            return {"result_type": "FAILED", "error_msg": "input_num is null"}
+        body_raw = await request.json()
+        logging.info("header:%s, request body:%s", request.headers.items(), body_raw)
+        if len(body_raw) == 0:
+            return {"result_type": "FAILED", "error_msg": "body is empty"}
         total = 0
-        for i in range(input_num):
+        for i in range(body_raw["input_num"]):
             total += i * i
         return {"sum": total}
     except Exception as e:
-        logging.error("choice processing failed. request params:%s", request.query_params, e)
+        logging.error("choice processing failed. request body:%s", body_raw, e)
         return {"result_type": "FAILED", "error_msg": "choice processing failed"}
 
 
@@ -185,6 +186,36 @@ def callback(executor_response, callback_url):
                      payload, response)
     except Exception as e:
         logging.error("callback rill flow is failed. callback url:%s, callback body:%s", callback_url, payload, e)
+
+
+@app.get('/hello.json')
+async def hello_api(request: Request):
+    body_raw = {}
+    try:
+        logging.info("header:%s, query_params:%s", request.headers.items(), request.query_params)
+        name = request.query_params.get("user")
+        if name is None:
+            return {"result_type": "FAILED", "error_msg": "params user is null"}
+        return {"result_type", "SUCCESS", "result", "Hello, " + name}
+    except Exception as e:
+        logging.error("hello_api processing failed.", e)
+        return {"result_type": "FAILED", "error_msg": "hello_api processing failed"}
+
+
+@app.post('/posts.json')
+async def posts_api(request: Request):
+    try:
+        logging.info("header:%s, query_params:%s", request.headers.items(), request.query_params)
+        content_type = request.headers.get("content-type")
+        user = request.query_params.get("user")
+        form_data = await request.form()
+        if form_data is None:
+            return {"result_type": "FAILED", "error_msg": "params title is null"}
+        return {"result_type": "SUCCESS", "result":
+            {"content_type": content_type, "user": user, "form_data": form_data}}
+    except Exception as e:
+        logging.error("posts_api processing failed.",  e)
+        return {"result_type": "FAILED", "error_msg": "posts_api processing failed"}
 
 
 if __name__ == '__main__':

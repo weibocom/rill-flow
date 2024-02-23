@@ -12,7 +12,7 @@ tasks:
     next: returnNode
     resourceName: http://sample-executor:8000/choice.json
     inputMappings:
-      - target: $.input.query.input_num
+      - target: $.input.input_num
         source: $.context.input_num
     outputMappings:
       - target: $.context.sum
