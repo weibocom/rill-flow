@@ -1,0 +1,38 @@
+name: Docker Deploy and Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+jobs:
+  test:
+    name: Docker Deploy and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Run Internal Test
+        run: mvn test && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Deploy with Docker Compose
+        run: |
+          cd docker
+          docker-compose up -d
+
+      - name: Run API Test
+        run:  mvn test -P flow_api_test -Dapi.url=http://localhost:8080 && echo "Run API Test succeeded" || { echo "Run API Test failed."; exit 1; }
+          
