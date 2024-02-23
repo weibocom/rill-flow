@@ -29,6 +29,7 @@ import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
+import com.weibo.rill.flow.service.util.DescriptorIdUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -90,7 +91,8 @@ public class FlowController {
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> submitActions = () -> {
             ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder().withData(data).withIdentity(descriptorId).build();
+            String businessId = DescriptorIdUtil.changeDescriptorIdToBusinessId(descriptorId);
+            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return olympiceneFacade.submit(flowUser, descriptorId, context, callback, resourceCheckConfig);
         };
@@ -105,7 +107,8 @@ public class FlowController {
                                       @ApiParam(value = "任务名称") @RequestParam(TASK_NAME) String taskName,
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody JSONObject result) {
         Supplier<Map<String, Object>> finishActions = () -> {
-            Map<String, Object> context = dagContextInitializer.newCallbackContextBuilder().withData(result).withIdentity(executionId).build();
+            String businessId = ExecutionIdUtil.getBusinessId(executionId);
+            Map<String, Object> context = dagContextInitializer.newCallbackContextBuilder(businessId).withData(result).withIdentity(executionId).build();
             JSONObject data = new JSONObject();
             data.put("response", result);
             data.put("result_type", result.getOrDefault("result_type", "SUCCESS"));
@@ -129,7 +132,8 @@ public class FlowController {
                 throw new TaskException(BizError.ERROR_DATA_FORMAT, executionId, "task_name is empty");
             }
 
-            Map<String, Object> context = dagContextInitializer.newWakeupContextBuilder().withData(data).withIdentity(executionId).build();
+            String businessId = ExecutionIdUtil.getBusinessId(executionId);
+            Map<String, Object> context = dagContextInitializer.newWakeupContextBuilder(businessId).withData(data).withIdentity(executionId).build();
             return olympiceneFacade.wakeup(executionId, taskName, context);
         };
 
@@ -143,7 +147,8 @@ public class FlowController {
                                     @ApiParam(value = "任务名称列表") @RequestParam(value = TASK_NAMES, required = false) List<String> taskNames,
                                     @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
         Supplier<Map<String, Object>> redoActions = () -> {
-            Map<String, Object> context = dagContextInitializer.newRedoContextBuilder().withData(data).withIdentity(executionId).build();
+            String businessId = ExecutionIdUtil.getBusinessId(executionId);
+            Map<String, Object> context = dagContextInitializer.newRedoContextBuilder(businessId).withData(data).withIdentity(executionId).build();
             return olympiceneFacade.redo(executionId, taskNames, context);
         };
 

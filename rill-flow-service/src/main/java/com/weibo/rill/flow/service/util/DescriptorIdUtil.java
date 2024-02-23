@@ -14,30 +14,19 @@
  *    limitations under the License.
  */
 
-package com.rill.flow.executor.wrapper;
+package com.weibo.rill.flow.service.util;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.weibo.rill.flow.common.constant.ReservedConstant;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.Serializable;
-import java.util.Map;
+public class DescriptorIdUtil {
 
-/**
- * @author yansheng3
- */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class CallbackData implements Serializable {
     /**
-     * callback url
+     * change descriptorId to businessId
      */
-    @JSONField(serialize = false)
-    private String url;
+    public static String changeDescriptorIdToBusinessId(String descriptorId) {
+        return StringUtils.substringBefore(descriptorId, ReservedConstant.COLON);
+    }
 
-    private Map<String, Object> result;
+    private DescriptorIdUtil() { }
 }

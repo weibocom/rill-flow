@@ -32,13 +32,13 @@ async def executor_api(request: Request):
         if mode is not None and mode == "async" and callbackUrl is not None:
             # 函数异步执行
             executor.submit(async_processor, body_raw, request)
-            result = {"result": {"err_msg": "success"}}
+            result = {"result_type": "SUCCESS"}
             return result
         else:
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(executor, processor, body_raw, request)
-            logging.info("response:%s", body_raw)
-        return result
+            logging.info("executor response:%s", result)
+            return result
     except Exception as e:
         logging.error("executor processing failed. request body:%s", body_raw, e)
         return {"result_type": "FAILED", "error_msg": "Executor processing failed"}
@@ -52,8 +52,9 @@ def async_processor(request_body: dict, request: Request):
         executor_response = "executor processor is failed"
         result_type = "FAILED"
         logging.error("executor processor is failed. request body:%s", request_body, e)
-
-    callback(result_type, executor_response, request.headers.get("X-Callback-Url"))
+    finally:
+        executor_response["result_type"] = result_type
+        callback(executor_response, request.headers.get("X-Callback-Url"))
 
 
 def processor(request_body: dict, request: Request):
@@ -66,11 +67,9 @@ def processor(request_body: dict, request: Request):
         return request_body
 
 
-def callback(result_type, executor_response, callback_url):
-    callback_body = {"result_type": result_type, "result": executor_response}
-
+def callback(executor_response, callback_url):
     headers = {"Content-Type": "application/json"}
-    payload = json.dumps(callback_body)
+    payload = json.dumps(executor_response)
 
     try:
         response = requests.post(callback_url, headers=headers, data=payload)

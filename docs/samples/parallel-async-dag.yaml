@@ -32,7 +32,7 @@ tasks:
             source: $.context.segment_item
         outputMappings:
           - target: $.context.executor_result
-            source: $.output.result.executor_result
+            source: $.output.executor_result
         next: callback
       - category: function
         name: callback
