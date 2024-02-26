@@ -19,16 +19,31 @@ package com.weibo.rill.flow.service.facade;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.common.constant.ReservedConstant;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.function.ResourceCheckConfig;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.BusinessHeapStatus;
 import com.weibo.rill.flow.common.model.User;
+import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
+import com.weibo.rill.flow.interfaces.model.task.BaseTask;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
+import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
+import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
+import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
+import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
+import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
+import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
+import com.weibo.rill.flow.olympicene.traversal.Olympicene;
+import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
+import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
+import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
-import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
@@ -38,20 +53,8 @@ import com.weibo.rill.flow.service.statistic.SystemMonitorStatistic;
 import com.weibo.rill.flow.service.storage.CustomizedStorage;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeStorage;
+import com.weibo.rill.flow.service.util.DescriptorIdUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
-import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
-import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
-import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
-import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
-import com.weibo.rill.flow.olympicene.traversal.Olympicene;
-import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
-import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
-import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
-import com.weibo.rill.flow.interfaces.model.task.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -80,15 +83,11 @@ public class OlympiceneFacade {
     @Autowired
     private DescriptorManager descriptorManager;
     @Autowired
-    private BizDConfs bizDConfs;
-    @Autowired
     private SystemMonitorStatistic systemMonitorStatistic;
     @Autowired
     private RuntimeStorage runtimeStorage;
     @Autowired
     private LongTermStorage longTermStorage;
-    @Autowired
-    private DAGSubmitChecker dagSubmitChecker;
     @Autowired
     private DAGResourceStatistic dagResourceStatistic;
     @Autowired
@@ -98,14 +97,15 @@ public class OlympiceneFacade {
     @Autowired
     private ProfileRecordService profileRecordService;
     @Autowired
-    private DAGSubmitChecker submitChecker;
+    private DAGSubmitChecker dagSubmitChecker;
     @Autowired
     private DAGContextInitializer dagContextInitializer;
 
     public Map<String, Object> submit(Long uid, String descriptorId, String callback, String resourceCheck, JSONObject data, String url) {
         Supplier<Map<String, Object>> submitActions = () -> {
-            ResourceCheckConfig resourceCheckConfig = submitChecker.getCheckConfig(resourceCheck);
-            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder().withData(data).withIdentity(descriptorId).build();
+            ResourceCheckConfig resourceCheckConfig = dagSubmitChecker.getCheckConfig(resourceCheck);
+            String businessId = DescriptorIdUtil.changeDescriptorIdToBusinessId(descriptorId);
+            Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
             return submit(uid, descriptorId, context, callback, resourceCheckConfig);
         };
@@ -239,7 +239,10 @@ public class OlympiceneFacade {
             baseTask = tasks.stream()
                     .filter(task -> baseName.equals(task.getName()))
                     .findFirst()
-                    .orElseThrow(() -> new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "can not find base task: " + baseName));
+                    .orElse(null);
+            if (baseTask == null) {
+                break;
+            }
             tasks = baseTask.subTasks();
         }
         if (baseTask == null) {

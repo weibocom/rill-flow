@@ -41,9 +41,29 @@ public class DAGContextInitializer {
                 .withHooks(contextInitializeHookList);
     }
 
+    public DAGContextBuilder newSubmitContextBuilder(String businessId) {
+        Map<String, Integer> submitContextMaxSizeMap = bizDConfs.getRedisBusinessIdToRuntimeSubmitContextMaxSize();
+        if (submitContextMaxSizeMap == null || submitContextMaxSizeMap.get(businessId) == null) {
+            return newSubmitContextBuilder();
+        }
+
+        return new DAGContextBuilder()
+                .withMaxSize(submitContextMaxSizeMap.get(businessId))
+                .withHooks(contextInitializeHookList);
+    }
+
     public DAGContextBuilder newCallbackContextBuilder() {
         return new DAGContextBuilder()
                 .withMaxSize(bizDConfs.getRuntimeCallbackContextMaxSize());
+    }
+
+    public DAGContextBuilder newCallbackContextBuilder(String businessId) {
+        Map<String, Integer> callbackContextMaxSizeMap = bizDConfs.getRedisBusinessIdToRuntimeCallbackContextMaxSize();
+        if (callbackContextMaxSizeMap == null || callbackContextMaxSizeMap.get(businessId) == null) {
+            return newCallbackContextBuilder();
+        }
+        return new DAGContextBuilder()
+                .withMaxSize(callbackContextMaxSizeMap.get(businessId));
     }
 
     public DAGContextBuilder newWakeupContextBuilder() {
@@ -51,9 +71,27 @@ public class DAGContextInitializer {
                 .withMaxSize(bizDConfs.getRuntimeCallbackContextMaxSize());
     }
 
+    public DAGContextBuilder newWakeupContextBuilder(String businessId) {
+        Map<String, Integer> callbackContextMaxSizeMap = bizDConfs.getRedisBusinessIdToRuntimeCallbackContextMaxSize();
+        if (callbackContextMaxSizeMap == null || callbackContextMaxSizeMap.get(businessId) == null) {
+            return newWakeupContextBuilder();
+        }
+        return new DAGContextBuilder()
+                .withMaxSize(callbackContextMaxSizeMap.get(businessId));
+    }
+
     public DAGContextBuilder newRedoContextBuilder() {
         return new DAGContextBuilder()
                 .withMaxSize(bizDConfs.getRuntimeCallbackContextMaxSize());
+    }
+
+    public DAGContextBuilder newRedoContextBuilder(String businessId) {
+        Map<String, Integer> callbackContextMaxSizeMap = bizDConfs.getRedisBusinessIdToRuntimeCallbackContextMaxSize();
+        if (callbackContextMaxSizeMap == null || callbackContextMaxSizeMap.get(businessId) == null) {
+            return newRedoContextBuilder();
+        }
+        return new DAGContextBuilder()
+                .withMaxSize(callbackContextMaxSizeMap.get(businessId));
     }
 
     public static class DAGContextBuilder {
