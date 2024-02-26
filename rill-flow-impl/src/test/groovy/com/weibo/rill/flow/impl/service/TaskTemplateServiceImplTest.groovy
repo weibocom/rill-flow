@@ -3,6 +3,7 @@ package com.weibo.rill.flow.impl.service
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.olympicene.traversal.runners.AbstractTaskRunner
 import com.weibo.rill.flow.task.template.dao.mapper.TaskTemplateDAO
 import com.weibo.rill.flow.task.template.dao.model.TaskTemplateDO
@@ -21,15 +22,15 @@ class TaskTemplateServiceImplTest extends Specification {
     TaskTemplateDAO taskTemplateDAO = Mock(TaskTemplateDAO)
 
     def setup() {
-        functionTaskRunner.getCategory() >> "function"
+        functionTaskRunner.getCategory() >> TaskCategory.FUNCTION
         functionTaskRunner.getIcon() >> "function base64 icon code"
         functionTaskRunner.getFields() >> ["field1": "field1", "field2": "field2"]
         functionTaskRunner.isEnable() >> true
-        choiceTaskRunner.getCategory() >> "choice"
+        choiceTaskRunner.getCategory() >> TaskCategory.CHOICE
         choiceTaskRunner.getIcon() >> "choice base64 icon code"
         choiceTaskRunner.getFields() >> ["field1": "field1", "field2": "field2"]
         choiceTaskRunner.isEnable() >> true
-        paasTaskRunner.getCategory() >> "paas"
+        paasTaskRunner.getCategory() >> TaskCategory.PASS
         paasTaskRunner.getIcon() >> "base64 icon code"
         paasTaskRunner.isEnable() >> false
         taskTemplateService.taskRunnerMap = taskRunnerMap

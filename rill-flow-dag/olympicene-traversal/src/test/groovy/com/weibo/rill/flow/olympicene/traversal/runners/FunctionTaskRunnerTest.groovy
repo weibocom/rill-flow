@@ -1,6 +1,7 @@
 package com.weibo.rill.flow.olympicene.traversal.runners
 
 import com.alibaba.fastjson.JSONObject
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import spock.lang.Specification
 
 class FunctionTaskRunnerTest extends Specification {
@@ -8,7 +9,7 @@ class FunctionTaskRunnerTest extends Specification {
 
     def "test base properties getter"() {
         expect:
-        runner.getCategory() == "function"
+        runner.getCategory() == TaskCategory.FUNCTION
         runner.getIcon() == ""
     }
 

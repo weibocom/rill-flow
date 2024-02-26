@@ -62,8 +62,8 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
-    public String getCategory() {
-        return "suspense";
+    public TaskCategory getCategory() {
+        return TaskCategory.SUSPENSE;
     }
 
     @Override

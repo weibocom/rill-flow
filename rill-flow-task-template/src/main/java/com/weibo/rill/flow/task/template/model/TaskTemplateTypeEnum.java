@@ -35,7 +35,10 @@ public enum TaskTemplateTypeEnum {
         this.desc = desc;
     }
 
-    public static TaskTemplateTypeEnum getEnumByType(int type) {
+    public static TaskTemplateTypeEnum getEnumByType(Integer type) {
+        if (type == null) {
+            return null;
+        }
         return switch (type) {
             case 0 -> FUNCTION;
             case 1 -> PLUGIN;

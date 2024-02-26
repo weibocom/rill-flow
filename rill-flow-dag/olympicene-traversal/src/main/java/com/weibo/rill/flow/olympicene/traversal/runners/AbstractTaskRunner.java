@@ -32,6 +32,7 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
@@ -79,17 +80,17 @@ public abstract class AbstractTaskRunner implements TaskRunner {
     }
 
     public JSONObject getFields() {
-        String category = getCategory();
+        TaskCategory category = getCategory();
         try {
-            String config = ResourceLoader.loadResourceAsText("metadata/fields/" + category + ".json");
+            String config = ResourceLoader.loadResourceAsText("metadata/fields/" + category.getValue() + ".json");
             return JSON.parseObject(config);
         } catch (Exception e) {
-            log.warn("get fields error, category: {}", category, e);
+            log.warn("get fields error, category: {}", category.getValue(), e);
             throw new RuntimeException(e);
         }
     }
 
-    public abstract String getCategory();
+    public abstract TaskCategory getCategory();
 
     public boolean isEnable() {
         return true;

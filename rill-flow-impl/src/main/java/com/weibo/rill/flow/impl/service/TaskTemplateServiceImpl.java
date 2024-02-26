@@ -57,7 +57,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
             if (!taskRunner.isEnable()) {
                 continue;
             }
-            metaData.put("category", taskRunner.getCategory());
+            metaData.put("category", taskRunner.getCategory().getValue());
             metaData.put("icon", taskRunner.getIcon());
             metaData.put("fields", taskRunner.getFields());
             metaDataList.add(metaData);
@@ -123,14 +123,15 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     private List<AbstractTaskRunner> getTaskRunners(TaskTemplateParams params) {
         List<AbstractTaskRunner> metaDataList = new ArrayList<>();
         TaskTemplateTypeEnum taskTemplateType = TaskTemplateTypeEnum.getEnumByType(params.getType());
+        TaskCategory taskCategory = TaskCategory.getEnumByValue(params.getCategory());
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
             AbstractTaskRunner taskRunner = taskRunnerEntry.getValue();
             if (!taskRunner.isEnable() || params.getId() != null
-                    || params.getName() != null && !taskRunner.getCategory().contains(params.getName())
-                    || params.getCategory() != null && !taskRunner.getCategory().equals(params.getCategory())
+                    || params.getName() != null && !taskRunner.getCategory().getValue().contains(params.getName())
+                    || taskCategory != null && taskRunner.getCategory() != taskCategory
                     || taskTemplateType == TaskTemplateTypeEnum.PLUGIN
-                    || taskTemplateType == TaskTemplateTypeEnum.FUNCTION && !TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
-                    || taskTemplateType == TaskTemplateTypeEnum.LOGIC && TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
+                    || taskTemplateType == TaskTemplateTypeEnum.FUNCTION && TaskCategory.FUNCTION != taskRunner.getCategory()
+                    || taskTemplateType == TaskTemplateTypeEnum.LOGIC && TaskCategory.FUNCTION == taskRunner.getCategory()
             ) {
                 continue;
             }
@@ -160,14 +161,14 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
 
     private TaskTemplate turnMetaDataToTaskTemplate(AbstractTaskRunner taskRunner) {
         // 获取任务模板类型，由于元数据不存在插件类型，因此通过任务 category 二分为函数模板和逻辑模板
-        TaskTemplateTypeEnum taskTemplateType = TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
+        TaskTemplateTypeEnum taskTemplateType = taskRunner.getCategory() == TaskCategory.FUNCTION
                 ? TaskTemplateTypeEnum.FUNCTION: TaskTemplateTypeEnum.LOGIC;
         TaskTemplate result = new TaskTemplate();
         result.setId(null);
-        result.setCategory(taskRunner.getCategory());
+        result.setCategory(taskRunner.getCategory().getValue());
         result.setIcon(taskRunner.getIcon());
         result.setTaskYaml("");
-        result.setName(taskRunner.getCategory());
+        result.setName(taskRunner.getCategory().getValue());
         result.setOutput("{}");
         result.setSchema("{}");
         result.setEnable(1);

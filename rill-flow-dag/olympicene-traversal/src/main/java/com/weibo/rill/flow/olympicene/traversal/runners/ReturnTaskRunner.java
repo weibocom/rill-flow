@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
@@ -43,8 +44,8 @@ public class ReturnTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
-    public String getCategory() {
-        return "return";
+    public TaskCategory getCategory() {
+        return TaskCategory.RETURN;
     }
 
     @Override

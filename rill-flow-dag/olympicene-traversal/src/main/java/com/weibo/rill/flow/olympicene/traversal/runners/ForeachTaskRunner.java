@@ -32,6 +32,7 @@ import com.weibo.rill.flow.olympicene.core.model.mapping.IterationMapping;
 import com.weibo.rill.flow.olympicene.core.model.strategy.Synchronization;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
@@ -66,8 +67,8 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
-    public String getCategory() {
-        return "foreach";
+    public TaskCategory getCategory() {
+        return TaskCategory.FOREACH;
     }
 
     @SuppressWarnings("unchecked")
