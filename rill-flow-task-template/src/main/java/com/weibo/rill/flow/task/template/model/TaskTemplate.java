@@ -1,10 +1,10 @@
 package com.weibo.rill.flow.task.template.model;
 
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Date;
 
-@Setter
+@Data
 public class TaskTemplate {
     private Long id;
     private String name;
