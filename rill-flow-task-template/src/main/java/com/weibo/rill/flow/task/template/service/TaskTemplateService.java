@@ -23,11 +23,46 @@ import com.weibo.rill.flow.task.template.model.TaskTemplate;
 
 import java.util.List;
 
+/**
+ * the service to manage task templates
+ */
 public interface TaskTemplateService {
+    /**
+     * get all meta data
+     * @return meta data array
+     */
     JSONArray getTaskMetaDataList();
+
+    /**
+     * get task templates by parameters
+     * @param params task template parameters
+     * @param page page number
+     * @param pageSize records count per page
+     * @return task template list
+     */
     List<TaskTemplate> getTaskTemplates(TaskTemplateParams params, int page, int pageSize);
+
+    /**
+     * create a task template
+     * @param taskTemplate task template to be created
+     * @return task template id
+     */
     long createTaskTemplate(JSONObject taskTemplate);
+
+    /**
+     * update a task template
+     * @param taskTemplate task template to be updated
+     * @return record count that has been affected
+     */
     int updateTaskTemplate(JSONObject taskTemplate);
+    /**
+     * delete a task template
+     * @param id task template id
+     */
     int disableTaskTemplate(Long id);
+    /**
+     * enable a task template
+     * @param id task template id
+     */
     int enableTaskTemplate(Long id);
 }
