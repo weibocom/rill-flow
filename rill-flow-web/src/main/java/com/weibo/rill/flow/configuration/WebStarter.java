@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.configuration;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -28,6 +29,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication(scanBasePackages = {"com.weibo.rill.flow"}, exclude = {DataSourceAutoConfiguration.class})
 @ImportResource({"classpath:spring/web.xml"})
 @EnableAsync
+@MapperScan("com.weibo.rill.flow.task.template.dao.mapper")
 @Import(OlympiceneConfiguration.class)
 public class WebStarter extends SpringBootServletInitializer {
     public static void main(String[] args) {

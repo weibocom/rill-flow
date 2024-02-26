@@ -1,0 +1,178 @@
+{
+  "name": {
+    "type": "string",
+    "name": "任务名称",
+    "required": true,
+    "default_value": ""
+  },
+  "resource_name": {
+    "type": "string",
+    "name": "资源名称",
+    "required": true,
+    "default_value": ""
+  },
+  "resource_protocol": {
+    "type": "string",
+    "name": "资源协议",
+    "required": true
+  },
+  "request_type": {
+    "type": "string",
+    "name": "请求类型",
+    "required": false,
+    "default_value": "POST",
+    "options": [
+      {
+        "name": "POST",
+        "value": "POST"
+      },
+      {
+        "name": "GET",
+        "value": "GET"
+      }
+    ]
+  },
+  "pattern": {
+    "type": "string",
+    "name": "同步类型",
+    "required": true,
+    "options": [
+      {
+        "name": "同步",
+        "value": "task_scheduler"
+      },
+      {
+        "name": "异步",
+        "value": "task_async"
+      }
+    ]
+  },
+  "input_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "output_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "tolerance": {
+    "type": "boolean",
+    "name": "是否容错",
+    "required": false,
+    "default_value": false
+  },
+  "success_conditions": {
+    "type": "list",
+    "name": "成功条件",
+    "required": false,
+    "data": {
+      "type": "string"
+    }
+  },
+  "fail_conditions": {
+    "type": "list",
+    "name": "失败条件",
+    "required": false,
+    "data": {
+      "type": "string"
+    }
+  },
+  "retry": {
+    "type": "object",
+    "required": false,
+    "fields": {
+      "max_retry_times": {
+        "type": "integer",
+        "name": "最大重试次数",
+        "required": true
+      },
+      "interval_in_seconds": {
+        "type": "integer",
+        "name": "间隔时间",
+        "required": false,
+        "default_value": 0
+      },
+      "multiplier": {
+        "type": "integer",
+        "name": "放大系数",
+        "required": false,
+        "default_value": 1
+      }
+    }
+  },
+  "next": {
+    "type": "string",
+    "name": "下一节点",
+    "required": false
+  }
+}

@@ -52,8 +52,9 @@ public class SuspenseTask extends BaseTask {
                         @JsonProperty("timeline") Timeline timeline,
                         @JsonProperty("isKeyCallback") boolean isKeyCallback,
                         @JsonProperty("keyExp") String keyExp,
-                        @JsonProperty("parameters") Map<String, Object> parameters) {
-        super(name, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters);
+                        @JsonProperty("parameters") Map<String, Object> parameters,
+                        @JsonProperty("templateId") String templateId) {
+        super(name, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.conditions = conditions;
         this.interruptions = interruptions;
     }

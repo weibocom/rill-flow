@@ -20,7 +20,7 @@ class DAGInfoDAOTest extends Specification {
     def setup() {
         dagInfo.executionId = executionId
         dagInfo.dagStatus = DAGStatus.NOT_STARTED
-        dagInfo.dag = new DAG("workspace", "dagName", "1.0.0", DAGType.FLOW, null, Lists.newArrayList(), null, null, null, null, "ns", "service")
+        dagInfo.dag = new DAG("workspace", "dagName", "1.0.0", DAGType.FLOW, null, Lists.newArrayList(), null, null, null, null, "ns", "service", null)
     }
 
     def "updateDagInfo redis eval shardingKey check"() {

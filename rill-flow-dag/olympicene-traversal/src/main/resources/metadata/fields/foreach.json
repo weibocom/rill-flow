@@ -1,0 +1,141 @@
+{
+  "name": {
+    "type": "string",
+    "name": "任务名称",
+    "required": true,
+    "default_value": ""
+  },
+  "synchronization": {
+    "type": "object",
+    "name": "并发控制",
+    "required": false,
+    "fields": {
+      "conditions": {
+        "type": "list",
+        "name": "控制条件",
+        "required": false,
+        "data": {
+          "type": "string"
+        }
+      },
+      "maxConcurrency": {
+        "type": "integer",
+        "required": false,
+        "name": "最大并发量"
+      }
+    }
+  },
+  "iterationMapping": {
+    "type": "object",
+    "name": "循环条件控制",
+    "required": true,
+    "fields": {
+      "collection": {
+        "type": "string",
+        "name": "待循环集合",
+        "required": true
+      },
+      "item": {
+        "type": "string",
+        "name": "子 context 元素名称",
+        "required": true
+      },
+      "identity": {
+        "type": "string",
+        "name": "本次循环的别名",
+        "required": false
+      }
+    }
+  },
+  "input_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "output_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "type": "list",
+    "name": "任务列表",
+    "required": true,
+    "data": {
+      "type": "task"
+    }
+  },
+  "next": {
+    "type": "string",
+    "name": "下一节点",
+    "required": false
+  }
+}

@@ -26,6 +26,7 @@ import com.weibo.rill.flow.olympicene.core.helper.TaskInfoMaker;
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.Choice;
 import com.weibo.rill.flow.olympicene.core.model.task.ChoiceTask;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
@@ -51,6 +52,16 @@ public class ChoiceTaskRunner extends AbstractTaskRunner {
                             DAGStorageProcedure dagStorageProcedure,
                             SwitcherManager switcherManager) {
         super(inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
+    }
+
+    @Override
+    public TaskCategory getCategory() {
+        return TaskCategory.CHOICE;
+    }
+
+    @Override
+    public boolean isEnable() {
+        return false;
     }
 
     @Override

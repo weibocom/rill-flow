@@ -23,7 +23,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 
-public class RedisScriptLoader {
+public class ResourceLoader {
+    private ResourceLoader() {}
     public static String loadResourceAsText(String name) throws IOException {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = loader.getResourceAsStream(name);

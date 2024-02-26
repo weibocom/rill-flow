@@ -16,6 +16,8 @@
 
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.*;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -30,10 +32,12 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.storage.redis.lock.ResourceLoader;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
@@ -69,6 +73,27 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         this.dagContextStorage = dagContextStorage;
         this.dagStorageProcedure = dagStorageProcedure;
         this.switcherManager = switcherManager;
+    }
+
+    public String getIcon() {
+        return "";
+    }
+
+    public JSONObject getFields() {
+        TaskCategory category = getCategory();
+        try {
+            String config = ResourceLoader.loadResourceAsText("metadata/fields/" + category.getValue() + ".json");
+            return JSON.parseObject(config);
+        } catch (Exception e) {
+            log.warn("get fields error, category: {}", category.getValue(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public abstract TaskCategory getCategory();
+
+    public boolean isEnable() {
+        return true;
     }
 
     protected abstract ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input);

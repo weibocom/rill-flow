@@ -1,0 +1,91 @@
+{
+  "name": {
+    "type": "string",
+    "name": "任务名称",
+    "required": true,
+    "default_value": ""
+  },
+  "input_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "output_mappings": {
+    "type": "list",
+    "name": "输入映射",
+    "required": true,
+    "data": {
+      "type": "object",
+      "fields": {
+        "source": {
+          "type": "string",
+          "name": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "name": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "name": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "name": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "name": "容忍错误",
+          "required": false
+        },
+        "required_group": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "next": {
+    "type": "string",
+    "name": "下一节点",
+    "required": false
+  }
+}

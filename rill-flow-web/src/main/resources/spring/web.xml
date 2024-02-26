@@ -21,5 +21,6 @@
 
     <import resource="classpath:spring/web-mvc.xml"/>
     <import resource="classpath:spring/service-httpclient.xml"/>
+    <import resource="classpath:spring/service-mysql.xml"/>
 
 </beans>

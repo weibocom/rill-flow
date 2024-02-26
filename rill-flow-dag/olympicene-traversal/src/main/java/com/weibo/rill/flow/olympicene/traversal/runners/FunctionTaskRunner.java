@@ -32,6 +32,7 @@ import com.weibo.rill.flow.olympicene.core.model.strategy.RetryPolicy;
 import com.weibo.rill.flow.olympicene.core.model.strategy.SimpleRetryPolicy;
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
@@ -87,6 +88,11 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
         super(inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
         this.dagDispatcher = dagDispatcher;
         this.retryPolicy = retryPolicy;
+    }
+
+    @Override
+    public TaskCategory getCategory() {
+        return TaskCategory.FUNCTION;
     }
 
     @Override

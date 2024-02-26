@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright 2021-2023 rill, Inc.
+  ~
+  ~    Licensed under the Apache License, Version 2.0 (the "License");
+  ~    you may not use this file except in compliance with the License.
+  ~    You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~    Unless required by applicable law or agreed to in writing, software
+  ~    distributed under the License is distributed on an "AS IS" BASIS,
+  ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~    See the License for the specific language governing permissions and
+  ~    limitations under the License.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="taskTemplateMasterDataSource" />
+        <property name="typeAliasesPackage" value="com.weibo.rill.flow.task.template.dao.model"/>
+        <property name="configuration" ref="mybatisConfiguration"/>
+    </bean>
+
+    <bean id="mybatisConfiguration" class="org.apache.ibatis.session.Configuration">
+        <property name="mapUnderscoreToCamelCase" value="true"/>
+        <property name="cacheEnabled" value="false"/>
+        <property name="lazyLoadingEnabled" value="false"/>
+        <property name="defaultStatementTimeout" value="30"/>
+        <property name="useGeneratedKeys" value="true"/>
+    </bean>
+
+    <bean id="taskTemplateMasterDataSource" parent="taskTemplateDataSource">
+        <property name="jdbcUrl" value="${rill.flow.task.template.datasource.jdbc.master.url}"/>
+        <property name="user" value="${rill.flow.task.template.datasource.master.user}"/>
+        <property name="password" value="${rill.flow.task.template.datasource.master.password}"/>
+    </bean>
+
+    <bean id="taskTemplateDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="minPoolSize" value="${rill.flow.swap.jdbc.minPoolSize:5}"/>
+        <property name="maxPoolSize" value="${rill.flow.swap.jdbc.maxPoolSize:30}"/>
+        <property name="idleConnectionTestPeriod" value="${rill.flow.swap.jdbc.idleConnectionTestPeriod:20}"/>
+        <property name="maxIdleTime" value="${rill.flow.swap.jdbc.maxIdleTime:25}"/>
+        <property name="maxConnectionAge" value="${rill.flow.swap.jdbc.maxConnectionAge:60}"/>
+        <property name="breakAfterAcquireFailure" value="${rill.flow.swap.jdbc.breakAfterAcquireFailure:false}"/>
+        <property name="checkoutTimeout" value="${rill.flow.swap.jdbc.checkoutTimeout:3000}"/>
+        <property name="acquireRetryAttempts" value="${rill.flow.swap.jdbc.acquireRetryAttempts:50}"/>
+        <property name="acquireRetryDelay" value="${rill.flow.swap.jdbc.acquireRetryDelay:1000}"/>
+    </bean>
+</beans>

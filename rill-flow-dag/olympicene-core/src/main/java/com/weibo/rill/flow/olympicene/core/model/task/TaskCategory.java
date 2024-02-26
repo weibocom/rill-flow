@@ -17,8 +17,6 @@
 package com.weibo.rill.flow.olympicene.core.model.task;
 
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -54,19 +52,18 @@ public enum TaskCategory {
      */
     private final int type;
 
-    @JsonValue
-    public String getValue() {
-        return value;
-    }
-
-    @JsonCreator
-    public static TaskCategory forValues(String value) {
-        for (TaskCategory item : TaskCategory.values()) {
-            if (item.value.equals(value)) {
-                return item;
-            }
+    public static TaskCategory getEnumByValue(String category) {
+        if (category == null) {
+            return null;
         }
-
-        return null;
+        return switch (category) {
+            case "function" -> FUNCTION;
+            case "choice" -> CHOICE;
+            case "foreach" -> FOREACH;
+            case "suspense" -> SUSPENSE;
+            case "pass" -> PASS;
+            case "return" -> RETURN;
+            default -> null;
+        };
     }
 }
