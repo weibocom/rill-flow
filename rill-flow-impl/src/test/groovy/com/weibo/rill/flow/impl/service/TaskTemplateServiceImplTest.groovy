@@ -95,11 +95,18 @@ class TaskTemplateServiceImplTest extends Specification {
         array.get(0).getCategory() == "function"
         array.get(0).getIcon() == "function base64 icon code"
         array.get(0).getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
-        array.get(2).getCategory() == "function"
         array.get(2).getId() == 1L
-        array.get(2).getIcon() == "function template base64 icon code"
+        array.get(2).getName() == "function template"
+        array.get(2).getEnable() == 1
+        array.get(2).getType() == 0
+        array.get(2).getTypeStr() == "函数模板"
+        array.get(2).getTaskYaml() == "resourceName: function template"
+        array.get(2).getUpdateTime() == null
+        array.get(2).getCreateTime() == null
         array.get(2).getSchema() == "{}"
         array.get(2).getOutput() == "{}"
+        array.get(2).getCategory() == "function"
+        array.get(2).getIcon() == "function template base64 icon code"
     }
 
     def "test createTaskTemplate"() {
