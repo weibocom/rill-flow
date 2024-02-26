@@ -3,7 +3,7 @@ USE rill_flow;
 CREATE TABLE IF NOT EXISTS `task_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `name` varchar(64) NOT NULL DEFAULT '' COMMENT 'template name',
-    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function，1. plugin，2. logical',
+    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function，1. plugin，2. logic',
     `category` varchar(64) NOT NULL DEFAULT '' COMMENT 'template category: function, foreach, etc.',
     `icon` TEXT NOT NULL COMMENT 'icon base64 string',
     `task_yaml` TEXT NOT NULL COMMENT 'default task yaml configurations in dag',

@@ -18,6 +18,7 @@ package com.weibo.rill.flow.impl.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.task.template.dao.mapper.TaskTemplateDAO;
 import com.weibo.rill.flow.task.template.dao.model.TaskTemplateDO;
 import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
@@ -121,14 +122,15 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     @NotNull
     private List<AbstractTaskRunner> getTaskRunners(TaskTemplateParams params) {
         List<AbstractTaskRunner> metaDataList = new ArrayList<>();
+        TaskTemplateTypeEnum taskTemplateType = TaskTemplateTypeEnum.getEnumByType(params.getType());
         for (Map.Entry<String, AbstractTaskRunner> taskRunnerEntry: taskRunnerMap.entrySet()) {
             AbstractTaskRunner taskRunner = taskRunnerEntry.getValue();
             if (!taskRunner.isEnable() || params.getId() != null
                     || params.getName() != null && !taskRunner.getCategory().contains(params.getName())
                     || params.getCategory() != null && !taskRunner.getCategory().equals(params.getCategory())
-                    || params.getType() != null && params.getType() == 1
-                    || params.getType() != null && params.getType() == 0 && !"function".equals(taskRunner.getCategory())
-                    || params.getType() != null && params.getType() == 2 && "function".equals(taskRunner.getCategory())
+                    || taskTemplateType == TaskTemplateTypeEnum.PLUGIN
+                    || taskTemplateType == TaskTemplateTypeEnum.FUNCTION && !TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
+                    || taskTemplateType == TaskTemplateTypeEnum.LOGIC && TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
             ) {
                 continue;
             }
@@ -157,6 +159,9 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     }
 
     private TaskTemplate turnMetaDataToTaskTemplate(AbstractTaskRunner taskRunner) {
+        // 获取任务模板类型，由于元数据不存在插件类型，因此通过任务 category 二分为函数模板和逻辑模板
+        TaskTemplateTypeEnum taskTemplateType = TaskCategory.FUNCTION.getValue().equals(taskRunner.getCategory())
+                ? TaskTemplateTypeEnum.FUNCTION: TaskTemplateTypeEnum.LOGIC;
         TaskTemplate result = new TaskTemplate();
         result.setId(null);
         result.setCategory(taskRunner.getCategory());
@@ -166,8 +171,8 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         result.setOutput("{}");
         result.setSchema("{}");
         result.setEnable(1);
-        result.setType("function".equals(taskRunner.getCategory())? 0: 2);
-        result.setTypeStr(result.getType() == 0? "函数模板（元数据）": "逻辑模板（元数据）");
+        result.setType(taskTemplateType.getType());
+        result.setTypeStr(taskTemplateType.getDesc() + "（元数据）");
         result.setNodeType("meta");
         result.setMetaData(MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build());
         return result;
