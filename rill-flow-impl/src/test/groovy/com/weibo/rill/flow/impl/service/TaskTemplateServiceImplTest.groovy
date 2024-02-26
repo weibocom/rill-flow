@@ -216,4 +216,102 @@ class TaskTemplateServiceImplTest extends Specification {
         then:
         thrown Exception
     }
+
+    def "test getTaskRunners with params"() {
+        given:
+        TaskTemplateParams params = TaskTemplateParams.builder()
+                .id(1L)
+                .name("function")
+                .category("function")
+                .type(0)
+                .nodeType("meta")
+                .enable(1)
+                .build()
+        when:
+        List<AbstractTaskRunner> list = taskTemplateService.getTaskRunners(params)
+        then:
+        list.size() == 0
+    }
+
+    def "test getTaskRunners with empty params"() {
+        given:
+        TaskTemplateParams params = TaskTemplateParams.builder().build()
+        when:
+        List<AbstractTaskRunner> list = taskTemplateService.getTaskRunners(params)
+        then:
+        list.size() == 2
+        list.contains(functionTaskRunner)
+        list.contains(choiceTaskRunner)
+    }
+
+    def "test turnMetaDataToTaskTemplate"() {
+        given:
+        AbstractTaskRunner taskRunner = functionTaskRunner
+        when:
+        TaskTemplate taskTemplate = taskTemplateService.turnMetaDataToTaskTemplate(taskRunner)
+        then:
+        taskTemplate.getId() == null
+        taskTemplate.getCategory() == "function"
+        taskTemplate.getIcon() == "function base64 icon code"
+        taskTemplate.getTaskYaml() == ""
+        taskTemplate.getName() == "function"
+        taskTemplate.getOutput() == "{}"
+        taskTemplate.getSchema() == "{}"
+        taskTemplate.getEnable() == 1
+        taskTemplate.getType() == 0
+        taskTemplate.getTypeStr() == "函数模板（元数据）"
+        taskTemplate.getNodeType() == "meta"
+        taskTemplate.getMetaData().getIcon() == "function base64 icon code"
+        taskTemplate.getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
+    }
+
+    def "test turnTaskTemplateDOToTaskTemplate"() {
+        given:
+        TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
+        taskTemplateDO.setCategory("function")
+        taskTemplateDO.setIcon("function template base64 icon code")
+        taskTemplateDO.setName("function template")
+        taskTemplateDO.setEnable(1)
+        taskTemplateDO.setType(0)
+        taskTemplateDO.setSchema("{}")
+        taskTemplateDO.setTaskYaml("resourceName: function template")
+        taskTemplateDO.setId(1L)
+        taskTemplateDO.setOutput("{}")
+        taskTemplateDO.setCreateTime(new Date())
+        taskTemplateDO.setUpdateTime(new Date())
+        when:
+        TaskTemplate taskTemplate = taskTemplateService.turnTaskTemplateDOToTaskTemplate(taskTemplateDO)
+        then:
+        taskTemplate.getId() == 1L
+        taskTemplate.getCategory() == "function"
+        taskTemplate.getIcon() == "function template base64 icon code"
+        taskTemplate.getTaskYaml() == "resourceName: function template"
+        taskTemplate.getName() == "function template"
+        taskTemplate.getOutput() == "{}"
+        taskTemplate.getSchema() == "{}"
+        taskTemplate.getEnable() == 1
+        taskTemplate.getType() == 0
+        taskTemplate.getTypeStr() == "函数模板"
+        taskTemplate.getNodeType() == "template"
+        taskTemplate.getMetaData().getIcon() == "function base64 icon code"
+        taskTemplate.getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
+    }
+
+    def "test setTemplateDOBeforeCreate"() {
+        given:
+        TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
+        taskTemplateDO.setCategory("function")
+        taskTemplateDO.setName("function template")
+        taskTemplateDO.setEnable(1)
+        taskTemplateDO.setType(0)
+        when:
+        taskTemplateService.setTemplateDOBeforeCreate(taskTemplateDO)
+        then:
+        taskTemplateDO.getIcon() == ""
+        taskTemplateDO.getOutput() == "{}"
+        taskTemplateDO.getTaskYaml() == ""
+        taskTemplateDO.getSchema() == "{}"
+        taskTemplateDO.getCreateTime() != null
+        taskTemplateDO.getUpdateTime() != null
+    }
 }
