@@ -1,0 +1,22 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: httpPostSample
+tasks:
+  - category: pass
+    name: startNode
+    next: callApiNode
+  - category: function
+    name: callApiNode
+    pattern: task_sync
+    resourceName: http://sample-executor:8000/posts.json
+    inputMappings:
+      - source: "application/x-www-form-urlencoded"
+        target: $.input.header.content-type
+      - source: $.context.user
+        target: $.input.query.user
+      - source: $.context.title
+        target: $.input.body.title
+    outputMappings:
+      - source: $.output.result
+        target: $.context.result
