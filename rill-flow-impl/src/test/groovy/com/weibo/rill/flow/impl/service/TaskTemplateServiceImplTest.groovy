@@ -74,6 +74,31 @@ class TaskTemplateServiceImplTest extends Specification {
         array.get(0).getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
     }
 
+    def "test getTaskTemplates with templates category invalid"() {
+        given:
+        TaskTemplateParams params = TaskTemplateParams.builder().build()
+        TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
+        taskTemplateDO.setCategory("xxxx")
+        taskTemplateDO.setIcon("function template base64 icon code")
+        taskTemplateDO.setName("function template")
+        taskTemplateDO.setEnable(1)
+        taskTemplateDO.setType(0)
+        taskTemplateDO.setSchema("{}")
+        taskTemplateDO.setTaskYaml("resourceName: function template")
+        taskTemplateDO.setId(1L)
+        taskTemplateDO.setOutput("{}")
+        taskTemplateDO.setCreateTime(new Date())
+        taskTemplateDO.setUpdateTime(new Date())
+        taskTemplateDAO.getTaskTemplateList(_) >> [taskTemplateDO]
+        when:
+        List<TaskTemplate> array = taskTemplateService.getTaskTemplates(params, 0, 1)
+        then:
+        array.size() == 2
+        array.get(0).getCategory() == "function"
+        array.get(0).getIcon() == "function base64 icon code"
+        array.get(0).getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
+    }
+
     def "test getTaskTemplates with templates"() {
         given:
         TaskTemplateParams params = TaskTemplateParams.builder().build()
