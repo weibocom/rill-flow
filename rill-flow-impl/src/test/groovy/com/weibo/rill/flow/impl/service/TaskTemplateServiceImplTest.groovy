@@ -265,6 +265,26 @@ class TaskTemplateServiceImplTest extends Specification {
         taskTemplate.getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
     }
 
+    def "test checkTaskTemplateDOValid when taskTemplateDO is null or taskTemplateDO.name is null or taskTemplateDO.type is null"() {
+        given:
+        TaskTemplateDO taskTemplateDO1 = Mock(TaskTemplateDO)
+        taskTemplateDO1.getName() >> null
+        TaskTemplateDO taskTemplateDO2 = Mock(TaskTemplateDO)
+        taskTemplateDO2.getName() >> "taskTemplate2"
+        taskTemplateDO2.getType() >> null
+        TaskTemplateDO taskTemplateDO3 = Mock(TaskTemplateDO)
+        taskTemplateDO3.getName() >> "taskTemplate3"
+        taskTemplateDO3.getType() >> 1
+        taskTemplateDO3.getCategory() >> "xxx"
+        when:
+        taskTemplateService.checkTaskTemplateDOValid(null)
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO1)
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO2)
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO3)
+        then:
+        thrown IllegalArgumentException
+    }
+
     def "test turnTaskTemplateDOToTaskTemplate"() {
         given:
         TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
