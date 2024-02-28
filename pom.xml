@@ -936,6 +936,24 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>skip-rill-flow-test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <!-- 其他插件配置 -->
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
 

@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run Internal Test
-        run: mvn test -pl !rill-flow-test && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
+        run: mvn test && echo "Maven Run Internal Test succeeded"|| { echo "Run Internal Test failed."; exit 1; }
 
       - name: Install Docker Compose
         run: |
