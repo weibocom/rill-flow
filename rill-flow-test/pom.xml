@@ -27,13 +27,16 @@
             <classifier>jdk15</classifier>
         </dependency>
     </dependencies>
+    <properties>
+        <skipRillFlowTest>true</skipRillFlowTest>
+    </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>${skipRillFlowTest}</skip>
                 </configuration>
             </plugin>
         </plugins>
