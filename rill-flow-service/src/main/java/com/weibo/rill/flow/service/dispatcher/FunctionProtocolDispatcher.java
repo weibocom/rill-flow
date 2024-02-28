@@ -67,25 +67,7 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             HttpMethod method = Optional.ofNullable(requestType).map(String::toUpperCase).map(HttpMethod::resolve).orElse(HttpMethod.POST);
-            Object body = null;
-            if (method == HttpMethod.POST) {
-                boolean isApplicationFormUrlencodedValue = Optional.ofNullable(header.get(HttpHeaders.CONTENT_TYPE))
-                        .map(it -> it.contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
-                        .isPresent();
-                if (isApplicationFormUrlencodedValue) {
-                    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-                    requestParams.getBody().forEach((key, value) -> {
-                        if (value instanceof String) {
-                            params.add(key, (String) value);
-                        }
-                    });
-                    body = params;
-                } else {
-                    body = requestParams.getBody();
-                }
-            }
-
-            HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
+            HttpEntity<?> requestEntity = buildHttpEntity(method, header, requestParams);
             String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, method, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
@@ -95,6 +77,27 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
                     String.format("dispatchTask http fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
         }
+    }
+
+    HttpEntity<?> buildHttpEntity(HttpMethod method, MultiValueMap<String, String> header, HttpParameter requestParams) {
+        Object body = null;
+        if (method == HttpMethod.POST) {
+            boolean isApplicationFormUrlencodedValue = Optional.ofNullable(header.get(HttpHeaders.CONTENT_TYPE))
+                    .map(it -> it.contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                    .orElse(false);
+            if (isApplicationFormUrlencodedValue) {
+                MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+                requestParams.getBody().forEach((key, value) -> {
+                    if (value instanceof String) {
+                        params.add(key, (String) value);
+                    }
+                });
+                body = params;
+            } else {
+                body = requestParams.getBody();
+            }
+        }
+        return new HttpEntity<>(body, header);
     }
 
     @Override

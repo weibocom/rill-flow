@@ -11,12 +11,15 @@ class HttpInvokeHelperImplTest extends Specification {
         given:
         String executionId = "xxx"
         String taskInfoName = "testFunctionRequestParams"
+
         when:
         def httpParameter = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, null, input)
+
         then:
         httpParameter.queryParams == query
         httpParameter.body == body
         httpParameter.header == header as Map<String, String>
+
         where:
         input                                                                                                                                         | query                                                                         | body                                     | header
         ['input_num': 10]                                                                                                                             | ['execution_id': "xxx", 'name': "testFunctionRequestParams"]                  | ['input_num': 10]                        | [:]
