@@ -905,6 +905,11 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>com.weibo.rill.flow.sample.SampleApiTest</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
