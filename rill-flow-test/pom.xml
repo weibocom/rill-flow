@@ -34,7 +34,7 @@
                 <!-- 定义激活条件 -->
                 <property>
                     <name>skipRillFlowTest</name>
-                    <value>false</value>
+                    <value>true</value>
                 </property>
             </activation>
             <build>
