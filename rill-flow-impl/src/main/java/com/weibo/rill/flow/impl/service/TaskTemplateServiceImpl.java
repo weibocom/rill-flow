@@ -147,7 +147,8 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     private TaskTemplate turnTaskTemplateDOToTaskTemplate(TaskTemplateDO taskTemplateDO) {
         AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory() + "TaskRunner");
         if (taskRunner == null) {
-            throw new IllegalArgumentException("模板 category 不存在");
+            log.warn("category in taskTemplateDO is invalid: {}", taskTemplateDO.getCategory());
+            throw new IllegalArgumentException("category in taskTemplateDO is invalid: " + taskTemplateDO.getCategory());
         }
         TaskTemplate result = new TaskTemplate();
         result.setId(taskTemplateDO.getId());
@@ -206,7 +207,8 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         String category = taskTemplateDO.getCategory();
         TaskCategory taskCategory = TaskCategory.getEnumByValue(category);
         if (taskCategory == null) {
-            throw new IllegalArgumentException("task_template category is illegal");
+            log.warn("task_template category is invalid: {}", category);
+            throw new IllegalArgumentException("task_template category is invalid: " + category);
         }
     }
 
