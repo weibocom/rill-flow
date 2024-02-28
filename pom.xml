@@ -936,12 +936,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>skip-rill-flow-test</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
     </profiles>
 </project>
 
