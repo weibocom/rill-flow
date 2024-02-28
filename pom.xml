@@ -21,7 +21,7 @@
 
     <groupId>com.weibo</groupId>
     <artifactId>rill-flow</artifactId>
-    <version>0.1.6-SNAPSHOT</version>
+    <version>0.1.7-SNAPSHOT</version>
 
     <name>rill-flow</name>
     <description>a high-performance and scalable distributed workflow orchestration service, originally designed to tackle the complexities and high concurrency demands of video processing workflows in the Weibo video business context.</description>

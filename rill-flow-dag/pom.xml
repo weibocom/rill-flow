@@ -19,7 +19,7 @@
     <parent>
         <artifactId>rill-flow</artifactId>
         <groupId>com.weibo</groupId>
-        <version>0.1.6-SNAPSHOT</version>
+        <version>0.1.7-SNAPSHOT</version>
     </parent>
     <modules>
         <module>olympicene-traversal</module>
