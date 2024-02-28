@@ -907,7 +907,7 @@
                 </executions>
                 <configuration>
                     <excludes>
-                        <exclude>com.weibo.rill.flow.sample.SampleApiTest</exclude>
+                        <exclude>com/weibo/rill/flow/sample/SampleApiTest</exclude>
                     </excludes>
                 </configuration>
             </plugin>
