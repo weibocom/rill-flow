@@ -207,6 +207,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         if (taskTemplateDO.getSchema() == null) {
             taskTemplateDO.setSchema("{}");
         }
+        taskTemplateDO.setEnable(1);
         taskTemplateDO.setCreateTime(new Date());
         taskTemplateDO.setUpdateTime(new Date());
     }
