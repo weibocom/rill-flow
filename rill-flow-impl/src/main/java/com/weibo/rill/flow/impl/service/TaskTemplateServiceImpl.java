@@ -47,7 +47,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
 
     private final static int minPage = 1;
     private final static int minPageSize = 10;
-    private final static int maxPageSize = 50;
+    private final static int maxPageSize = 500;
 
     public JSONArray getTaskMetaDataList() {
         JSONArray metaDataList = new JSONArray();
