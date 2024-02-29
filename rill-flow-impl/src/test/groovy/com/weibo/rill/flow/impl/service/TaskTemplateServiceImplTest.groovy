@@ -15,6 +15,8 @@ import spock.lang.Unroll
 /**
  * TaskTemplateServiceImpl 测试类
  */
+
+@Unroll
 class TaskTemplateServiceImplTest extends Specification {
     TaskTemplateServiceImpl taskTemplateService = new TaskTemplateServiceImpl()
     AbstractTaskRunner functionTaskRunner = Mock(AbstractTaskRunner)
@@ -292,7 +294,6 @@ class TaskTemplateServiceImplTest extends Specification {
         taskTemplate.getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
     }
 
-    @Unroll
     def "test checkTaskTemplateDOValid when taskTemplateDO.name is null"() {
         given:
         TaskTemplateDO taskTemplateDO1 = Mock(TaskTemplateDO)
