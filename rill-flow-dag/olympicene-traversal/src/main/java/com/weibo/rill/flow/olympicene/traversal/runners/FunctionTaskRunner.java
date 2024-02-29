@@ -96,6 +96,11 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getIcon() {
+        return "ant-design:api-outlined";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("function task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
