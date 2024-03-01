@@ -39,7 +39,7 @@
     "options": [
       {
         "name": "同步",
-        "value": "task_scheduler"
+        "value": "task_sync"
       },
       {
         "name": "异步",
