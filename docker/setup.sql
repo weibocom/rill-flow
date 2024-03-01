@@ -19,7 +19,7 @@ USE rill_flow;
 CREATE TABLE IF NOT EXISTS `task_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `name` varchar(64) NOT NULL DEFAULT '' COMMENT 'template name',
-    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function，1. plugin，2. logic',
+    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function, 1. plugin, 2. logic',
     `category` varchar(64) NOT NULL DEFAULT '' COMMENT 'template category: function, foreach, etc.',
     `icon` TEXT NOT NULL COMMENT 'icon base64 string',
     `task_yaml` TEXT NOT NULL COMMENT 'default task yaml configurations in dag',
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `task_template` (
     KEY `idx_type_category` (`type`, `category`),
     KEY `idx_update_time` (`update_time`),
     KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Rill Flow task template table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Rill Flow task template table';
 
 grant all on *.* to 'root'@'%' identified by 'secret';
 flush privileges;
