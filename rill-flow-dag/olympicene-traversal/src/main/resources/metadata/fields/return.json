@@ -1,4 +1,5 @@
 {
+  "keys": ["name", "input_mappings", "conditions", "next"],
   "name": {
     "type": "string",
     "name": "任务名称",
