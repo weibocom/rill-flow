@@ -37,3 +37,6 @@ CREATE TABLE IF NOT EXISTS `task_template` (
 
 grant all on *.* to 'root'@'%' identified by 'secret';
 flush privileges;
+
+DELETE FROM task_template where `name` = '通义千问文本AI模型';
+INSERT INTO task_template (`name`, `type`, `category`, `icon`, `task_yaml`, `schema`, `output`, `enable`, `create_time`, `update_time`) VALUES ('通义千问文本AI模型', 1, 'function', '', 'resourceName: "aliyun_ai://xxx"\nresourceProtocal: "aliyun_ai"', '{"type":"object","required":["appkey","model","prompt"],"properties":{"appkey":{"type":"string","title":"appkey"},"model":{"type":"string","title":"model"},"prompt":{"type":"string","title":"prompt"},"message_suffix":{"type":"string","title":"后缀信息"},"message_prefix":{"type":"string","title":"前缀信息"}}}', '', 1, now(), now());
