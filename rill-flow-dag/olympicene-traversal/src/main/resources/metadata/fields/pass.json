@@ -1,5 +1,5 @@
 {
-  "keys": ["name", "input_mappings", "output_mappings", "next"],
+  "_keys": ["name", "input_mappings", "output_mappings", "next"],
   "name": {
     "type": "string",
     "name": "任务名称",

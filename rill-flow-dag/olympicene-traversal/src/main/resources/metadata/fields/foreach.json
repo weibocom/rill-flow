@@ -1,5 +1,5 @@
 {
-  "keys": ["name", "synchronization", "iterationMapping", "input_mappings", "output_mappings", "tasks", "next"],
+  "_keys": ["name", "synchronization", "iterationMapping", "input_mappings", "output_mappings", "tasks", "next"],
   "name": {
     "type": "string",
     "name": "任务名称",
