@@ -29,8 +29,11 @@ import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -64,9 +67,7 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             HttpMethod method = Optional.ofNullable(requestType).map(String::toUpperCase).map(HttpMethod::resolve).orElse(HttpMethod.POST);
-            Map<String, Object> body = method != HttpMethod.POST ? null : requestParams.getBody();
-
-            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, header);
+            HttpEntity<?> requestEntity = buildHttpEntity(method, header, requestParams);
             String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, method, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
@@ -76,6 +77,29 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
                     String.format("dispatchTask http fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
         }
+    }
+
+    HttpEntity<?> buildHttpEntity(HttpMethod method, MultiValueMap<String, String> header, HttpParameter requestParams) {
+        Object body = null;
+        if (method != HttpMethod.POST) {
+            return new HttpEntity<>(body, header);
+
+        }
+        boolean isApplicationFormUrlencodedValue = Optional.ofNullable(header.get(HttpHeaders.CONTENT_TYPE))
+                .map(it -> it.contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .orElse(false);
+        if (isApplicationFormUrlencodedValue) {
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            requestParams.getBody().forEach((key, value) -> {
+                if (value instanceof String) {
+                    params.add(key, (String) value);
+                }
+            });
+            body = params;
+        } else {
+            body = requestParams.getBody();
+        }
+        return new HttpEntity<>(body, header);
     }
 
     @Override

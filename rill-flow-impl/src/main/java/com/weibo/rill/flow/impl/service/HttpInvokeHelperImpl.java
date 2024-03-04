@@ -102,6 +102,32 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
             }
         }));
 
+
+        if (input != null) {
+            input.forEach((key, value) -> {
+                if (value instanceof Map) {
+                    switch (key) {
+                        case "query":
+                            queryParams.putAll((Map<String, Object>) value);
+                            functionInput.remove("query");
+                            break;
+                        case "header":
+                            header.putAll((Map<String, String>) value);
+                            functionInput.remove("header");
+                            break;
+                        case "body":
+                            body.putAll((Map<String, Object>) value);
+                            functionInput.remove("body");
+                        default:
+                            functionInput.putAll((Map<String, Object>) value);
+                            break;
+                    }
+                } else {
+                    functionInput.put(key, value);
+                }
+            });
+        }
+
         return HttpParameter.builder().header(header).queryParams(queryParams).body(body).callback(callback).build();
     }
 
