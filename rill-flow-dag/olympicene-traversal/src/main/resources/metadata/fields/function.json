@@ -149,6 +149,7 @@
   },
   "retry": {
     "type": "object",
+    "name": "重试配置",
     "required": false,
     "fields": {
       "max_retry_times": {
