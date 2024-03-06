@@ -167,6 +167,7 @@ public class DAGResourceStatistic {
         } catch (Exception e) {
             log.warn("updateUrlTypeResourceStatus fails, executionId:{}, resourceName:{}, urlRet:{}, errorMsg:{}",
                     executionId, resourceName, urlRet, e.getMessage());
+            return null;
         }
     }
 
