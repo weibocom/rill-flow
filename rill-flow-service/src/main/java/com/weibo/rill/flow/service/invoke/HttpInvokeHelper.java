@@ -22,6 +22,7 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
@@ -36,5 +37,5 @@ public interface HttpInvokeHelper {
 
     String buildUrl(Resource resource, Map<String, Object> queryParams);
 
-    String invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime);
+    ResponseEntity<String> invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime);
 }

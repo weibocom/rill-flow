@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -154,14 +155,15 @@ public class DAGResourceStatistic {
         }
     }
 
-    public void updateUrlTypeResourceStatus(String executionId, String taskName, String resourceName, String urlRet) {
+    public JSONObject updateUrlTypeResourceStatus(String executionId, String taskName, String resourceName, String urlRet) {
         try {
             if (StringUtils.isBlank(urlRet) || urlRet.startsWith("[")) {
-                return;
+                return null;
             }
 
             JSONObject urlRetJson = JSON.parseObject(urlRet);
             updateUrlTypeResourceStatus(executionId, taskName, resourceName, urlRetJson);
+            return urlRetJson;
         } catch (Exception e) {
             log.warn("updateUrlTypeResourceStatus fails, executionId:{}, resourceName:{}, urlRet:{}, errorMsg:{}",
                     executionId, resourceName, urlRet, e.getMessage());
@@ -261,5 +263,12 @@ public class DAGResourceStatistic {
         Map<String, ResourceStatus> taskNameToResourceStatus = serviceResourceCache.get(ExecutionIdUtil.getServiceId(executionId));
         String cachedTaskName = String.format(CACHED_TASK_NAME_FORMAT, DAGWalkHelper.getInstance().getBaseTaskName(taskName), resourceName);
         return taskNameToResourceStatus.computeIfAbsent(cachedTaskName, key -> ResourceStatus.builder().resourceName(resourceName).build());
+    }
+
+    public void updateUrlTypeResourceStatus(String executionId, String taskInfoName, String resourceName, ResponseEntity<String> responseEntity) {
+        JSONObject retObject = updateUrlTypeResourceStatus(executionId, taskInfoName, resourceName, responseEntity.getBody());
+        if (retObject.get("status_code") == null) {
+            retObject.put("status_code", responseEntity.getStatusCodeValue());
+        }
     }
 }

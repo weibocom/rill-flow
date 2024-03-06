@@ -26,6 +26,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.core.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +54,7 @@ public class ReturnTaskRunner extends AbstractTaskRunner {
         log.info("return task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         ReturnTask returnTask = (ReturnTask) taskInfo.getTask();
-        boolean needReturn = conditionsAllMatch(returnTask.getConditions(), input, "input");
+        boolean needReturn = ConditionsUtil.conditionsAllMatch(returnTask.getConditions(), input, "input");
         log.info("needReturn conditions {}", needReturn);
 
         Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();

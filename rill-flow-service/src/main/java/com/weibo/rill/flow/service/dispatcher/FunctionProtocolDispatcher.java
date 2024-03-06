@@ -30,6 +30,7 @@ import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
@@ -67,9 +68,9 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
             Map<String, Object> body = method != HttpMethod.POST ? null : requestParams.getBody();
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, header);
-            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, method, maxInvokeTime);
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
-            return ret;
+            ResponseEntity<String> responseEntity = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, method, maxInvokeTime);
+            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), responseEntity);
+            return responseEntity.getBody();
         } catch (RestClientResponseException e) {
             String responseBody = e.getResponseBodyAsString();
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), responseBody);
