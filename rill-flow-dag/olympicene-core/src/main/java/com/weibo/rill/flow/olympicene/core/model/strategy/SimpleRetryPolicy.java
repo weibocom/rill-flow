@@ -20,8 +20,10 @@ import com.weibo.rill.flow.interfaces.model.strategy.Retry;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.utils.ConditionsUtil;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -40,6 +42,24 @@ public class SimpleRetryPolicy implements RetryPolicy {
         int maxRetryTimes = Optional.ofNullable(context.getRetryConfig()).map(Retry::getMaxRetryTimes).orElse(0);
 
         return invokeTimes <= maxRetryTimes;
+    }
+
+    @Override
+    public boolean needRetry(RetryContext context, Map<String, Object> output) {
+        if (context.getTaskStatus() != TaskStatus.FAILED) {
+            return false;
+        }
+
+        List<String> retryConditions = Optional.ofNullable(context.getRetryConfig()).map(Retry::getConditions).orElse(null);
+        if (retryConditions == null || retryConditions.isEmpty()) {
+            return needRetry(context);
+        }
+        boolean matchRetry = ConditionsUtil.conditionsAnyMatch(retryConditions, output, "output");
+        if (matchRetry) {
+            return needRetry(context);
+        } else {
+            return false;
+        }
     }
 
     @Override

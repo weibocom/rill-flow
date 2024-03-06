@@ -128,19 +128,12 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
     }
 
     @Override
-    public String invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime) {
+    public ResponseEntity<String> invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime) {
         RestTemplate restTemplate = defaultRestTemplate;
         String cause = null;
         for (int i = 1; i <= maxInvokeTime; i++) {
             try {
-                String result;
-                if (method == HttpMethod.GET) {
-                    ResponseEntity<String> responseEntity = restTemplate.exchange(new URI(url), method, requestEntity, String.class);
-                    result = responseEntity.getBody();
-                } else {
-                    result = restTemplate.postForObject(new URI(url), requestEntity, String.class);
-                }
-                return result;
+                return restTemplate.exchange(new URI(url), method, requestEntity, String.class);
             } catch (RestClientResponseException e) {
                 throw e;
             } catch (Exception e) {

@@ -22,6 +22,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @NoArgsConstructor
 @Setter
 @Getter
@@ -29,13 +31,16 @@ public class Retry {
     private Integer intervalInSeconds;
     private Integer maxRetryTimes;
     private Double multiplier;
+    private List<String> conditions;
 
     @JsonCreator
     public Retry(@JsonProperty("intervalInSeconds") Integer intervalInSeconds,
                  @JsonProperty("maxRetryTimes") Integer maxRetryTimes,
-                 @JsonProperty("multiplier") Double multiplier) {
+                 @JsonProperty("multiplier") Double multiplier,
+                 @JsonProperty("conditions") List<String> conditions) {
         this.intervalInSeconds = intervalInSeconds;
         this.maxRetryTimes = maxRetryTimes;
         this.multiplier = multiplier;
+        this.conditions = conditions;
     }
 }

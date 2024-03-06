@@ -17,8 +17,11 @@
 package com.weibo.rill.flow.olympicene.core.model.strategy;
 
 
+import java.util.Map;
+
 public interface RetryPolicy {
     boolean needRetry(RetryContext context);
+    boolean needRetry(RetryContext context, Map<String, Object> output);
 
     int calculateRetryInterval(RetryContext context);
 }

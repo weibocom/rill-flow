@@ -31,6 +31,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.core.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
@@ -180,7 +181,7 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
 
     private boolean isNeedWakeup(TaskInfo taskInfo, Map<String, Object> input) {
         SuspenseTask suspenseTask = (SuspenseTask) taskInfo.getTask();
-        return conditionsAllMatch(suspenseTask.getConditions(), input, "input");
+        return ConditionsUtil.conditionsAllMatch(suspenseTask.getConditions(), input, "input");
     }
 
     private boolean isNeedInterrupt(TaskInfo taskInfo, Map<String, Object> input) {
@@ -188,7 +189,7 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
         if (CollectionUtils.isEmpty(suspenseTask.getInterruptions())) {
             return false;
         }
-        return conditionsAnyMatch(suspenseTask.getInterruptions(), input, "input");
+        return ConditionsUtil.conditionsAnyMatch(suspenseTask.getInterruptions(), input, "input");
     }
 
     private void taskInfoValid(String executionId, String taskInfoName, TaskInfo taskInfo) {
