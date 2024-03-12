@@ -14,7 +14,7 @@ import spock.lang.Stepwise
 import spock.lang.Timeout
 
 @Stepwise
-class SampleApiTest extends Specification {
+class SampleApiIT extends Specification {
 
     
     

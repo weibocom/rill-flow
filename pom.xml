@@ -21,7 +21,7 @@
 
     <groupId>com.weibo</groupId>
     <artifactId>rill-flow</artifactId>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.9-SNAPSHOT</version>
 
     <name>rill-flow</name>
     <description>a high-performance and scalable distributed workflow orchestration service, originally designed to tackle the complexities and high concurrency demands of video processing workflows in the Weibo video business context.</description>
@@ -935,12 +935,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>flow_api_test</id>
-            <modules>
-                <module>rill-flow-test</module>
-            </modules>
         </profile>
     </profiles>
 </project>

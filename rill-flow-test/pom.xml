@@ -4,13 +4,14 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow</artifactId>
-        <version>0.1.8-SNAPSHOT</version>
+        <version>0.1.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>rill-flow-test</artifactId>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <skipITs>true</skipITs>
+        <maven.deploy.skip>true</maven.deploy.skip>
      </properties>
     <dependencies>
     <dependency>
@@ -28,4 +29,15 @@
             <classifier>jdk15</classifier>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <configuration>
+                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
