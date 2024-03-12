@@ -936,12 +936,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>flow_api_test</id>
-            <modules>
-                <module>rill-flow-test</module>
-            </modules>
-        </profile>
     </profiles>
 </project>
 
