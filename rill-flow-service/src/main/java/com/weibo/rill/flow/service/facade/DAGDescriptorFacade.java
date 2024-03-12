@@ -175,7 +175,9 @@ public class DAGDescriptorFacade {
 
     public Map<String, Object> addDescriptor(String identity, String businessId, String featureName, String alias, String descriptor) {
         try {
-            dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
+            if (StringUtils.isNotEmpty(descriptor)) {
+                dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
+            }
             String descriptorId = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptor);
 
             Map<String, String> attachments = Maps.newHashMap();
