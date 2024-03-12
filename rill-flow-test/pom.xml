@@ -10,7 +10,7 @@
     <artifactId>rill-flow-test</artifactId>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <skipITs>true</skipITs>
         <maven.deploy.skip>true</maven.deploy.skip>
      </properties>
     <dependencies>
