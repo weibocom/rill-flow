@@ -47,7 +47,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
 
     private final static int minPage = 1;
     private final static int minPageSize = 10;
-    private final static int maxPageSize = 50;
+    private final static int maxPageSize = 500;
 
     public JSONArray getTaskMetaDataList() {
         JSONArray metaDataList = new JSONArray();
@@ -114,7 +114,11 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
             return taskTemplateList;
         }
         for (TaskTemplateDO taskTemplateDO : taskTemplateDOList) {
-            taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
+            try {
+                taskTemplateList.add(turnTaskTemplateDOToTaskTemplate(taskTemplateDO));
+            } catch (Exception e) {
+                log.error("taskTemplateDO to taskTemplate error", e);
+            }
         }
         return taskTemplateList;
     }
@@ -141,6 +145,11 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     }
 
     private TaskTemplate turnTaskTemplateDOToTaskTemplate(TaskTemplateDO taskTemplateDO) {
+        AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory() + "TaskRunner");
+        if (taskRunner == null) {
+            log.warn("category in taskTemplateDO is invalid: {}", taskTemplateDO.getCategory());
+            throw new IllegalArgumentException("category in taskTemplateDO is invalid: " + taskTemplateDO.getCategory());
+        }
         TaskTemplate result = new TaskTemplate();
         result.setId(taskTemplateDO.getId());
         result.setCategory(taskTemplateDO.getCategory());
@@ -153,7 +162,6 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         result.setEnable(taskTemplateDO.getEnable());
         result.setTypeStr(TaskTemplateTypeEnum.getEnumByType(taskTemplateDO.getType()).getDesc());
         result.setNodeType("template");
-        AbstractTaskRunner taskRunner = taskRunnerMap.get(taskTemplateDO.getCategory() + "TaskRunner");
         MetaData metaData = MetaData.builder().icon(taskRunner.getIcon()).fields(taskRunner.getFields()).build();
         result.setMetaData(metaData);
         return result;
@@ -182,15 +190,25 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     public long createTaskTemplate(JSONObject taskTemplate) {
         try {
             TaskTemplateDO taskTemplateDO = JSONObject.parseObject(taskTemplate.toJSONString(), TaskTemplateDO.class);
-            if (taskTemplateDO == null || taskTemplateDO.getName() == null || taskTemplateDO.getType() == null) {
-                throw new IllegalArgumentException("task_template can't be null");
-            }
+            checkTaskTemplateDOValid(taskTemplateDO);
             // set default value if field is null
             setTemplateDOBeforeCreate(taskTemplateDO);
             return taskTemplateDAO.insert(taskTemplateDO);
         } catch (Exception e) {
             log.warn("create task template error", e);
             throw e;
+        }
+    }
+
+    private static void checkTaskTemplateDOValid(TaskTemplateDO taskTemplateDO) {
+        if (taskTemplateDO == null || taskTemplateDO.getName() == null || taskTemplateDO.getType() == null) {
+            throw new IllegalArgumentException("task_template can't be null");
+        }
+        String category = taskTemplateDO.getCategory();
+        TaskCategory taskCategory = TaskCategory.getEnumByValue(category);
+        if (taskCategory == null) {
+            log.warn("task_template category is invalid: {}", category);
+            throw new IllegalArgumentException("task_template category is invalid: " + category);
         }
     }
 
@@ -207,6 +225,7 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         if (taskTemplateDO.getSchema() == null) {
             taskTemplateDO.setSchema("{}");
         }
+        taskTemplateDO.setEnable(1);
         taskTemplateDO.setCreateTime(new Date());
         taskTemplateDO.setUpdateTime(new Date());
     }

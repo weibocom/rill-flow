@@ -10,9 +10,13 @@ import com.weibo.rill.flow.task.template.dao.model.TaskTemplateDO
 import com.weibo.rill.flow.task.template.model.TaskTemplate
 import com.weibo.rill.flow.task.template.model.TaskTemplateParams
 import spock.lang.Specification
+import spock.lang.Unroll
+
 /**
  * TaskTemplateServiceImpl 测试类
  */
+
+@Unroll
 class TaskTemplateServiceImplTest extends Specification {
     TaskTemplateServiceImpl taskTemplateService = new TaskTemplateServiceImpl()
     AbstractTaskRunner functionTaskRunner = Mock(AbstractTaskRunner)
@@ -63,6 +67,31 @@ class TaskTemplateServiceImplTest extends Specification {
         given:
         TaskTemplateParams params = TaskTemplateParams.builder().build()
         taskTemplateDAO.getTaskTemplateList(_) >> null
+        when:
+        List<TaskTemplate> array = taskTemplateService.getTaskTemplates(params, 0, 1)
+        then:
+        array.size() == 2
+        array.get(0).getCategory() == "function"
+        array.get(0).getIcon() == "function base64 icon code"
+        array.get(0).getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
+    }
+
+    def "test getTaskTemplates with templates category invalid"() {
+        given:
+        TaskTemplateParams params = TaskTemplateParams.builder().build()
+        TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
+        taskTemplateDO.setCategory("xxxx")
+        taskTemplateDO.setIcon("function template base64 icon code")
+        taskTemplateDO.setName("function template")
+        taskTemplateDO.setEnable(1)
+        taskTemplateDO.setType(0)
+        taskTemplateDO.setSchema("{}")
+        taskTemplateDO.setTaskYaml("resourceName: function template")
+        taskTemplateDO.setId(1L)
+        taskTemplateDO.setOutput("{}")
+        taskTemplateDO.setCreateTime(new Date())
+        taskTemplateDO.setUpdateTime(new Date())
+        taskTemplateDAO.getTaskTemplateList(_) >> [taskTemplateDO]
         when:
         List<TaskTemplate> array = taskTemplateService.getTaskTemplates(params, 0, 1)
         then:
@@ -263,6 +292,46 @@ class TaskTemplateServiceImplTest extends Specification {
         taskTemplate.getNodeType() == "meta"
         taskTemplate.getMetaData().getIcon() == "function base64 icon code"
         taskTemplate.getMetaData().getFields() == ["field1": "field1", "field2": "field2"]
+    }
+
+    def "test checkTaskTemplateDOValid when taskTemplateDO.name is null"() {
+        given:
+        TaskTemplateDO taskTemplateDO1 = Mock(TaskTemplateDO)
+        taskTemplateDO1.getName() >> null
+        when:
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO1)
+        then:
+        thrown(IllegalArgumentException)
+    }
+
+    def "test checkTaskTemplateDOValid when taskTemplateDO is null"() {
+        when:
+        taskTemplateService.checkTaskTemplateDOValid(null)
+        then:
+        thrown(IllegalArgumentException)
+    }
+
+    def "test checkTaskTemplateDOValid when taskTemplateDO.type is null"() {
+        given:
+        TaskTemplateDO taskTemplateDO2 = Mock(TaskTemplateDO)
+        taskTemplateDO2.getName() >> "taskTemplate2"
+        taskTemplateDO2.getType() >> null
+        when:
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO2)
+        then:
+        thrown(IllegalArgumentException)
+    }
+
+    def "test checkTaskTemplateDOValid when taskTemplateDO.category is invalid"() {
+        given:
+        TaskTemplateDO taskTemplateDO3 = Mock(TaskTemplateDO)
+        taskTemplateDO3.getName() >> "taskTemplate3"
+        taskTemplateDO3.getType() >> 1
+        taskTemplateDO3.getCategory() >> "xxx"
+        when:
+        taskTemplateService.checkTaskTemplateDOValid(taskTemplateDO3)
+        then:
+        thrown(IllegalArgumentException)
     }
 
     def "test turnTaskTemplateDOToTaskTemplate"() {

@@ -71,6 +71,11 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
         return TaskCategory.FOREACH;
     }
 
+    @Override
+    public String getIcon() {
+        return "ant-design:sync-outlined";
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {

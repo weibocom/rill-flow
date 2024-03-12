@@ -19,7 +19,7 @@ USE rill_flow;
 CREATE TABLE IF NOT EXISTS `task_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `name` varchar(64) NOT NULL DEFAULT '' COMMENT 'template name',
-    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function，1. plugin，2. logic',
+    `type` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'template type: 0. function, 1. plugin, 2. logic',
     `category` varchar(64) NOT NULL DEFAULT '' COMMENT 'template category: function, foreach, etc.',
     `icon` TEXT NOT NULL COMMENT 'icon base64 string',
     `task_yaml` TEXT NOT NULL COMMENT 'default task yaml configurations in dag',
@@ -33,7 +33,11 @@ CREATE TABLE IF NOT EXISTS `task_template` (
     KEY `idx_type_category` (`type`, `category`),
     KEY `idx_update_time` (`update_time`),
     KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Rill Flow task template table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Rill Flow task template table';
 
 grant all on *.* to 'root'@'%' identified by 'secret';
 flush privileges;
+
+DELETE FROM task_template where `name` = 'aliyun-ai-module';
+INSERT INTO task_template (`name`, `type`, `category`, `icon`, `task_yaml`, `schema`, `output`, `enable`, `create_time`, `update_time`)
+VALUES ('aliyun-ai-module', 1, 'function', 'ant-design:aliyun-outlined', 'resourceName: "aliyun_ai://aliyun"\nresourceProtocal: "aliyun_ai"\nname: "aliyunAiTemplate"\ncategory: "function"\npattern: "task_sync"', '{"type":"object","required":["apikey","message"],"properties":{"apikey":{"type":"string","title":"apikey"},"model":{"type":"string","title":"model"},"message":{"type":"string","title":"prompt"},"message_suffix":{"type":"string","title":"suffix message"},"message_prefix":{"type":"string","title":"prefix message"}}}', '{"type":"object","properties":{"output":{"type":"object","title":"output","properties":{"text":{"type":"string","title":"text"}}},"requestId":{"type":"string","title":"requestId"}}}', 1, now(), now());

@@ -16,12 +16,24 @@
 
 package com.weibo.rill.flow.olympicene.storage.redis.lock
 
+import com.alibaba.fastjson.JSONObject
+import com.alibaba.fastjson.parser.Feature
 import spock.lang.Specification
 
 class ResourceLoaderTest extends Specification {
     def "test loadResourceAsText"() {
         expect:
         ResourceLoader.loadResourceAsText("test.json") == "{\"hello\": \"world\"}"
+    }
+
+    def "test loadResourceAsText load json by ordered"() {
+        when:
+        var text = ResourceLoader.loadResourceAsText("function.json")
+        JSONObject jsonObject = JSONObject.parseObject(text, Feature.OrderedField)
+        then:
+        new ArrayList<>(jsonObject.keySet()).get(0) == "name"
+        new ArrayList<>(jsonObject.keySet()).get(1) == "resource_name"
+        new ArrayList<>(jsonObject.keySet()).get(2) == "resource_protocol"
     }
 
     def "test loadResourceAsText with non-existing resource"() {

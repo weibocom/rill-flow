@@ -26,7 +26,7 @@ class FunctionTaskRunnerTest extends Specification {
     def "test base properties getter"() {
         expect:
         runner.getCategory() == TaskCategory.FUNCTION
-        runner.getIcon() == ""
+        runner.getIcon() == "ant-design:api-outlined"
     }
 
     def "test getFields"() {

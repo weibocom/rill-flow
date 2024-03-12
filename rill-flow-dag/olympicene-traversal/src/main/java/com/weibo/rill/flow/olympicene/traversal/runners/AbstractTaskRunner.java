@@ -18,6 +18,7 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
 import com.google.common.collect.*;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -83,7 +84,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         TaskCategory category = getCategory();
         try {
             String config = ResourceLoader.loadResourceAsText("metadata/fields/" + category.getValue() + ".json");
-            return JSON.parseObject(config);
+            return JSON.parseObject(config, Feature.OrderedField);
         } catch (Exception e) {
             log.warn("get fields error, category: {}", category.getValue(), e);
             throw new RuntimeException(e);

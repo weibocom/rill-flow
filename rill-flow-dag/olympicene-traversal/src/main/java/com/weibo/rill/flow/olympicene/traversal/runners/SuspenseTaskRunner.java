@@ -67,6 +67,11 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getIcon() {
+        return "ant-design:pause-circle-outlined";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("suspense task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
