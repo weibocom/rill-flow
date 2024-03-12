@@ -34,5 +34,5 @@ jobs:
           docker-compose up -d
 
       - name: Run API Test
-        run:  mvn test -P flow_api_test -Dapi.url=http://localhost:8080 && echo "Run API Test succeeded" || { echo "Run API Test failed."; exit 1; }
+        run:  mvn test -pl rill-flow-test -Dmaven.test.skip=false -Dapi.url=http://localhost:8080 && echo "Run API Test succeeded" || { echo "Run API Test failed."; exit 1; }
           
