@@ -24,6 +24,9 @@
     </parent>
     <artifactId>rill-flow-task-template</artifactId>
     <packaging>jar</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -54,5 +57,14 @@
     </dependencies>
     <build>
         <finalName>rill-flow-task-template</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <configuration>
+                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>
