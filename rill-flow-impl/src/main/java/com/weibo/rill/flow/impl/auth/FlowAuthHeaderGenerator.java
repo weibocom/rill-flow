@@ -48,6 +48,6 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
         }
         paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
         AuthHttpUtil.addSignToParam(paramMap, authSecret);
-        httpHeaders.add("X-Callback-Url", "http://" + flowServerHost + flowCallbackUri + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
+        httpHeaders.add("X-Callback-Url", flowServerHost + flowCallbackUri + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
     }
 }

@@ -36,7 +36,7 @@ public class UrlBuildServiceImpl implements UrlBuildService {
     @Override
     public String buildRedoUrl(String executionId, String taskNamesString) {
         URIBuilder uriBuilder;
-        String redoUrl = "http://" + serverHost + redoUri;
+        String redoUrl = serverHost + redoUri;
         try {
             uriBuilder = new URIBuilder(redoUrl);
             uriBuilder.addParameter("execution_id", executionId);
