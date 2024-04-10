@@ -28,7 +28,7 @@ import java.util.Map;
 
 public interface HttpInvokeHelper {
 
-    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task);
+    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input);
 
     HttpParameter functionRequestParams(String executionId, String taskInfoName, Resource resource, Map<String, Object> input);
 

@@ -168,7 +168,7 @@ public class OlympiceneCallback implements Callback<DAGCallbackInfo> {
             HttpParameter requestParams = buildRequestParams(callbackConfig, dagCallbackInfo);
             String url = httpInvokeHelper.buildUrl(new Resource(resourceName), requestParams.getQueryParams());
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpInvokeHelper.appendRequestHeader(httpHeaders, executionId, null);
+            httpInvokeHelper.appendRequestHeader(httpHeaders, executionId, null, dagCallbackInfo.getContext());
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestParams.getBody(), httpHeaders);
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             httpInvokeHelper.invokeRequest(executionId, null, url, requestEntity, HttpMethod.POST, maxInvokeTime);
