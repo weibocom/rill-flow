@@ -52,8 +52,8 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
     private AuthHeaderGenerator authHeaderGenerator;
 
     @Override
-    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task) {
-        authHeaderGenerator.appendRequestHeader(httpHeaders, executionId, task);
+    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
+        authHeaderGenerator.appendRequestHeader(httpHeaders, executionId, task, input);
         if (task != null && task.getTask() instanceof FunctionTask functionTask) {
             if (FunctionPattern.TASK_SCHEDULER.equals(functionTask.getPattern())
                     || FunctionPattern.TASK_ASYNC.equals(functionTask.getPattern())) {
@@ -70,7 +70,7 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         queryParams.put("name", taskInfoName);
         Map<String, Object> body = httpParameter.getBody();
         httpParameter.setBody(Optional.ofNullable((Map<String, Object>) body.get("data")).orElse(Maps.newHashMap()));
-        log.info("buildRequestParams result queryParams:{} body:{}, executionId:{}， taskInfoName:{}", queryParams, body, executionId, taskInfoName);
+        log.info("buildRequestParams result queryParams:{} body:{}, executionId:{}， taskInfoName:{}", queryParams, httpParameter.getBody(), executionId, taskInfoName);
         return httpParameter;
     }
 

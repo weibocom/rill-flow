@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.service.dispatcher;
 
+import com.alibaba.fastjson.JSON;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
@@ -37,6 +38,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -90,6 +92,10 @@ public class FunctionProtocolDispatcher implements DispatcherExtension {
                 requestParams.getBody().forEach((key, value) -> {
                     if (value instanceof String) {
                         params.add(key, (String) value);
+                    } else if (value instanceof Map<?,?> || value instanceof List<?>) {
+                        params.add(key, JSON.toJSONString(value));
+                    } else {
+                        params.add(key, value.toString());
                     }
                 });
                 body = params;

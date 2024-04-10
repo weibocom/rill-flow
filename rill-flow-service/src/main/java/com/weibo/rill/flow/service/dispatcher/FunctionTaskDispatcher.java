@@ -75,7 +75,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
                     .orElseThrow(() -> new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "handle functionPattern null"));
 
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpInvokeHelper.appendRequestHeader(httpHeaders, dispatchInfo.getExecutionId(), dispatchInfo.getTaskInfo());
+            httpInvokeHelper.appendRequestHeader(httpHeaders, dispatchInfo.getExecutionId(), dispatchInfo.getTaskInfo(), dispatchInfo.getInput());
             dispatchInfo.setHeaders(httpHeaders);
 
             // fill parameters as default value to input

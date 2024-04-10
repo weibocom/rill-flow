@@ -35,7 +35,7 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
     private String authSecret;
 
     @Override
-    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task) {
+    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
         Map<String, String> paramMap = new TreeMap<>();
         if (executionId != null) {
             paramMap.put("execution_id", executionId);
