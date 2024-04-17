@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
+import com.weibo.rill.flow.task.template.model.TemplatePrototype;
 import com.weibo.rill.flow.task.template.service.TaskTemplateService;
 import com.weibo.rill.flow.task.template.model.TaskTemplate;
 import io.swagger.annotations.Api;
@@ -33,7 +34,7 @@ import java.util.Map;
 
 @RestController
 @Api(tags = {"任务模板相关接口"})
-@RequestMapping("/template")
+@RequestMapping("/flow/template")
 public class TaskTemplateController {
     @Autowired
     private TaskTemplateService taskTemplateService;
@@ -47,11 +48,29 @@ public class TaskTemplateController {
         return jsonObject;
     }
 
+    @ApiOperation("查询模板原型列表")
+    @RequestMapping(value = "get_template_prototypes.json", method = RequestMethod.GET)
+    public JSONObject getTemplatePrototypes(User flowUser,
+                                            @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                            @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "500") int pageSize,
+                                            @ApiParam(value = "模板id") @RequestParam(value = "id", required = false) Long id,
+                                            @ApiParam(value = "模板名称") @RequestParam(value = "name", required = false) String name,
+                                            @ApiParam(value = "元数据类别") @RequestParam(value = "category", required = false) String category,
+                                            @ApiParam(value = "模板类型") @RequestParam(value = "type", required = false) Integer type,
+                                            @ApiParam(value = "节点类型") @RequestParam(value = "node_type", required = false) String nodeType,
+                                            @ApiParam(value = "是否启用") @RequestParam(value = "enable", required = false) Integer enable) {
+        TaskTemplateParams params = TaskTemplateParams.builder().id(id).name(name).category(category).type(type).nodeType(nodeType).enable(enable).build();
+        List<TemplatePrototype> templatePrototypes = taskTemplateService.getTemplatePrototypes(params, page, pageSize);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data", templatePrototypes);
+        return jsonObject;
+    }
+
     @ApiOperation("查询任务模板列表")
     @RequestMapping(value = "get_task_templates.json", method = RequestMethod.GET)
     public JSONObject getTaskTemplates(User flowUser,
                                        @ApiParam(value = "页码") @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                       @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "10") int pageSize,
+                                       @ApiParam(value = "每页元素数") @RequestParam(value = "page_size", required = false, defaultValue = "500") int pageSize,
                                        @ApiParam(value = "模板id") @RequestParam(value = "id", required = false) Long id,
                                        @ApiParam(value = "模板名称") @RequestParam(value = "name", required = false) String name,
                                        @ApiParam(value = "元数据类别") @RequestParam(value = "category", required = false) String category,

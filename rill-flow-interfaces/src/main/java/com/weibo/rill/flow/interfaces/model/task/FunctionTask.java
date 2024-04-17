@@ -48,6 +48,7 @@ public class FunctionTask extends BaseTask {
 
     @JsonCreator
     public FunctionTask(@JsonProperty("name") String name,
+                        @JsonProperty("title") String title,
                         @JsonProperty("category") String category,
                         @JsonProperty("next") String next,
                         @JsonProperty("tolerance") boolean tolerance,
@@ -68,7 +69,7 @@ public class FunctionTask extends BaseTask {
                         @JsonProperty("keyExp") String keyExp,
                         @JsonProperty("parameters") Map<String, Object> parameters,
                         @JsonProperty("templateId") String templateId) {
-        super(name, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+        super(name, title, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.resourceProtocol = resourceProtocol;
         this.resourceName = resourceName;
         this.resource = resource;

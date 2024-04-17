@@ -36,7 +36,7 @@ public class MapResponseBodyAdvice implements ResponseBodyAdvice<Map<String, Obj
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return returnType.getMethod().getReturnType().isAssignableFrom(Map.class);
+        return Map.class.isAssignableFrom(returnType.getMethod().getReturnType());
     }
 
     @Override

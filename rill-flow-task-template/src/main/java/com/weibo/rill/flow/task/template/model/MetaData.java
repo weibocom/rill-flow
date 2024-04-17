@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetaData {
+    private String category;
     private String icon;
     private JSONObject fields;
 }

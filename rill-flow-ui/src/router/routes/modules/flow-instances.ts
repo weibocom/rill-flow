@@ -20,20 +20,8 @@ const flowInstances: { redirect: string; path: string; component: () => Promise<
         title: t('routes.flow.instances.record'),
         open: true
       },
-    },
-    {
-      path: 'detail',
-      name: 'FlowPage',
-      component: () => import('@/views/flow-instance/details/index.vue'),
-      meta: {
-        title: t('routes.flow.instances.record_detail'),
-        hideMenu: true,
-        ignoreKeepAlive: true,
-        showMenu: false,
-        currentActiveMenu: '/flow-instance/list',
-      },
-    },
-    ],
+    }
+  ],
 };
 
 export default flowInstances;

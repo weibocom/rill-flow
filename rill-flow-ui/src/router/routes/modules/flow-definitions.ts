@@ -1,13 +1,11 @@
-import {LAYOUT} from '/@/router/constant';
+import { LAYOUT } from '/@/router/constant';
 import { t } from '/@/hooks/web/useI18n';
-import {ExceptionEnum} from "@/enums/exceptionEnum";
-const ExceptionPage = () => import('/@/views/sys/exception/Exception.vue');
 
 const flowDefinitions: { redirect: string; path: string; component: () => Promise<any>; children: { path: string; component: () => Promise<any>; meta: { title: string }; name: string }[]; meta: { icon: string; title: string }; name: string } = {
-  path: '/flow-definitions',
+  path: '/flow-definition',
   name: 'flow-definition',
   component: LAYOUT,
-  redirect: '/flow-definitions/index',
+  redirect: '/flow-definition/list',
   meta: {
     icon: 'tabler:chart-dots',
     title: t('routes.flow.definitions.record'),
@@ -15,14 +13,21 @@ const flowDefinitions: { redirect: string; path: string; component: () => Promis
   },
   children: [
     {
-      path: 'index',
+      path: 'list',
       name: 'FlowDefinitionPage',
       meta: {
         title: t('routes.flow.definitions.list'),
+        open: true,
       },
-      component: ExceptionPage,
-      props: {
-        status: ExceptionEnum.DEVELOPING,
+      component: () => import('/@/views/flow-definition/index.vue'),
+    },
+    {
+      path: 'node-templetes',
+      name: 'FlowNodeTempletes',
+      component: () => import('@/views/flow-definition/node-templetes/index.vue'),
+      meta: {
+        title: t('routes.flow.definitions.node_templetes'),
+        open: true,
       },
     },
   ],

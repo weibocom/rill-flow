@@ -80,7 +80,7 @@ class TaskTemplateServiceImplTest extends Specification {
         given:
         TaskTemplateParams params = TaskTemplateParams.builder().build()
         TaskTemplateDO taskTemplateDO = new TaskTemplateDO()
-        taskTemplateDO.setCategory("xxxx")
+        taskTemplateDO.setCategory("function")
         taskTemplateDO.setIcon("function template base64 icon code")
         taskTemplateDO.setName("function template")
         taskTemplateDO.setEnable(1)
@@ -95,7 +95,7 @@ class TaskTemplateServiceImplTest extends Specification {
         when:
         List<TaskTemplate> array = taskTemplateService.getTaskTemplates(params, 0, 1)
         then:
-        array.size() == 2
+        array.size() == 3
         array.get(0).getCategory() == "function"
         array.get(0).getIcon() == "function base64 icon code"
         array.get(0).getMetaData().getFields() == ["field1": "field1", "field2": "field2"]

@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.weibo.rill.flow.task.template.model.TaskTemplateParams;
 import com.weibo.rill.flow.task.template.model.TaskTemplate;
+import com.weibo.rill.flow.task.template.model.TemplatePrototype;
 
 import java.util.List;
 
@@ -65,4 +66,6 @@ public interface TaskTemplateService {
      * @param id task template id
      */
     int enableTaskTemplate(Long id);
+
+    List<TemplatePrototype> getTemplatePrototypes(TaskTemplateParams params, int page, int pageSize);
 }

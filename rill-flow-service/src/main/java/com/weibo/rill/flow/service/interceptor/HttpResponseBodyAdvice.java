@@ -33,7 +33,7 @@ public class HttpResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return returnType.getMethod().getReturnType().isAssignableFrom(HttpResponse.class);
+        return HttpResponse.class.isAssignableFrom(returnType.getMethod().getReturnType());
     }
 
     @Override
@@ -45,7 +45,6 @@ public class HttpResponseBodyAdvice implements ResponseBodyAdvice<Object> {
         } else {
             httpResponse = HttpResponse.data(body);
         }
-
         httpResponse.setRequestId(MDC.get("request_id"));
         return httpResponse;
     }
