@@ -115,6 +115,8 @@ public abstract class AbstractTaskRunner implements TaskRunner {
             updateTaskInvokeStartTime(taskInfo);
             Map<String, Object> input = inputMappingCalculate(executionId, taskInfo, context);
 
+            log.info("task start, executionId:{}, taskName:{}, input: {}", executionId, taskInfo.getTask().getName(), input);
+
             if (switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT")) {
                 taskInfo.getTaskInvokeMsg().setInput(input);
                 updateTaskExpectedCost(taskInfo, input);
