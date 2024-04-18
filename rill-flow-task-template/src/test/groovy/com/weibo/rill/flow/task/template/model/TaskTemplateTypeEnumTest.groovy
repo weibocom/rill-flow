@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.task.template.model
 
+import com.weibo.rill.flow.task.template.model.enums.TaskTemplateTypeEnum
 import spock.lang.Specification
 
 class TaskTemplateTypeEnumTest extends Specification {

@@ -3,6 +3,66 @@ export default {
     record: "流程定义",
     list: "流程列表",
     detail: "流程详情",
+    node_templetes: "节点模版管理",
+    opt: "操作",
+    option: {
+      versions: "版本",
+      showYaml: "展示yaml",
+      edit: "编辑",
+      create: "新建",
+    },
+    columns: {
+      create_time: "创建时间",
+      update_time: "更新时间",
+      business_id: "业务名称",
+      feature_id: "服务名称",
+      alias: "别名",
+    },
+    modal:{
+      title: "版本信息",
+      columns: {
+        "descriptor_id": "流程ID",
+        "create_time": "创建时间"
+      }
+    },
+    node_templates_detail: {
+      opt: "操作",
+      option: {
+        disable: "禁用",
+        enable: "启用",
+        edit: "编辑",
+        create: "创建模板",
+        preview_json_schema: "预览 jsonSchema",
+        editTask_template: "编辑任务模板",
+        preview_input: "预览输入",
+        preview_output: "预览输出",
+      },
+      columns: {
+        name: "模板名称",
+        type: "模板类型",
+        node_type: "节点类型",
+        category: "category",
+        status: "状态",
+        disable: "禁用",
+        enable: "启用",
+      },
+      node_type: {
+        meta: "元数据",
+        template: "模板"
+      },
+      task_template_detail: {
+        columns: {
+          name: "模板名称",
+          type: "模板类型",
+          function_template: "函数模板",
+          plugin_template: "插件模板",
+          logic_template: "逻辑模板",
+          task_yaml: "模板任务默认 yaml",
+          schema: "模板输入结构(schema)",
+          output: "模板输出结构",
+        }
+      }
+    }
   },
   instances: {
     record: "执行记录",
@@ -53,6 +113,7 @@ export default {
           context_key: "参数名",
           context_value: "参数值",
           error_result_msg: "执行异常信息",
+          error_result_default_msg: "暂无",
           trace: "Trace日志信息",
           trace_detail: "详情",
         }

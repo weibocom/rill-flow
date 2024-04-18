@@ -1,82 +1,88 @@
 {
   "name": {
     "type": "string",
-    "name": "任务名称",
+    "title": "任务名称",
     "required": true,
-    "default_value": ""
+    "default": ""
   },
-  "input_mappings": {
-    "type": "list",
-    "name": "输入映射",
+  "title": {
+    "type": "string",
+    "title": "节点名称",
+    "required": false,
+    "default": ""
+  },
+  "inputMappings": {
+    "type": "array",
+    "title": "输入映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输入来源",
+          "title": "输入来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输入目标",
+          "title": "输入目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输入映射处理 aviator 表达式",
+          "title": "输入映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
       }
     }
   },
-  "output_mappings": {
-    "type": "list",
-    "name": "输出映射",
+  "outputMappings": {
+    "type": "array",
+    "title": "输出映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输出来源",
+          "title": "输出来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输出目标",
+          "title": "输出目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输出映射处理 aviator 表达式",
+          "title": "输出映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
@@ -84,16 +90,16 @@
     }
   },
   "conditions": {
-    "type": "list",
-    "name": "判断条件",
+    "type": "array",
+    "title": "判断条件",
     "required": true,
-    "data": {
+    "items": {
       "type": "string"
     }
   },
   "next": {
     "type": "string",
-    "name": "下一节点",
+    "title": "下一节点",
     "required": false
   }
 }

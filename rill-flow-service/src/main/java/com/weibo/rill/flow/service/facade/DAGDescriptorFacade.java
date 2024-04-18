@@ -32,6 +32,7 @@ import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.Node;
 import com.weibo.rill.flow.common.model.NodeType;
+import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
@@ -208,12 +209,17 @@ public class DAGDescriptorFacade {
     public JSONObject getDescriptor(String descriptorId) {
         String descriptor = descriptorManager.getDagDescriptor(null, null, descriptorId);
         JSONObject descriptorObject = yamlToJson(descriptor);
+        if (descriptorObject == null) {
+            log.warn("descriptorId:{} descriptor is null", descriptorId);
+            throw new TaskException(BizError.ERROR_DATA_FORMAT, "descriptor is null: " + descriptorId);
+        }
         //tasks
         JSONObject tasks = new JSONObject();
         JSONArray descriptorTasks = descriptorObject.getJSONArray("tasks");
         for (int i = 0; i < descriptorTasks.size(); i++) {
             JSONObject task = new JSONObject();
             JSONObject descriptorTask = descriptorTasks.getJSONObject(i);
+            generateResourceProtocol(descriptorTask);
             task.put("task", descriptorTask);
             task.put("next", Optional.ofNullable(descriptorTask.getString("next")).map(it -> List.of(it.split(","))).orElse(Lists.newArrayList()));
             tasks.put(descriptorTask.getString("name"), task);
@@ -222,6 +228,22 @@ public class DAGDescriptorFacade {
         return descriptorObject;
     }
 
+    /**
+     * 通过 task 生成 task.resourceProtocol
+     * @param task 任务结构
+     */
+    private void generateResourceProtocol(JSONObject task) {
+        try {
+            if (task == null || StringUtils.isNotEmpty(task.getString(task.getString("resourceProtocol")))) {
+                return;
+            }
+            String resourceName = task.getString("resourceName");
+            Resource resource = new Resource(resourceName);
+            task.put("resourceProtocol", resource.getSchemeProtocol());
+        } catch (Exception e) {
+            log.warn("generateResourceProtocol error", e);
+        }
+    }
 
     public Map<String, Object> addDescriptorForJson(String descriptor) {
 

@@ -1,6 +1,6 @@
 ## 简介
 
-Rill Flow UI 前端基于 [Vue vben admin](https://github.com/vbenjs/vue-vben-admin) 和 [图编辑引擎 x6](https://x6.antv.antgroup.com/) 开发
+Rill Flow UI 前端基于 [Vue vben admin](https://github.com/vbenjs/vue-vben-admin) 开发
 
 ## 准备
 
@@ -12,7 +12,7 @@ Rill Flow UI 前端基于 [Vue vben admin](https://github.com/vbenjs/vue-vben-ad
 - [Vue-Router-Next](https://next.router.vuejs.org/) - 熟悉 vue-router 基本使用
 - [Ant-Design-Vue](https://2x.antdv.com/docs/vue/introduce-cn/) - ui 基本使用
 - [Mock.js](https://github.com/nuysoft/Mock) - mockjs 基本语法
-- [图编辑引擎 X6](https://x6.antv.antgroup.com/) - 熟悉 X6 基本语法
+- [QianKun](https://qiankun.umijs.org/zh/guide) - 熟悉 QianKun 基本使用
 
 ## 安装使用
 - 安装 node 版本管理工具[nvm](https://github.com/nvm-sh/nvm)
@@ -21,11 +21,11 @@ Rill Flow UI 前端基于 [Vue vben admin](https://github.com/vbenjs/vue-vben-ad
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 ```
 
-- 安装版本为 v16.20.2 的 node，并设定为全局默认版本
+- 安装版本为 v18.19.0 的 node，并设定为全局默认版本
 
 ```shell
-nvm install v16.20.2
-nvm alias default v16.20.2
+nvm install v18.19.0
+nvm alias default v18.19.0
 ```
 
 - 安装pnpm
@@ -51,5 +51,5 @@ pnpm serve
 - 打包
 
 ```bash
-pnpm build:prod
+pnpm build:docker
 ```

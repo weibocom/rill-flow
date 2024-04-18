@@ -109,6 +109,11 @@ public class DAGRuntimeFacade {
             return ret;
         }
 
+        ret.put("workspace", dagInfo.getDag().getWorkspace());
+        ret.put("dag_name", dagInfo.getDag().getDagName());
+        ret.put("version", dagInfo.getDag().getVersion());
+        ret.put("type", dagInfo.getDag().getType().getValue());
+        ret.put("input_schema", dagInfo.getDag().getInputSchema());
         ret.put("dag_invoke_msg", dagInfo.getDagInvokeMsg());
         ret.put("dag_status", dagInfo.getDagStatus().name());
         ret.put("execution_id", dagInfo.getExecutionId());
