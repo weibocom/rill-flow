@@ -1,10 +1,9 @@
 import type { AppRouteModule, AppRouteRecordRaw } from '/@/router/types';
-import type { Router, RouteRecordNormalized } from 'vue-router';
+import { createRouter, createWebHistory, Router, RouteRecordNormalized } from "vue-router";
 
 import { getParentLayout, LAYOUT, EXCEPTION_COMPONENT } from '/@/router/constant';
 import { cloneDeep, omit } from 'lodash-es';
 import { warn } from '/@/utils/log';
-import { createRouter, createWebHashHistory } from 'vue-router';
 
 export type LayoutMapKey = 'LAYOUT';
 const IFRAME = () => import('/@/views/sys/iframe/FrameBlank.vue');
@@ -121,7 +120,7 @@ function promoteRouteLevel(routeModule: AppRouteModule) {
   // createRouter 创建一个可以被 Vue 应用程序使用的路由实例
   let router: Router | null = createRouter({
     routes: [routeModule as unknown as RouteRecordNormalized],
-    history: createWebHashHistory(),
+    history: createWebHistory(),
   });
   // getRoutes： 获取所有 路由记录的完整列表。
   const routes = router.getRoutes();

@@ -44,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -458,7 +457,7 @@ public class DescriptorManager {
         return resourceName;
     }
 
-    public List<Map<String, ? extends Serializable>> getVersion(String businessId, String featureName, String alias) {
+    public List<Map> getVersion(String businessId, String featureName, String alias) {
         Set<Pair<String, Double>> redisRet = redisClient.zrangeWithScores(businessId, buildVersionRedisKey(businessId, featureName, alias), 0, -1);
         return redisRet.stream()
                 .map(memberToScore -> {

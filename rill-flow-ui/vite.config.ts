@@ -17,13 +17,23 @@ export default defineApplicationConfig({
     },
     server: {
       host: true,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
       proxy: {
-        '/flow': {
+        '/flow/': {
           target: 'http://localhost:8080',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/basic-api`), ''),
-        }
+        },
+      },
+    },
+    css: {
+      preprocessorOptions: {
+        less: {
+          javascriptEnabled: true,
+        },
       },
     },
   },

@@ -37,6 +37,7 @@ import java.util.Map;
 public abstract class BaseTask {
 
     private String name;
+    private String title;
     private String category;
     private String next;
     private boolean tolerance = false;
