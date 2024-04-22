@@ -8,7 +8,7 @@ RUN npm config set registry https://registry.npm.taobao.org
 RUN npm cache clean --force
 RUN npm config set strict-ssl false
 
-RUN npm install pnpm -g && pnpm install && pnpm build:docker
+RUN npm install pnpm@9.0.2 -g && pnpm install && pnpm build:prod
 
 # build rill-flow-graph
 FROM node:18.12.1-alpine as build-submodule-stage
@@ -20,7 +20,7 @@ RUN npm config set registry https://registry.npm.taobao.org
 RUN npm cache clean --force
 RUN npm config set strict-ssl false
 
-RUN npm install pnpm -g && pnpm install && pnpm build:docker
+RUN npm install pnpm@9.0.2 -g && pnpm install && pnpm build:prod
 
 FROM nginx:1.23.3-alpine as production-stage
 COPY --from=build-stage /data/rill-flow-ui/dist /usr/share/nginx/html/dist
