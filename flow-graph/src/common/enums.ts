@@ -31,6 +31,8 @@ export const CustomEventTypeEnum = {
     TOOL_BAR_EXECUTION_DETAIL: '__tool_bar_execution_detail__',
     /**@type {String} 展示执行详情 */
     SHOW_EXECUTION_RESULT: '__show_execution_result__',
+    /**@type {String} 工具栏代码执行编辑 *TEST* */
+    TOOL_BAR_CODE_EDIT: '__tool_bar_code_edit__',
     /**@type {String} 刷新graph */
     REFRESH_DAG_GRAPH: '__refresh_dag_graph__',
 }
