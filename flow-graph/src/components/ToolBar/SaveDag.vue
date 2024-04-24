@@ -101,7 +101,6 @@
       state.values['dagName'] = flowGraphStore.getFlowGraph().getDagBaseInfo().dagName;
       state.values['alias'] = flowGraphStore.getFlowGraph().getDagBaseInfo().alias;
       state.values['inputSchema'] = flowGraphStore.getFlowGraph().getDagBaseInfo().inputSchema;
-      state.values['type'] = flowGraphStore.getFlowGraph().getDagBaseInfo().type;
     });
     open.value = true;
   });

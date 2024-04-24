@@ -52,5 +52,5 @@ pnpm serve
 - Build:
 
 ```bash
-pnpm build:docker
+pnpm build:prod
 ```

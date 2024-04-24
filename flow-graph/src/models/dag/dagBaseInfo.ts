@@ -1,5 +1,4 @@
 export class DagBaseInfo {
-  type: string;
   version: string;
   workspace: string;
   dagName: string;
