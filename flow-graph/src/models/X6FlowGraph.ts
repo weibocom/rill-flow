@@ -119,18 +119,24 @@ export class X6FlowGraph implements FlowGraph {
       dagName: this.dagBaseInfo.dagName,
       version: this.dagBaseInfo.version,
       alias: this.dagBaseInfo.alias,
-      type: this.dagBaseInfo.type,
+      type: 'flow',
       inputSchema: JSON.stringify(this.dagBaseInfo.inputSchema),
-      tasks: [],
+      tasks: undefined,
     };
 
     this.nodes.forEach(node => {
+      if (dagJson.tasks === undefined) {
+        dagJson.tasks = [];
+      }
       dagJson.tasks.push(node.task);
     });
     return dagJson;
   }
 
   public toYaml() {
+    if (this.toJSON().dagName ===  undefined) {
+      return null;
+    }
     return yaml.dump(this.toJSON());
   }
 
@@ -362,7 +368,6 @@ export class X6FlowGraph implements FlowGraph {
     this.dagBaseInfo.workspace = dagInfo.workspace;
     this.dagBaseInfo.dagName = dagInfo.dagName;
     this.dagBaseInfo.inputSchema = this.parseInputSchema(dagInfo.inputSchema);
-    this.dagBaseInfo.type = dagInfo.type;
     this.dagBaseInfo.alias = dagInfo.alias;
   }
 

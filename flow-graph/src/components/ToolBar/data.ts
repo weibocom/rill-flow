@@ -37,14 +37,6 @@ export function getSaveFormSchema() {
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
-              },
-              type: {
-                type: 'string',
-                title: '类型',
-                required: true,
-                default: 'flow',
-                'x-decorator': 'FormItem',
-                'x-component': 'Input',
               }
             },
           },
@@ -52,7 +44,7 @@ export function getSaveFormSchema() {
             type: 'void',
             'x-component': 'FormStep.StepPane',
             'x-component-props': {
-              title: '第二步',
+              title: '输入参数列表',
             },
             properties: getInputSchema(),
           },
@@ -82,14 +74,14 @@ export function getInputSchema() {
                 'x-decorator': 'FormItem',
                 'x-component': 'ArrayItems.SortHandle',
               },
-              paramsName: {
+              name: {
                 type: 'string',
                 title: '参数名',
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
               },
-              paramsType: {
+              type: {
                 type: 'string',
                 title: '参数类型',
                 required: true,
@@ -119,7 +111,7 @@ export function getInputSchema() {
                   },
                 },
               },
-              paramsRequired: {
+              required: {
                 type: 'boolean',
                 title: '参数是否必填',
                 'x-decorator': 'FormItem',
@@ -130,7 +122,7 @@ export function getInputSchema() {
                   style: {},
                 },
               },
-              paramsDesc: {
+              desc: {
                 type: 'string',
                 title: '参数描述',
                 required: false,
