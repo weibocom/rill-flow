@@ -23,65 +23,64 @@ Before you begin, ensure that the following tools are installed:
 - [Docker-Compose](https://docs.docker.com/compose/install/)
 
 ### Service Deployment
-
 Install Rill Flow services on your local environment using Docker-Compose:
 
+#### Download the Rill-Flow source code.
 ```shell
-cat << EOF > docker-compose.yaml
-version: '3'
-services:
-  rill-flow:
-    image: weibocom/rill-flow
-    depends_on:
-      - cache
-      - jaeger
-    ports:
-      - "8080:8080"
-    environment:
-      - RILL_FLOW_DESCRIPTOR_REDIS_HOST=cache
-      - RILL_FLOW_DEFAULT_REDIS_HOST=cache
-      - RILL_FLOW_TRACE_ENDPOINT=http://jaeger:4317
-      - RILL_FLOW_CALLBACK_URL=http://rill-flow:8080/flow/finish.json
-      - RILL_FLOW_TRACE_QUERY_HOST=http://jaeger:16686
-  cache:
-    image: redis:6.2-alpine
-    restart: always
-    command: redis-server --save 20 1 --loglevel warning
-  jaeger:
-    image: jaegertracing/all-in-one:1.39
-    restart: always
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-  ui:
-    image: weibocom/rill-flow-ui
-    ports:
-      - "8088:80"
-    depends_on:
-      - rill-flow
-      - jaeger
-    environment:
-      - BACKEND_SERVER=http://rill-flow:8080
-  sample-executor:
-    image: weibocom/rill-flow-sample:sample-executor 
-EOF
+git clone https://github.com/weibocom/rill-flow.git
+```
+
+#### Start the service.
+Enter the Docker directory of the Rill-Flow source code and execute the one-click start command:
+
+```shell
+cd rill-flow/docker
 docker-compose up -d
 ```
+> If your system has Docker Compose V2 installed instead of V1, please use docker compose instead of docker-compose. Check if this is the case by running docker compose version. Read more information [here](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command).
+
+### Verify the installation.
+
+To check the status of Rill Flow, please execute the following command:
+
+```shell
+docker-compose ps
+```
+
+Here is the expected output:
+
+```txt
+           Name                         Command               State                                           Ports
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+rill-flow-mysql              docker-entrypoint.sh --bin ...   Up      0.0.0.0:3306->3306/tcp, 33060/tcp
+rillflow_cache_1             docker-entrypoint.sh redis ...   Up      6379/tcp
+rillflow_jaeger_1            /go/bin/all-in-one-linux         Up      14250/tcp, 14268/tcp, 0.0.0.0:16686->16686/tcp, 5775/udp, 5778/tcp, 6831/udp, 6832/udp
+rillflow_rill-flow_1         catalina.sh run                  Up      0.0.0.0:8080->8080/tcp
+rillflow_sample-executor_1   uvicorn main:app --host 0. ...   Up
+rillflow_ui_1                /docker-entrypoint.sh /bin ...   Up      0.0.0.0:80->80/tcp
+```
+
+If your actual output matches the expected output, it means that Rill Flow has been successfully installed.
+
+### Access the Rill Flow administration background
+
+After the command is successfully executed, you can access the Rill Flow management background at http://localhost (admin/admin). If the server is deployed, use the server IP address for access (port 80 by default).
 
 ### Execution Example
 
-- Step 1: Submit a YAML file defining a workflow
-
-```curl
-curl --location  --request POST 'http://127.0.0.1:8080/flow/bg/manage/descriptor/add_descriptor.json?business_id=rillFlowSimple&feature_name=greet&alias=release' \
---header 'Content-Type: text/plain' \
---data-raw '---
+- Step 1: Open the Rill Flow management background, click the 'Flow Definition' menu, enter the 'Flow Definition List' page, click the 'Create' button
+- Step 2: After entering the 'Flow Graph Edit' page, open the 'one-click import' switch, copy the following yaml file content into the text box, click the 'Submit' button, you can submit a simple flowchart.
+```yaml
 version: 1.0.0
 workspace: rillFlowSimple
 dagName: greet
+alias: release
 type: flow
+inputSchema: >-
+  [{"required":true,"name":"Bob","type":"String"},{"required":true,"name":"Alice","type":"String"}]
 tasks:
   - category: function
-    name: Bob 
+    name: Bob
     resourceName: http://sample-executor:8000/greet.json?user=Bob
     pattern: task_sync
     tolerance: false
@@ -90,29 +89,24 @@ tasks:
       - source: "$.context.Bob"
         target: "$.input.Bob"
   - category: function
-    name: Alice 
+    name: Alice
     resourceName: http://sample-executor:8000/greet.json?user=Alice
     pattern: task_sync
     tolerance: false
     inputMappings:
       - source: "$.context.Alice"
         target: "$.input.Alice"
-'
 ```
 
-- Step 2: Submit a task to execute the workflow
-  
-```curl
-curl -X POST 'http://127.0.0.1:8080/flow/submit.json?descriptor_id=rillFlowSimple:greet'  -d '{"Bob":"Hello, I am Bob!", "Alice": "Hi, I am Alice"}' -H 'Content-Type:application/json'
-```
 
-- Step 3：Query the task execution results
+- Step 3: Submit the flow graph to execute the task
 
-  Query the execution details via the Rill Flow UI.(admin/admin)
+Click the 'Test' button, fill in the required parameters, and click the 'Submit' button.
 
-```curl
-http://127.0.0.1:8088/#/flow-instance/list
-```
+- Step 4: Viewing the execution Result
+  Click the 'Submit' button in the previous step and you will automatically jump to the execution details page. You can view the execution status and details by clicking the 'Execution Records' button.
+
+> More instructions on viewing results can be found in [Execution Status](../user-guide/04-execution/03-status.md)
 
 ![preview](https://rill-flow.github.io/img/flow_sample.jpg)
 

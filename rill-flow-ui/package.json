@@ -15,7 +15,7 @@
     "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=1024 pnpm vite build",
     "build:no-cache": "pnpm clean:cache && npm run build",
     "build:development": "cross-env NODE_OPTIONS=--max-old-space-size=8192 pnpm vite build --mode development",
-    "build:docker": "pnpm vite build --mode docker",
+    "build:prod": "pnpm vite build --mode prod",
     "commit": "czg",
     "dev": "pnpm vite",
     "preinstall": "npx only-allow pnpm",

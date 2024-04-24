@@ -1,21 +1,21 @@
 export class InputSchemaValueItem {
-  paramsName: string;
-  paramsType: string;
-  paramsValue: string;
-  paramsDesc: string;
-  paramsRequired: string;
+  name: string;
+  type: string;
+  value: string;
+  desc: string;
+  required: string;
 
   constructor(
-    paramsName: string,
-    paramsType: string,
-    paramsValue: string,
-    paramsDesc: string,
-    paramsRequired: string,
+    name: string,
+    type: string,
+    value: string,
+    desc: string,
+    required: string,
   ) {
-    this.paramsName = paramsName;
-    this.paramsType = paramsType;
-    this.paramsValue = paramsValue;
-    this.paramsDesc = paramsDesc;
-    this.paramsRequired = paramsRequired;
+    this.name = name;
+    this.type = type;
+    this.value = value;
+    this.desc = desc;
+    this.required = required;
   }
 }
