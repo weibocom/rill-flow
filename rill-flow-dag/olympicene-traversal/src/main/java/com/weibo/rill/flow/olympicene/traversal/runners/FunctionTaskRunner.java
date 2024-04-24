@@ -141,6 +141,8 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(dispatchRetJson);
             Map<String, Object> output = buildOutput(dispatchRetJson);
+            log.info("dispatchTask success, executionId:{}, taskName:{}, output:{}",
+                    executionId, taskInfo.getName(), output);
             NotifyInfo notifyInfo = NotifyInfo.builder()
                     .taskInfoName(taskInfo.getName())
                     .taskStatus(buildTaskStatus(output, taskInfo, taskInvokeMsg))
