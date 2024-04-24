@@ -81,6 +81,12 @@
                 ),
                 value: 2,
               },
+              {
+                label: t(
+                  'routes.flow.definitions.node_templates_detail.task_template_detail.columns.code_template',
+                ),
+                value: 3,
+              },
             ],
             multiple: false,
             filterable: true,
@@ -161,6 +167,7 @@
       function handlePreviewSchema() {
         const data = getFieldsValue();
         templateSchema.value = JSON.parse(data.schema);
+        console.log("handlePreviewSchema", templateSchema.value)
         openModal(true);
       }
 

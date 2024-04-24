@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="open" title="测试任务" width="70%" @ok="handleOk()">
+  <a-modal v-model:visible="open" title="测试任务" width="70%" @ok="handleOk()" okText="提交" cancelText="取消">
     <a-card>
       <FormProvider :form="form">
         <SchemaField :schema="schema" />
@@ -60,7 +60,7 @@
     console.log('inputSchema', inputSchema, inputSchema === '{}')
     if (inputSchema !== {}) {
       inputSchema.forEach((item: InputSchemaValueItem) => {
-        schema.value.properties[item.paramsName] = buildSchema(item);
+        schema.value.properties[item.name] = buildSchema(item);
       });
     }
     open.value = true;
@@ -85,56 +85,38 @@
   };
 
   function buildSchema(item: InputSchemaValueItem) {
-    if (item.paramsType === 'Number') {
+    const labelWidth = 100
+    if (item.type === 'Number') {
+
       return {
         type: 'number',
-        title: item.paramsName,
+        title: item.desc,
         'x-decorator': 'FormItem',
         'x-component': 'InputNumber',
-        required: item.paramsRequired,
-        'x-component-props': {
-          style: {
-            // width: '240px',
-          },
-        },
+        required: item.required,
         'x-decorator-props': {
-          tooltip: item.paramsDesc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
+          labelWidth: labelWidth,
         },
       };
-    } else if (item.paramsType === 'Boolean') {
+    } else if (item.type === 'Boolean') {
       return {
         type: 'boolean',
-        title: item.paramsName,
+        title: item.desc,
         'x-decorator': 'FormItem',
         'x-component': 'Switch',
-        required: item.paramsRequired,
-        'x-component-props': {
-          style: {
-            // width: '240px',
-          },
-        },
+        required: item.required,
         'x-decorator-props': {
-          tooltip: item.paramsDesc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
         },
       };
-    } else if (item.paramsType === 'JSON') {
+    } else if (item.type === 'JSON') {
       return {
         type: 'string',
-        title: '文本框',
+        title: item.desc,
         'x-decorator': 'FormItem',
         'x-component': 'Input.TextArea',
-        'x-component-props': {
-          style: {
-            // width: 400,
-          },
-        },
         'x-decorator-props': {
-          tooltip: item.paramsDesc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
         },
         required: true,
@@ -142,14 +124,13 @@
     }
     return {
       type: 'string',
-      title: item.paramsName,
-      required: item.paramsRequired,
+      title: item.desc,
+      required: item.required,
       'x-decorator': 'FormItem',
       'x-component': 'Input',
       'x-decorator-props': {
-        tooltip: item.paramsDesc,
-        wrapperAlign: 'right',
         labelAlign: 'left',
+        labelWidth: labelWidth,
       },
     };
   }

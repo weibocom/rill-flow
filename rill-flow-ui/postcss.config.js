@@ -5,7 +5,9 @@ module.exports = (ctx) => {
         ignore: [
           /body/,
           /html/,
-          '#app'
+          '#app',
+          /ant-form-item/,
+          /ant-col/
         ]
       }),
     ]

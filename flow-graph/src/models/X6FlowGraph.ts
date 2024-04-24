@@ -78,11 +78,16 @@ export class X6FlowGraph implements FlowGraph {
     let taskNumber = 1;
     let taskName;
     if (getNodeCategoryByNumber(nodePrototype.node_category) === NodeCategory.TEMPLATE_NODE) {
-      taskName = nodePrototype.template.name;
+      const taskYaml = nodePrototype.template.task_yaml;
+      const fields = yaml.load(taskYaml);
+      taskName = fields?.name;
     } else {
       taskName = nodePrototype.meta_data.category;
     }
     taskName = this.normalizeTaskName(taskName);
+    if (!this.taskNames.has(taskName)) {
+      return taskName;
+    }
     while (this.taskNames.has(taskName + taskNumber)) {
       taskNumber += 1;
     }
@@ -119,18 +124,24 @@ export class X6FlowGraph implements FlowGraph {
       dagName: this.dagBaseInfo.dagName,
       version: this.dagBaseInfo.version,
       alias: this.dagBaseInfo.alias,
-      type: this.dagBaseInfo.type,
+      type: 'flow',
       inputSchema: JSON.stringify(this.dagBaseInfo.inputSchema),
-      tasks: [],
+      tasks: undefined,
     };
 
     this.nodes.forEach(node => {
+      if (dagJson.tasks === undefined) {
+        dagJson.tasks = [];
+      }
       dagJson.tasks.push(node.task);
     });
     return dagJson;
   }
 
   public toYaml() {
+    if (this.toJSON().dagName ===  undefined) {
+      return null;
+    }
     return yaml.dump(this.toJSON());
   }
 
@@ -218,7 +229,7 @@ export class X6FlowGraph implements FlowGraph {
       type: 'dagre',
       rankdir: 'TB',
       ranksep: 15,
-      nodesep: 35,
+      nodesep: 50,
       controlPoints: true,
       nodeSize: 100,
     });
@@ -262,6 +273,7 @@ export class X6FlowGraph implements FlowGraph {
     const icon = nodePrototype.icon;
     node.task.name = this.generateTaskName(nodePrototype);
     this.buildNodeTask(node);
+    console.log('addNodeByPrototype', node)
     const nodeConfig = GraphCellRenderService.render(node, icon)[0];
     const graphNode = this.createNode(nodeConfig);
 
@@ -362,7 +374,6 @@ export class X6FlowGraph implements FlowGraph {
     this.dagBaseInfo.workspace = dagInfo.workspace;
     this.dagBaseInfo.dagName = dagInfo.dagName;
     this.dagBaseInfo.inputSchema = this.parseInputSchema(dagInfo.inputSchema);
-    this.dagBaseInfo.type = dagInfo.type;
     this.dagBaseInfo.alias = dagInfo.alias;
   }
 
@@ -462,12 +473,25 @@ export class X6FlowGraph implements FlowGraph {
     }
   }
 
-  public updateNodeTaskMappingInfos(nodeId: string, mappingParametersObject: object) {
-    // 1. 将 mappingParametersObject 转换为 Map<string, MappingParameters> 的 parametersMap
-    const parametersMap = convertObjectToMappingParametersMap(mappingParametersObject);
-
-    // 2. 通过 nodeId 获取当前 node
+  public updateNodeTaskTitle(nodeId: string, title: string) {
     const currentNode = this.getNode(nodeId);
+    currentNode.task.title = title;
+    this.graph.getCellById(nodeId).prop('label', title);
+  }
+  public updateNodeTaskOutput(nodeId: string, outputSchema: object){
+    const currentNode = this.getNode(nodeId);
+    currentNode.task.outputSchema = outputSchema;
+  }
+  public updateNodeTaskMappingInfos(nodeId: string, mappingParametersObject: object) {
+    // 1. 通过 nodeId 获取当前 node
+    const currentNode = this.getNode(nodeId);
+    const flowGraphStore = useFlowStoreWithOut();
+    const nodePrototype = flowGraphStore.getNodePrototypeRegistry().getNodePrototype(currentNode.nodePrototypeId.toString());
+
+
+    // 2. 将 mappingParametersObject 转换为 Map<string, MappingParameters> 的 parametersMap
+    const parametersMap = convertObjectToMappingParametersMap(nodePrototype?.template?.schema, mappingParametersObject);
+    console.log('parametersMap', parametersMap, currentNode.nodePrototypeId, nodePrototype)
 
     // 3. 删除 currentNode.task.inputMappings 中 key 已存在的数据，并添加新的数据
     const oldSources: Map<string, Set<string>> = new Map<string, Set<string>>();

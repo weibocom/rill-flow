@@ -171,7 +171,8 @@ public class OlympiceneCallback implements Callback<DAGCallbackInfo> {
             httpInvokeHelper.appendRequestHeader(httpHeaders, executionId, null, dagCallbackInfo.getContext());
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestParams.getBody(), httpHeaders);
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
-            httpInvokeHelper.invokeRequest(executionId, null, url, requestEntity, HttpMethod.POST, maxInvokeTime);
+            String taskInfoName = dagCallbackInfo.getTaskInfo() == null? null : dagCallbackInfo.getTaskInfo().getName();
+            httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, maxInvokeTime);
         } catch (Exception e) {
             log.warn("flowCompletedCallback fails, executionId:{}, eventCode:{}, errorMsg:{}",
                     dagCallbackInfo.getExecutionId(), eventCode, e.getMessage());

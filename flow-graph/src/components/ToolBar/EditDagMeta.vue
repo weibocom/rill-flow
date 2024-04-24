@@ -1,12 +1,12 @@
 <template>
-    <a-modal v-model:visible="open" class="modal" title="详情" width="70%" :footer="null">
-      <a-card>
+    <a-modal v-model:visible="open" class="modal" title="流程基础信息编辑" width="70%" :footer="null">
+      <a-card v-if="showQuickCreateButton">
         一键导入:
         <a-switch v-model:checked="quickCreate" checked-children="开" un-checked-children="关">
         </a-switch>
       </a-card>
       <a-card>
-          <FormProvider :form="form" class="form" v-if="!quickCreate" >
+        <FormProvider :form="form" class="form" v-if="!quickCreate" >
           <SchemaField :schema="schema" :scope="{ formStep }" />
           <FormConsumer>
             <template #default>
@@ -37,8 +37,14 @@
             </template>
           </FormConsumer>
         </FormProvider>
-          <Codemirror v-if="quickCreate" v-model:value="yamlCode" :options="yamlOptions" border />
-          <a-button v-if="quickCreate" @click="save">提交</a-button>
+        <div v-if="quickCreate">
+          <a-tabs v-model:activeKey="activeKey">
+            <a-tab-pane key="1" tab="Yaml">
+              <Codemirror v-model:value="yamlCode" :options="yamlOptions" border />
+            </a-tab-pane>
+          </a-tabs>
+          <a-button type="primary" @click="save">提交</a-button>
+        </div>
       </a-card>
     </a-modal>
 </template>
@@ -71,6 +77,7 @@
   import {submitDagInfo} from "@/src/api/flow";
   import {message} from "ant-design-vue";
   import yaml from 'js-yaml';
+  import { OptEnum } from "@/src/models/enums/optEnum";
 
   const open = ref<boolean>(false);
   const quickCreate = ref<boolean>(false);
@@ -78,7 +85,8 @@
   const yamlOptions = ref({
     mode: 'yaml',
   });
-
+  const activeKey = ref('1');
+  const showQuickCreateButton = ref(false);
   const form = ref();
   form.value = createForm();
 
@@ -104,15 +112,16 @@
   const schema = ref({});
 
   Channel.eventListener(CustomEventTypeEnum.TOOL_BAR_EDIT_INPUT_SCHEMA, () => {
-    quickCreate.value = false;
-    schema.value = getSaveFormSchema();
     const flowGraphStore = useFlowStoreWithOut();
+    quickCreate.value = false;
+    showQuickCreateButton.value = flowGraphStore.getFlowParams().opt === OptEnum.CREATE;
+    schema.value = getSaveFormSchema();
+
     form.value.setFormState((state) => {
       state.values['workspace'] = flowGraphStore.getFlowGraph().getDagBaseInfo().workspace;
       state.values['dagName'] = flowGraphStore.getFlowGraph().getDagBaseInfo().dagName;
-      state.values['alias'] = flowGraphStore.getFlowGraph().getDagBaseInfo().alias;
+      state.values['alias'] = flowGraphStore.getFlowGraph().getDagBaseInfo().alias === undefined ? 'release': flowGraphStore.getFlowGraph().getDagBaseInfo().alias;
       state.values['inputSchema'] = flowGraphStore.getFlowGraph().getDagBaseInfo().inputSchema;
-      state.values['type'] = flowGraphStore.getFlowGraph().getDagBaseInfo().type;
     });
     yamlCode.value = flowGraphStore.getFlowGraph().toYaml()
     open.value = true;
@@ -125,19 +134,22 @@
     dagBaseInfo.dagName = form.value.getFormState().values['dagName'];
     dagBaseInfo.alias = form.value.getFormState().values['alias'];
     dagBaseInfo.inputSchema = form.value.getFormState().values['inputSchema'];
-    dagBaseInfo.type = form.value.getFormState().values['type'];
     flowGraphStore.getFlowGraph().updateDagBaseInfo(dagBaseInfo);
     open.value = !close;
   };
 
   function save() {
     const flowGraphStore = useFlowStoreWithOut();
+    flowGraphStore.getFlowParams().opt
     const dagBaseInfo = flowGraphStore.getFlowGraph().getDagBaseInfo();
     flowGraphStore.getFlowGraph().updateDagBaseInfo(dagBaseInfo);
     const dagJson = yaml.load(yamlCode.value)
-    if (dagJson?.workspace === undefined || dagJson?.dagName === undefined || dagJson?.alias === undefined) {
+    if (dagJson?.workspace === undefined || dagJson?.dagName === undefined) {
       message.error('参数异常');
       return;
+    }
+    if (dagJson?.alias === undefined) {
+      dagJson.alias = 'release';
     }
     const dagSubmitParams = new DagSubmitParams(
         dagJson.workspace,

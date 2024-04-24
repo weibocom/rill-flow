@@ -1,14 +1,14 @@
 export function convertSchemaToTreeData(schema, currentPath = '$') {
   const treeData = [];
-
   if (schema.type === 'object') {
     if (schema.properties === undefined) {
       return treeData;
     }
     for (const [key, value] of Object.entries(schema.properties)) {
       currentPath += '.' + key;
+      const title = value?.title === undefined ? key : value?.title;
       const node = {
-        title: key + '【' + value.type + '】',
+        title: title + '【' + value.type + '】',
         value: currentPath,
         children: convertSchemaToTreeData(value, currentPath),
       };

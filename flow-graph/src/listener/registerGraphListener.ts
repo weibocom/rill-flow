@@ -68,6 +68,7 @@ export function registerGraphListener(graph: Graph, opt: OptEnum) {
   );
 
   graph.on('node:added', ({ node }) => {
+    console.log("CustomEventTypeEnum.NODE_ADD", node)
     Channel.dispatchEvent(CustomEventTypeEnum.NODE_ADD, node);
   });
 

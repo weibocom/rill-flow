@@ -51,19 +51,11 @@
       </a-button>
     </a-tooltip>
 
-    <a-tooltip placement="bottom" v-if="opt !== 'display'">
-      <template #title>
-        <span>codeEdit</span>
-      </template>
-      <a-button name="codeEdit" @click="handleClick" class="item-space" size="small"> 代码执行节点 </a-button>
-    </a-tooltip>
-
     <ShowDag />
     <SaveDag />
     <EditDagMeta />
     <DagTestRun />
     <DagExecutionModal />
-    <CodeEdit />
   </div>
 </template>
 
@@ -75,7 +67,6 @@
   import EditDagMeta from './EditDagMeta.vue';
   import DagTestRun from './DagTestRun.vue';
   import DagExecutionModal from "./DagExecutionModal.vue";
-  import CodeEdit from "@/src/components/ToolBar/CodeEdit.vue";
   import { useFlowStoreWithOut } from '../../store/modules/flowGraphStore';
   import { ref, watch } from "vue";
   import { dagStatusColor } from "@/src/common/dagStatusStyle";
@@ -107,9 +98,6 @@
       case 'refresh':
         Channel.dispatchEvent(CustomEventTypeEnum.SHOW_EXECUTION_RESULT, flowGraphStore.getFlowParams().id);
         break;
-      case 'codeEdit' :
-        // TODO TEST
-        Channel.dispatchEvent(CustomEventTypeEnum.TOOL_BAR_CODE_EDIT, event);
       default:
         break;
     }

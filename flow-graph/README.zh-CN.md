@@ -50,5 +50,5 @@ pnpm serve
 - 打包
 
 ```bash
-pnpm build:docker
+pnpm build:prod
 ```

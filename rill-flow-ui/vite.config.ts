@@ -22,7 +22,7 @@ export default defineApplicationConfig({
       },
       proxy: {
         '/flow/': {
-          target: 'http://localhost:8080',
+          target: 'http://10.185.9.39:8080',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/basic-api`), ''),

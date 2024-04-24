@@ -57,6 +57,7 @@ export default {
           function_template: "函数模板",
           plugin_template: "插件模板",
           logic_template: "逻辑模板",
+          code_template: "代码执行模板",
           task_yaml: "模板任务默认 yaml",
           schema: "模板输入结构(schema)",
           output: "模板输出结构",

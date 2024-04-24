@@ -16,13 +16,16 @@ importers:
         version: 0.6.11
       '@formily/antdv-x3':
         specifier: 1.0.0-alpha.7
-        version: 1.0.0-alpha.7(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
+        version: 1.0.0-alpha.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
       '@formily/core':
         specifier: ^2.3.1
         version: 2.3.1
+      '@formily/reactive-vue':
+        specifier: ^2.3.1
+        version: 2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       '@formily/vue':
         specifier: ^2.3.1
-        version: 2.3.1(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
+        version: 2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
       '@iconify/iconify':
         specifier: ^3.1.1
         version: 3.1.1
@@ -46,10 +49,10 @@ importers:
         version: 3.4.23
       '@vueuse/core':
         specifier: ^10.2.1
-        version: 10.9.0(vue@3.4.23(typescript@5.4.5))
+        version: 10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       '@vueuse/shared':
         specifier: ^10.2.1
-        version: 10.9.0(vue@3.4.23(typescript@5.4.5))
+        version: 10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       '@zxcvbn-ts/core':
         specifier: ^3.0.2
         version: 3.0.4
@@ -112,7 +115,7 @@ importers:
         version: 6.2.2
       pinia:
         specifier: 2.1.4
-        version: 2.1.4(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
+        version: 2.1.4(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
       postcss-loader:
         specifier: ^8.1.1
         version: 8.1.1(postcss@8.4.38)(typescript@5.4.5)
@@ -154,7 +157,7 @@ importers:
         version: 5.10.9
       v-code-diff:
         specifier: ^1.9.0
-        version: 1.11.0(vue@3.4.23(typescript@5.4.5))
+        version: 1.11.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       vditor:
         specifier: ^3.9.4
         version: 3.10.4
@@ -544,7 +547,7 @@ importers:
     dependencies:
       '@vueuse/core':
         specifier: ^10.2.1
-        version: 10.9.0(vue@3.4.23(typescript@5.4.5))
+        version: 10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       vue:
         specifier: ^3.3.4
         version: 3.4.23(typescript@5.4.5)
@@ -2884,6 +2887,11 @@ packages:
 
   '@vue/compiler-ssr@3.4.23':
     resolution: {integrity: sha512-hb6Uj2cYs+tfqz71Wj6h3E5t6OKvb4MVcM2Nl5i/z1nv1gjEhw+zYaNOV+Xwn+SSN/VZM0DgANw5TuJfxfezPg==}
+
+  '@vue/composition-api@1.7.2':
+    resolution: {integrity: sha512-M8jm9J/laYrYT02665HkZ5l2fWTK4dcVg3BsDHm/pfz+MjDYwX+9FUaZyGwEyXEDonQYRCo0H7aLgdklcIELjw==}
+    peerDependencies:
+      vue: '>= 2.5 < 2.7'
 
   '@vue/devtools-api@6.6.1':
     resolution: {integrity: sha512-LgPscpE3Vs0x96PzSSB4IGVSZXZBZHpfxs+ZA1d+VEPwHdOXowy/Y2CsvCAIFrf+ssVU1pD1jidj505EpUnfbA==}
@@ -10218,15 +10226,15 @@ snapshots:
       lodash.isundefined: 3.0.1
       lodash.uniq: 4.5.0
 
-  '@formily/antdv-x3@1.0.0-alpha.7(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))':
+  '@formily/antdv-x3@1.0.0-alpha.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))':
     dependencies:
       '@formily/core': 2.3.1
       '@formily/grid': 2.3.1(typescript@5.4.5)
       '@formily/json-schema': 2.3.1(typescript@5.4.5)
       '@formily/reactive': 2.3.1
-      '@formily/reactive-vue': 2.3.1(vue@3.4.23(typescript@5.4.5))
+      '@formily/reactive-vue': 2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       '@formily/shared': 2.3.1
-      '@formily/vue': 2.3.1(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
+      '@formily/vue': 2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))
       moment: 2.30.1
       vue: 3.4.23(typescript@5.4.5)
       vue-slicksort: 2.0.5(vue@3.4.23(typescript@5.4.5))
@@ -10255,11 +10263,13 @@ snapshots:
 
   '@formily/path@2.3.1': {}
 
-  '@formily/reactive-vue@2.3.1(vue@3.4.23(typescript@5.4.5))':
+  '@formily/reactive-vue@2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))':
     dependencies:
       '@formily/reactive': 2.3.1
       vue: 3.4.23(typescript@5.4.5)
-      vue-demi: 0.13.11(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.13.11(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
+    optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
 
   '@formily/reactive@2.3.1': {}
 
@@ -10277,18 +10287,20 @@ snapshots:
     dependencies:
       '@formily/shared': 2.3.1
 
-  '@formily/vue@2.3.1(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))':
+  '@formily/vue@2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5))':
     dependencies:
       '@formily/core': 2.3.1
       '@formily/json-schema': 2.3.1(typescript@5.4.5)
       '@formily/reactive': 2.3.1
-      '@formily/reactive-vue': 2.3.1(vue@3.4.23(typescript@5.4.5))
+      '@formily/reactive-vue': 2.3.1(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       '@formily/shared': 2.3.1
       '@formily/validator': 2.3.1
       fs-extra: 10.1.0
       vue: 3.4.23(typescript@5.4.5)
-      vue-demi: 0.13.11(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.13.11(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       vue-frag: 1.4.3(vue@3.4.23(typescript@5.4.5))
+    optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
     transitivePeerDependencies:
       - typescript
 
@@ -11659,6 +11671,11 @@ snapshots:
       '@vue/compiler-dom': 3.4.23
       '@vue/shared': 3.4.23
 
+  '@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5))':
+    dependencies:
+      vue: 3.4.23(typescript@5.4.5)
+    optional: true
+
   '@vue/devtools-api@6.6.1': {}
 
   '@vue/language-core@1.8.27(typescript@5.4.5)':
@@ -11703,21 +11720,21 @@ snapshots:
       js-beautify: 1.15.1
       vue-component-type-helpers: 2.0.13
 
-  '@vueuse/core@10.9.0(vue@3.4.23(typescript@5.4.5))':
+  '@vueuse/core@10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))':
     dependencies:
       '@types/web-bluetooth': 0.0.20
       '@vueuse/metadata': 10.9.0
-      '@vueuse/shared': 10.9.0(vue@3.4.23(typescript@5.4.5))
-      vue-demi: 0.14.7(vue@3.4.23(typescript@5.4.5))
+      '@vueuse/shared': 10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.14.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
 
   '@vueuse/metadata@10.9.0': {}
 
-  '@vueuse/shared@10.9.0(vue@3.4.23(typescript@5.4.5))':
+  '@vueuse/shared@10.9.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))':
     dependencies:
-      vue-demi: 0.14.7(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.14.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
@@ -12059,7 +12076,7 @@ snapshots:
 
   axios@1.6.8:
     dependencies:
-      follow-redirects: 1.15.6(debug@4.3.4)
+      follow-redirects: 1.15.6
       form-data: 4.0.0
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -13781,6 +13798,8 @@ snapshots:
       rimraf: 3.0.2
 
   flatted@3.3.1: {}
+
+  follow-redirects@1.15.6: {}
 
   follow-redirects@1.15.6(debug@4.3.4):
     optionalDependencies:
@@ -16159,12 +16178,13 @@ snapshots:
   pify@4.0.1:
     optional: true
 
-  pinia@2.1.4(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5)):
+  pinia@2.1.4(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(typescript@5.4.5)(vue@3.4.23(typescript@5.4.5)):
     dependencies:
       '@vue/devtools-api': 6.6.1
       vue: 3.4.23(typescript@5.4.5)
-      vue-demi: 0.14.7(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.14.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
     optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
       typescript: 5.4.5
 
   pirates@4.0.6: {}
@@ -18306,14 +18326,16 @@ snapshots:
 
   uuid@8.3.2: {}
 
-  v-code-diff@1.11.0(vue@3.4.23(typescript@5.4.5)):
+  v-code-diff@1.11.0(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5)):
     dependencies:
       diff: 5.2.0
       diff-match-patch: 1.0.5
       highlight.js: 11.9.0
       vue: 3.4.23(typescript@5.4.5)
-      vue-demi: 0.14.7(vue@3.4.23(typescript@5.4.5))
+      vue-demi: 0.14.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5))
       vue-i18n: 9.12.1(vue@3.4.23(typescript@5.4.5))
+    optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
 
   v8-compile-cache-lib@3.0.1: {}
 
@@ -18535,13 +18557,17 @@ snapshots:
 
   vue-component-type-helpers@2.0.13: {}
 
-  vue-demi@0.13.11(vue@3.4.23(typescript@5.4.5)):
+  vue-demi@0.13.11(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5)):
     dependencies:
       vue: 3.4.23(typescript@5.4.5)
+    optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
 
-  vue-demi@0.14.7(vue@3.4.23(typescript@5.4.5)):
+  vue-demi@0.14.7(@vue/composition-api@1.7.2(vue@3.4.23(typescript@5.4.5)))(vue@3.4.23(typescript@5.4.5)):
     dependencies:
       vue: 3.4.23(typescript@5.4.5)
+    optionalDependencies:
+      '@vue/composition-api': 1.7.2(vue@3.4.23(typescript@5.4.5))
 
   vue-eslint-parser@9.4.2(eslint@8.57.0):
     dependencies:

@@ -57,6 +57,7 @@ export default {
           function_template: "Function Template",
           plugin_template: "Plugin Template",
           logic_template: "Logic Template",
+          code_template: "Code Template",
           task_yaml: "Template tasks default to yaml",
           schema: "Template input structure (schema)",
           output: "Template output structure",

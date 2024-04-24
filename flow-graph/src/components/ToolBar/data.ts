@@ -34,15 +34,7 @@ export function getSaveFormSchema() {
               alias: {
                 type: 'string',
                 title: '别名',
-                required: true,
-                'x-decorator': 'FormItem',
-                'x-component': 'Input',
-              },
-              type: {
-                type: 'string',
-                title: '类型',
-                required: true,
-                default: 'flow',
+                required: false,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
               }
@@ -52,7 +44,7 @@ export function getSaveFormSchema() {
             type: 'void',
             'x-component': 'FormStep.StepPane',
             'x-component-props': {
-              title: '第二步',
+              title: '输入参数列表',
             },
             properties: getInputSchema(),
           },
@@ -82,14 +74,14 @@ export function getInputSchema() {
                 'x-decorator': 'FormItem',
                 'x-component': 'ArrayItems.SortHandle',
               },
-              paramsName: {
+              name: {
                 type: 'string',
                 title: '参数名',
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
               },
-              paramsType: {
+              type: {
                 type: 'string',
                 title: '参数类型',
                 required: true,
@@ -119,7 +111,7 @@ export function getInputSchema() {
                   },
                 },
               },
-              paramsRequired: {
+              required: {
                 type: 'boolean',
                 title: '参数是否必填',
                 'x-decorator': 'FormItem',
@@ -130,7 +122,7 @@ export function getInputSchema() {
                   style: {},
                 },
               },
-              paramsDesc: {
+              desc: {
                 type: 'string',
                 title: '参数描述',
                 required: false,
@@ -155,4 +147,103 @@ export function getInputSchema() {
       },
     },
   };
+}
+
+export function getOutputSchema() {
+  return {
+    type: 'object',
+    title: '输出参数列表',
+    properties: {
+      outputSchema: {
+        type: 'array',
+        'x-component': 'ArrayItems',
+        'x-decorator': 'FormItem',
+        title: '输出参数',
+        required: false,
+        items: {
+          type: 'object',
+          properties: {
+            space: {
+              type: 'void',
+              'x-component': 'Space',
+              properties: {
+                sort: {
+                  type: 'void',
+                  'x-decorator': 'FormItem',
+                  'x-component': 'ArrayItems.SortHandle',
+                },
+                name: {
+                  type: 'string',
+                  title: '参数名',
+                  required: true,
+                  'x-decorator': 'FormItem',
+                  'x-component': 'Input',
+                },
+                type: {
+                  type: 'string',
+                  title: '参数类型',
+                  required: true,
+                  'x-decorator': 'FormItem',
+                  'x-component': 'Select',
+                  enum: [
+                    {
+                      label: 'String',
+                      value: 'string',
+                    },
+                    {
+                      label: 'Number',
+                      value: 'number',
+                    },
+                    {
+                      label: 'Boolean',
+                      value: 'boolean',
+                    },
+                    {
+                      label: 'Object',
+                      value: 'object',
+                    },
+                  ],
+                  'x-component-props': {
+                    style: {
+                      width: '100px',
+                    },
+                  },
+                },
+                required: {
+                  type: 'boolean',
+                  title: '参数是否必填',
+                  'x-decorator': 'FormItem',
+                  'x-component': 'Switch',
+                  required: true,
+                  default: true,
+                  'x-component-props': {
+                    style: {},
+                  },
+                },
+                desc: {
+                  type: 'string',
+                  title: '参数描述',
+                  required: false,
+                  'x-decorator': 'FormItem',
+                  'x-component': 'Input',
+                },
+                remove: {
+                  type: 'void',
+                  'x-decorator': 'FormItem',
+                  'x-component': 'ArrayItems.Remove',
+                },
+              },
+            },
+          },
+        },
+        properties: {
+          add: {
+            type: 'void',
+            title: '添加输出参数',
+            'x-component': 'ArrayItems.Addition',
+          },
+        },
+      },
+    }
+  }
 }

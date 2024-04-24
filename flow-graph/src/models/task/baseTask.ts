@@ -12,4 +12,5 @@ export class BaseTask {
   status: string;
   containsSub: boolean;
   invokeMsg: DagInvokeMessage;
+  outputSchema: object;
 }

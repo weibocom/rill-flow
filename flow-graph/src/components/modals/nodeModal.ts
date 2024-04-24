@@ -33,3 +33,4 @@ export function renderNodeEditModal(cellId: string) {
 
   const fields = nodePrototype.meta_data.fields;
 }
+
