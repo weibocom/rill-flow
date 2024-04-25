@@ -33,7 +33,6 @@
         statusImg.value = NodeStatus.prefix + NodeStatus[status.value];
         statusShow.value = true;
       }
-      console.log('icon ===> ', getNode().store.data.data, base64Icon.value);
       if (getNode().store.data.data?.icon !== undefined && !getNode().store.data.data?.icon.startsWith('ant-design')) {
         base64Icon.value = NodeLogo.default;
         base64Icon.value = NodeLogo.prefix + getNode().store.data.data?.icon;

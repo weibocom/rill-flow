@@ -34,7 +34,7 @@
     <!-- action  -->
     <div :class="`${prefixCls}-action`">
 <!--      <AppSearch :class="`${prefixCls}-action__item `" v-if="getShowSearch" />-->
-
+      <Github/>
       <ErrorAction v-if="getUseErrorHandle" :class="`${prefixCls}-action__item error-action`" />
 
 <!--      <Notify v-if="getShowNotice" :class="`${prefixCls}-action__item notify-item`" />-->
@@ -77,10 +77,12 @@
 
   import { createAsyncComponent } from '/@/utils/factory/createAsyncComponent';
   import { useLocale } from '/@/locales/useLocale';
+  import Github from "@/layouts/default/header/components/Github.vue";
 
   export default defineComponent({
     name: 'LayoutHeader',
     components: {
+      Github,
       Header: Layout.Header,
       AppLogo,
       LayoutTrigger,

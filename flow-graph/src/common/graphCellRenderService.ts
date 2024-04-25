@@ -15,17 +15,18 @@ export class GraphCellRenderService {
   }
 
   private static renderNode(node: RillNode, icon: string): {} {
-
+    const label = (node.task.title === undefined || node.task.title === '') ? node.task.name : node.task.title
     return getVueNodeConfig({
       size: {
-        width: node.task.name.length * 13 > 180 ?  node.task.name.length * 13 : 180,
+        width: label.length * 20 > 200 ?  label.length * 20 : 200,
         height: 40,
       },
       icon: icon,
-      label: (node.task.title === undefined || node.task.title === '') ? node.task.name : node.task.title,
+      label: label,
       nodePrototype: node.nodePrototypeId,
       position: '',
       id: node.id,
+      name: node.task.name,
       status: node.task.status,
       ports: GraphCellRenderService.generatePorts(node),
     });

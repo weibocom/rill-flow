@@ -9,17 +9,43 @@
     <a-card>
       <a-tabs v-model:activeKey="activeKey">
         <a-tab-pane key="1" tab="基础设置" v-if="nodeCategory === NodeCategory.TEMPLATE_NODE">
+          <a-card>
+              <a-space>
+                节点名称:
+                <a-input v-model:value="nodeTitle"/>
+              </a-space>
+          </a-card>
           <a-card title="Input">
-            <VueForm v-model="jsonSchemaFormData" :schema="inputJsonSchema" :formProps="formProps">
+            <VueForm id="vue-json-schema-form"  v-model="jsonSchemaFormData" :schema="inputJsonSchema" :formProps="formProps">
               <div slot-scope="{ jsonSchemaFormData }"></div>
             </VueForm>
           </a-card>
           <a-card title="Output">
-            <a-tree
-              v-model:expandedKeys="expandedKeys"
-              v-model:selectedKeys="selectedKeys"
-              :tree-data="treeData"
-            />
+            <a-card>
+              编辑: <a-switch v-model:checked="editOutputSwitch" checked-children="开" un-checked-children="关"/>
+              <a-tabs v-if="editOutputSwitch" v-model:activeKey="outputActiveKey">
+              <a-tab-pane key="1" tab="基础模式">
+                <FormProvider :form="outputForm" class="form"  >
+                  <SchemaField :schema="outputSchema" />
+                </FormProvider>
+
+              </a-tab-pane>
+              <a-tab-pane key="2" tab="高级模式">
+                <Codemirror v-model:value="nodeOutputStr"
+                            :options="codeOptions"
+                            border
+                            style="width: 100%; height: 300px"
+                />
+              </a-tab-pane>
+            </a-tabs>
+            </a-card>
+            <a-card title="Output详情">
+              <a-tree
+                v-model:expandedKeys="expandedKeys"
+                v-model:selectedKeys="selectedKeys"
+                :tree-data="treeData"
+              />
+            </a-card>
           </a-card>
         </a-tab-pane>
         <a-tab-pane key="2" tab="高级设置">
@@ -35,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref, shallowRef, toRaw } from 'vue';
+import { reactive, ref, shallowRef, toRaw, watch } from "vue";
   import { Channel } from '../../common/transmit';
   import { CustomEventTypeEnum } from '../../common/enums';
   import VueForm from '@lljj/vue3-form-ant';
@@ -53,23 +79,66 @@
   import { FlowGraph } from '@/src/models/flowGraph';
   import { Mapping } from '@/src/models/task/mapping';
   import { getOptEnumByOpt, OptEnum } from '../../models/enums/optEnum';
+  import Codemirror from "codemirror-editor-vue3";
+  import { getOutputSchema } from "@/src/components/ToolBar/data";
+  import {
+    ArrayItems,
+    DatePicker,
+    FormButtonGroup, FormCollapse,
+    FormItem,
+    FormStep,
+    Input, InputNumber, PreviewText,
+    Select,
+    Space,
+    Submit, Switch
+  } from "@formily/antdv-x3";
+  import { createSchemaField, FormConsumer, FormProvider } from "@formily/vue";
+  import { createForm } from "@formily/core";
+  import { InputSchemaValueItem } from "@/src/models/inputSchema";
+
+  const outputForm = ref();
+  outputForm.value = createForm();
+  const { SchemaField } = createSchemaField({
+    components: {
+      FormItem,
+      FormStep,
+      Input,
+      Space,
+      Select,
+      DatePicker,
+      ArrayItems,
+      Switch,
+      InputNumber,
+      FormCollapse,
+      PreviewText,
+    },
+  });
+
+  const outputSchema = ref({});
+  outputSchema.value = getOutputSchema()
 
   const open = shallowRef<boolean>(false);
   const activeKey = ref('1');
+  const outputActiveKey = ref('1');
   const nodeCategory = ref(NodeCategory.TEMPLATE_NODE);
-
   const expandedKeys = ref<string[]>([]);
   const selectedKeys = ref<string[]>([]);
   const treeData = ref<TreeProps['treeData']>([]);
-
+  const editOutputSwitch = ref<boolean>(false);
+  const nodeTitle = ref('');
   let jsonSchemaFormData = reactive({});
+  const codeOptions = ref({
+    mode: 'application/json',
+  });
   const inputJsonSchema = ref({});
   const fieldsSchema = ref({});
   const fieldsSchemaData = ref({});
   const formProps = ref({});
-
+  const nodeOutputStr = ref("");
   const nodeRef = ref(null);
 
+  const outputData = ref({});
+  const outputJsonSchema = ref(getOutputSchema());
   function getSchemaFormDataByReference(
     inputMapping: Mapping,
     flowGraph: FlowGraph,
@@ -105,9 +174,31 @@
     }
 
     // 1. 初始化 output 和 templateSchema
-    const output = JSON.parse(nodePrototype.template.output);
-    const outputTreeData = convertSchemaToTreeData(output);
-    treeData.value = outputTreeData;
+    let nodeOutput= node.task.outputSchema === undefined ? JSON.parse(nodePrototype.template.output): node.task.outputSchema;
+    nodeOutputStr.value = JSON.stringify(nodeOutput,null,2);
+    treeData.value = convertSchemaToTreeData(JSON.parse(nodeOutputStr.value));
+    if (nodeOutput?.mode === 'simple') {
+      let properties = nodeOutput.properties
+      let outputSchemaList = []
+      for (const key in properties) {
+        console.log('nodeOutput item', key, properties[key])
+        outputSchemaList.push({
+          name: key,
+          type: properties[key].type,
+          desc: properties[key]?.title,
+          required: properties[key]?.required
+        })
+      };
+      outputForm.value.setFormState((state) => {
+        state.values['outputSchema'] = outputSchemaList
+      });
+      console.log('outputSchemaList item', outputSchemaList, outputForm.value.getFormState().values)
+    } else {
+      outputForm.value.setFormState((state) => {
+        state.values['outputSchema'] = []
+      });
+    }
+
     const templateSchemaOri = JSON.parse(nodePrototype.template.schema);
     const templateSchema = cloneDeep(templateSchemaOri);
 
@@ -120,6 +211,7 @@
     };
 
     // 2. 初始化templateSchema中的值jsonSchemaFormData
+    nodeTitle.value = node.task.title;
     const inputMappingMap: Map<string, Mapping> = new Map<string, Mapping>();
     for (const inputKey in node.task.inputMappings) {
       const inputMapping = node.task.inputMappings[inputKey];
@@ -131,26 +223,75 @@
     let jsonSchemaFormDataList = [];
     for (const inputTargetParam of schemaParamsList) {
       const inputMapping = inputMappingMap.get(inputTargetParam);
+      const nodeSchema = JSON.parse(nodePrototype.template.schema)?.properties
+      if (nodeSchema !== undefined && (nodeSchema[inputTargetParam]?.bizType === 'array-to-map')) {
+        const properties = nodeSchema[inputTargetParam]?.items?.properties
+        const arrayValue = []
+        const arrayItemMap = {}
+        for (const key of inputMappingMap.keys()){
+          if (key.split('.')[0] === inputTargetParam) {
+            const itemKey = key.split('.')[1]
+            arrayItemMap[itemKey] = inputMappingMap.get(key)
+            if (properties['value']?.bizType === 'none') {
+              arrayValue.push({
+                key: itemKey,
+                value: inputMappingMap.get(key).source
+              })
+            } else {
+              const formData = getJsonSchemaFormDataItem(itemKey, inputMappingMap.get(key), flowGraph)
+              if (formData === null) {
+                continue;
+              }
+              arrayValue.push(formData)
+            }
+          }
+        }
+
+        jsonSchemaFormDataList.push({
+          key: inputTargetParam,
+          value: arrayValue
+        })
+        continue;
+      }
       if (inputMapping === undefined) {
         continue;
       }
-      const inputFormData = {
-        key: inputTargetParam,
-        value: {
-          attr: 'input',
-          input: inputMapping.source,
-          reference: '',
-        },
-      };
-      if (inputMapping?.source === undefined) {
+      if (nodeSchema !== undefined && (nodeSchema[inputTargetParam]?.bizType === 'code' || nodeSchema[inputTargetParam]?.bizType === 'none')) {
+
+        if (nodeSchema[inputTargetParam]?.oneOf) {
+          const select = nodeSchema[inputTargetParam]?.oneOf
+        }
+        jsonSchemaFormDataList.push({
+          key: inputTargetParam,
+          value: inputMapping.source
+        })
         continue;
       }
-      const formData = inputMapping.source.startsWith('$.')
-        ? getSchemaFormDataByReference(inputMapping, flowGraph, inputTargetParam)
-        : inputFormData;
+      const formData = getJsonSchemaFormDataItem(inputTargetParam, inputMapping, flowGraph)
+      if (formData === null) {
+        continue;
+      }
       jsonSchemaFormDataList.push(formData);
     }
     jsonSchemaFormData = getJsonByJsonPaths(jsonSchemaFormDataList);
+  }
+
+  function getJsonSchemaFormDataItem(key: string,inputMapping:Mapping, flowGraph: FlowGraph) {
+    const inputFormData = {
+      key: key,
+      value: {
+        attr: 'input',
+        input: inputMapping.source,
+        reference: '',
+      },
+    };
+    if (inputMapping?.source === undefined) {
+      return null;
+    }
+    const formData = inputMapping.source.toString().startsWith('$.')
+      ? getSchemaFormDataByReference(inputMapping, flowGraph, key)
+      : inputFormData;
+    return formData;
   }
 
   // 监听点击事件后弹modal
@@ -160,8 +301,11 @@
 
   Channel.eventListener(CustomEventTypeEnum.NODE_CLICK, (nodeCell) => {
     const flowGraphStore = useFlowStoreWithOut();
+    reset();
+
     nodeRef.value = nodeCell;
     if (!isOpenModel(getOptEnumByOpt(flowGraphStore.getFlowParams().opt))) {
+      open.value = false;
       return;
     }
 
@@ -222,17 +366,64 @@
     const flowGraphStore = useFlowStoreWithOut();
     const flowGraph: FlowGraph = flowGraphStore.getFlowGraph();
     if (activeKey.value === '1') {
+      console.log("jsonSchemaFormData", toRaw(jsonSchemaFormData),outputForm.value.getFormState().values, outputActiveKey.value, nodeTitle.value)
+      flowGraph.updateNodeTaskTitle(nodeRef.value.id,  nodeTitle.value)
+
       // 基础模式
       flowGraph.updateNodeTaskMappingInfos(
         nodeRef.value.id,
         toRaw(jsonSchemaFormData),
       );
+
+      if (editOutputSwitch.value) {
+        let outputSchema = {}
+        if (outputActiveKey.value === '1') {
+          outputSchema = formValuesToJsonSchema(outputForm.value.getFormState().values['outputSchema'])
+        } else {
+          outputSchema = JSON.parse(nodeOutputStr.value)
+        }
+        console.log("outputSchema save", outputSchema, nodeTitle.value)
+        flowGraph.updateNodeTaskOutput(nodeRef.value.id, outputSchema)
+      }
     } else {
       // 高级模式
       flowGraph.updateNodeTaskData(nodeRef.value.id, fieldsSchemaData.value);
     }
     open.value = false;
+    reset();
   };
+
+  function formValuesToJsonSchema(formValues: Array<InputSchemaValueItem>) {
+    const schema = {
+      type: 'object',
+      properties: {},
+      mode: 'simple'
+    }
+
+    if (formValues === undefined) {
+      return schema;
+    }
+    console.log('formValues', formValues)
+    for (const i in formValues) {
+
+      schema.properties[formValues[i].name] = {
+        'required': formValues[i].required,
+        'type': formValues[i].type,
+        'title': formValues[i].desc,
+      }
+      console.log('formValues', i,formValues[i])
+    }
+    return schema;
+  }
+
+  function reset() {
+    editOutputSwitch.value = false;
+    outputActiveKey.value = '1';
+    outputForm.value.setFormState((state) => {
+      state.values['outputSchema'] = []
+    });
+  }
+
 </script>
 
 <style scoped lang="less"></style>

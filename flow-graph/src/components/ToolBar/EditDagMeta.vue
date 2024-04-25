@@ -120,7 +120,7 @@
     form.value.setFormState((state) => {
       state.values['workspace'] = flowGraphStore.getFlowGraph().getDagBaseInfo().workspace;
       state.values['dagName'] = flowGraphStore.getFlowGraph().getDagBaseInfo().dagName;
-      state.values['alias'] = flowGraphStore.getFlowGraph().getDagBaseInfo().alias;
+      state.values['alias'] = flowGraphStore.getFlowGraph().getDagBaseInfo().alias === undefined ? 'release': flowGraphStore.getFlowGraph().getDagBaseInfo().alias;
       state.values['inputSchema'] = flowGraphStore.getFlowGraph().getDagBaseInfo().inputSchema;
     });
     yamlCode.value = flowGraphStore.getFlowGraph().toYaml()

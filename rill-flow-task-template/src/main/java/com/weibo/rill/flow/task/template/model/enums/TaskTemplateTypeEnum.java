@@ -25,7 +25,9 @@ import lombok.Getter;
 public enum TaskTemplateTypeEnum {
     FUNCTION(0, "函数模板"),
     PLUGIN(1, "插件模板"),
-    LOGIC(2, "逻辑模板");
+    LOGIC(2, "逻辑模板"),
+    CODE(3, "代码执行模板"),
+    ;
 
     private final int type;
     private final String desc;
@@ -43,6 +45,7 @@ public enum TaskTemplateTypeEnum {
             case 0 -> FUNCTION;
             case 1 -> PLUGIN;
             case 2 -> LOGIC;
+            case 3 -> CODE;
             default -> null;
         };
     }

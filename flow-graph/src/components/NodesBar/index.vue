@@ -13,7 +13,7 @@
           :key="nodeVO.id"
           @mousedown="startDrag(nodeVO, $event)"
         >
-          <NodeTemplate :label="nodeVO.name" :icon="nodeVO.icon" />
+          <NodeTemplate :label="nodeVO.title" :icon="nodeVO.icon" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -67,6 +67,7 @@
     id: string;
     nodeCategory: NodeCategory;
     name: string;
+    title: string;
     icon: string;
   }
 
@@ -76,8 +77,10 @@
     nodeVO.nodeCategory = nodeCategory;
     if (nodeVO.nodeCategory === NodeCategory.BASE_NODE) {
       nodeVO.name = nodePrototype.meta_data.category;
+      nodeVO.title = nodePrototype.meta_data.category;
     } else {
-      nodeVO.name = nodePrototype.template.name;
+      nodeVO.name = '';
+      nodeVO.title = nodePrototype.template.name;
     }
 
     nodeVO.icon = nodePrototype.icon;
