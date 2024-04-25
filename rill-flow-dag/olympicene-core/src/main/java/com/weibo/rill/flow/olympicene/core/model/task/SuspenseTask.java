@@ -41,6 +41,7 @@ public class SuspenseTask extends BaseTask {
     @JsonCreator
     public SuspenseTask(@JsonProperty("name") String name,
                         @JsonProperty("title") String title,
+                        @JsonProperty("description") String description,
                         @JsonProperty("category") String category,
                         @JsonProperty("next") String next,
                         @JsonProperty("tolerance") boolean tolerance,
@@ -55,7 +56,7 @@ public class SuspenseTask extends BaseTask {
                         @JsonProperty("keyExp") String keyExp,
                         @JsonProperty("parameters") Map<String, Object> parameters,
                         @JsonProperty("templateId") String templateId) {
-        super(name, title, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+        super(name, title, description, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.conditions = conditions;
         this.interruptions = interruptions;
     }
