@@ -28,7 +28,7 @@ import java.util.TreeMap;
 
 @Service("authHeaderGenerator")
 public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
-    @Value("${rill_flow_callback_uri}")
+    @Value("${rill.flow.function.trigger.uri}")
     private String flowCallbackUri;
 
     @Value("${rill.flow.server.host}")
