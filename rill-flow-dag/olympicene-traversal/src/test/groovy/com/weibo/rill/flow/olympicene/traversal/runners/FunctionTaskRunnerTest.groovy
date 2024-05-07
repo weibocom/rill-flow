@@ -26,14 +26,14 @@ class FunctionTaskRunnerTest extends Specification {
     def "test base properties getter"() {
         expect:
         runner.getCategory() == TaskCategory.FUNCTION
-        runner.getIcon() == ""
+        runner.getIcon() == "ant-design:api-outlined"
     }
 
     def "test getFields"() {
         when:
         JSONObject fields = runner.getFields()
         then:
-        fields.size() == 12
+        fields.size() == 13
         fields.getJSONObject("next").getString("name") == "下一节点"
         fields.getJSONObject("next").getString("type") == "string"
         fields.getJSONObject("next").getBoolean("required") == false

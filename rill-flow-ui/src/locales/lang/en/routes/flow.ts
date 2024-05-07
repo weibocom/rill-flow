@@ -1,10 +1,68 @@
-import {getInstanceColumns} from "@/views/flow-instance/tableData";
-
 export default {
   definitions: {
     record: "Flow Definition",
     list: "Flow Definition List",
     detail: "Flow Definition Detail",
+    node_templetes: "Node Templates",
+    opt: "operation",
+    option: {
+      versions: "Versions",
+      showYaml: "ShowYaml",
+      edit: "Edit",
+      create: "Create"
+    },
+    columns: {
+      create_time: "Create Time",
+      update_time: "Update Time",
+      business_id: "Business Name",
+      feature_id: "Feature Name",
+      alias: "Alias",
+    },
+    modal:{
+      title: "Version Information",
+      columns: {
+        "descriptor_id": "Flow Id",
+        "create_time": "Create Time"
+      }
+    },
+    node_templates_detail: {
+      opt: "operation",
+      option: {
+        disable: "Disable",
+        enable: "Enable",
+        edit: "Edit",
+        create: "Create",
+        preview_json_schema: "preview jsonSchema",
+        editTask_template: "Edit Task Template",
+        preview_input: "Preview Input",
+        preview_output: "Preview Output",
+      },
+      columns: {
+        name: "Template Name",
+        type: "Template Type",
+        node_type: "Node Type",
+        category: "Category",
+        status: "Status",
+        disable: "Disable",
+        enable: "Enable",
+      },
+      node_type: {
+        meta: "Meta Data",
+        template: "Template"
+      },
+      task_template_detail: {
+        columns: {
+          name: "Template Name",
+          type: "Template Type",
+          function_template: "Function Template",
+          plugin_template: "Plugin Template",
+          logic_template: "Logic Template",
+          task_yaml: "Template tasks default to yaml",
+          schema: "Template input structure (schema)",
+          output: "Template output structure",
+        }
+      }
+    }
   },
   instances: {
     record: "Execution Records",
@@ -54,6 +112,7 @@ export default {
           context_key: "Key",
           context_value: "Value",
           error_result_msg: "Execution Exception Message",
+          error_result_default_msg: "No Exception Message",
           trace: "Trace",
           trace_detail: "Detail",
         }

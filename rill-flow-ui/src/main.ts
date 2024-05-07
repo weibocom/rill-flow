@@ -18,8 +18,9 @@ import { setupStore } from '@/store';
 
 import App from './App.vue';
 
+const app = createApp(App);
+
 async function bootstrap() {
-  const app = createApp(App);
 
   // Configure store
   // 配置 store

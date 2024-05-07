@@ -1,124 +1,130 @@
 {
   "name": {
     "type": "string",
-    "name": "任务名称",
+    "title": "任务名称",
     "required": true,
-    "default_value": ""
+    "default": ""
   },
-  "resource_name": {
+  "title": {
     "type": "string",
-    "name": "资源名称",
+    "title": "节点名称",
+    "required": false,
+    "default": ""
+  },
+  "resourceName": {
+    "type": "string",
+    "title": "资源名称",
     "required": true,
-    "default_value": ""
+    "default": ""
   },
-  "resource_protocol": {
+  "resourceProtocol": {
     "type": "string",
-    "name": "资源协议",
+    "title": "资源协议",
     "required": true
   },
-  "request_type": {
+  "requestType": {
     "type": "string",
-    "name": "请求类型",
+    "title": "请求类型",
     "required": false,
-    "default_value": "POST",
-    "options": [
+    "default": "POST",
+    "oneOf": [
       {
-        "name": "POST",
-        "value": "POST"
+        "title": "POST",
+        "const": "POST"
       },
       {
-        "name": "GET",
-        "value": "GET"
+        "title": "GET",
+        "const": "GET"
       }
     ]
   },
   "pattern": {
     "type": "string",
-    "name": "同步类型",
+    "title": "同步类型",
     "required": true,
-    "options": [
+    "oneOf": [
       {
-        "name": "同步",
-        "value": "task_scheduler"
+        "title": "同步",
+        "const": "task_sync"
       },
       {
-        "name": "异步",
-        "value": "task_async"
+        "title": "异步",
+        "const": "task_async"
       }
     ]
   },
-  "input_mappings": {
-    "type": "list",
-    "name": "输入映射",
+  "inputMappings": {
+    "type": "array",
+    "title": "输入映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输入来源",
+          "title": "输入来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输入目标",
+          "title": "输入目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输入映射处理 aviator 表达式",
+          "title": "输入映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
       }
     }
   },
-  "output_mappings": {
-    "type": "list",
-    "name": "输入映射",
+  "outputMappings": {
+    "type": "array",
+    "title": "输出映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输入来源",
+          "title": "输出来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输入目标",
+          "title": "输出目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输入映射处理 aviator 表达式",
+          "title": "输出映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
@@ -127,52 +133,51 @@
   },
   "tolerance": {
     "type": "boolean",
-    "name": "是否容错",
+    "title": "是否容错",
     "required": false,
-    "default_value": false
+    "default": false
   },
-  "success_conditions": {
-    "type": "list",
-    "name": "成功条件",
+  "successConditions": {
+    "type": "array",
+    "title": "成功条件",
     "required": false,
-    "data": {
+    "items": {
       "type": "string"
     }
   },
-  "fail_conditions": {
-    "type": "list",
-    "name": "失败条件",
+  "failConditions": {
+    "type": "array",
+    "title": "失败条件",
     "required": false,
-    "data": {
+    "items": {
       "type": "string"
     }
   },
   "retry": {
     "type": "object",
+    "title": "重试配置",
     "required": false,
-    "fields": {
-      "max_retry_times": {
+    "properties": {
+      "maxRetryTimes": {
         "type": "integer",
-        "name": "最大重试次数",
+        "title": "最大重试次数",
         "required": true
       },
-      "interval_in_seconds": {
+      "intervalInSeconds": {
         "type": "integer",
-        "name": "间隔时间",
-        "required": false,
-        "default_value": 0
+        "title": "间隔时间",
+        "required": false
       },
       "multiplier": {
         "type": "integer",
-        "name": "放大系数",
-        "required": false,
-        "default_value": 1
+        "title": "放大系数",
+        "required": false
       }
     }
   },
   "next": {
     "type": "string",
-    "name": "下一节点",
+    "title": "下一节点",
     "required": false
   }
 }

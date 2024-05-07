@@ -97,6 +97,11 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
     }
 
     @Override
+    public String getIcon() {
+        return "ant-design:api-outlined";
+    }
+
+    @Override
     protected ExecutionResult doRun(String executionId, TaskInfo taskInfo, Map<String, Object> input) {
         log.info("function task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
@@ -138,6 +143,8 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(dispatchRetJson);
             output = buildOutput(dispatchRetJson);
+            log.info("dispatchTask success, executionId:{}, taskName:{}, output:{}",
+                    executionId, taskInfo.getName(), output);
             NotifyInfo notifyInfo = NotifyInfo.builder()
                     .taskInfoName(taskInfo.getName())
                     .taskStatus(buildTaskStatus(output, taskInfo, taskInvokeMsg))

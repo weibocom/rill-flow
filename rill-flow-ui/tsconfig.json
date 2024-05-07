@@ -22,7 +22,8 @@
     "build/**/*.ts",
     "build/**/*.d.ts",
     "mock/**/*.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "node_modules/.pnpm/preact@10.19.2/node_modules/preact/src/internal.d.ts"
   ],
   "exclude": ["node_modules", "tests/server/**/*.ts", "dist", "**/*.js"]
 }

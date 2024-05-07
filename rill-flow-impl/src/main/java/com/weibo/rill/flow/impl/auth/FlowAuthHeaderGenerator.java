@@ -28,14 +28,17 @@ import java.util.TreeMap;
 
 @Service("authHeaderGenerator")
 public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
-    @Value("${rill_flow_callback_url}")
-    private String flowCallbackUrl;
+    @Value("${rill.flow.function.trigger.uri}")
+    private String flowCallbackUri;
+
+    @Value("${rill.flow.server.host}")
+    private String flowServerHost;
 
     @Value("${rill_flow_auth_secret_key}")
     private String authSecret;
 
     @Override
-    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task) {
+    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
         Map<String, String> paramMap = new TreeMap<>();
         if (executionId != null) {
             paramMap.put("execution_id", executionId);
@@ -45,6 +48,6 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
         }
         paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
         AuthHttpUtil.addSignToParam(paramMap, authSecret);
-        httpHeaders.add("X-Callback-Url", flowCallbackUrl + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
+        httpHeaders.add("X-Callback-Url", flowServerHost + flowCallbackUri + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
     }
 }

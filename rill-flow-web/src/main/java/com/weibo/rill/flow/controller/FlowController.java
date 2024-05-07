@@ -23,7 +23,9 @@ import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.function.ResourceCheckConfig;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.User;
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
+import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.facade.OlympiceneFacade;
@@ -35,6 +37,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -49,12 +53,14 @@ import java.util.function.Supplier;
 @Api(tags = {"工作流操作相关接口"})
 @RequestMapping("/flow")
 public class FlowController {
+    private static final String PASSTHROUGH = "passthrough";
     private static final String EXECUTION_ID = "execution_id";
     private static final String TASK_NAME = "task_name";
     private static final String TASK_NAMES = "task_names";
     private static final String SERVICE_ID = "service_id";
     private static final String TYPE = "type";
     private static final String CODE = "code";
+    private static final Logger log = LoggerFactory.getLogger(FlowController.class);
 
     @Autowired
     private OlympiceneFacade olympiceneFacade;
@@ -71,6 +77,9 @@ public class FlowController {
 
     @Autowired
     private DAGContextInitializer dagContextInitializer;
+
+    @Autowired
+    private DAGInfoStorage dagInfoStorage;
 
     /**
      * 任务提交接口
@@ -119,6 +128,68 @@ public class FlowController {
             return olympiceneFacade.finish(executionId, context, data);
         };
         return profileRecordService.runNotifyAndRecordProfile("finish.json", executionId, finishActions);
+    }
+
+    @RequestMapping(value = "trigger.json", method = {RequestMethod.POST, RequestMethod.GET})
+    public Map<String, Object> trigger(@RequestParam(value = EXECUTION_ID) String executionId,
+                                       @RequestParam(value = TASK_NAME) String taskName,
+                                       @RequestParam(value = "status", required = false) String status,
+                                       @RequestParam(value = "context", required = false) String queryContext,
+                                       @RequestBody(required = false) JSONObject context) {
+        JSONObject data = parseTriggerContext(queryContext, context);
+        TaskInfo taskInfo = dagInfoStorage.getBasicTaskInfo(executionId, taskName);
+        if (taskInfo == null) {
+            throw new TaskException(BizError.ERROR_DATA_FORMAT, "task not exists " + executionId + ":" + taskName);
+        }
+        Supplier<Map<String, Object>> finishActions;
+        if ("suspense".equals(taskInfo.getTask().getCategory())) {
+            finishActions = wakeUpSuspense(executionId, taskName, data);
+        } else {
+            finishActions = finishFunction(executionId, taskName, status, data);
+        }
+
+        return profileRecordService.runNotifyAndRecordProfile("trigger.json", executionId, finishActions);
+    }
+
+    private Supplier<Map<String, Object>> wakeUpSuspense(String executionId, String taskName, JSONObject data) {
+        Supplier<Map<String, Object>> finishActions;
+        finishActions = () -> {
+            String businessId = ExecutionIdUtil.getBusinessId(executionId);
+            Map<String, Object> context = dagContextInitializer.newWakeupContextBuilder(businessId).withData(data).withIdentity(executionId).build();
+            return olympiceneFacade.wakeup(executionId, taskName, context);
+        };
+        return finishActions;
+    }
+
+    private Supplier<Map<String, Object>> finishFunction(String executionId, String taskName, String status, JSONObject context) {
+        Supplier<Map<String, Object>> finishActions;
+        JSONObject data = new JSONObject();
+        data.put("result_type", status == null ? "SUCCESS" : status);
+        data.put(PASSTHROUGH, new JSONObject(Map.of("execution_id", executionId, "task_name", taskName)));
+        JSONObject contextData = context == null ? new JSONObject() : context;
+        data.put("response", contextData);
+        finishActions = () -> {
+            String businessId = ExecutionIdUtil.getBusinessId(executionId);
+            Map<String, Object> response = dagContextInitializer.newCallbackContextBuilder(businessId).withData(contextData).withIdentity(executionId).build();
+            return olympiceneFacade.finish(executionId, response, data);
+        };
+        return finishActions;
+    }
+
+    private JSONObject parseTriggerContext(String queryContext, JSONObject context) {
+        JSONObject data = null;
+        if (queryContext != null) {
+            try {
+                data = JSONObject.parseObject(queryContext);
+            } catch (Exception e) {
+                log.error("parse query context error", e);
+            }
+        }
+        if (context == null) {
+            return data;
+        }
+        context.putAll(data == null? new JSONObject() : data);
+        return context;
     }
 
     @ApiOperation(value = "唤醒挂起任务")

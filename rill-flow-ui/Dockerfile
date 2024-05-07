@@ -1,25 +1,30 @@
-FROM node:16-alpine as build-stage
+# build rill-flow-ui 
+FROM node:18.12.1-alpine as build-stage
 
 WORKDIR /data/rill-flow-ui
-COPY . ./
+COPY ./rill-flow-ui/ ./
 
-# 设置 node 阿里镜像
 RUN npm config set registry https://registry.npm.taobao.org
+RUN npm cache clean --force
+RUN npm config set strict-ssl false
 
-# 设置阿里镜像、pnpm、依赖、编译
-RUN npm install pnpm -g && pnpm install && pnpm build:prod
-# node部分结束
+RUN npm install pnpm@9.0.2 -g && pnpm install && pnpm build:prod
 
-RUN echo "🎉 编 🎉 译 🎉 成 🎉 功 🎉"
+# build rill-flow-graph
+FROM node:18.12.1-alpine as build-submodule-stage
+
+WORKDIR /data/rill-flow-graph
+COPY ./flow-graph ./
+
+RUN npm config set registry https://registry.npm.taobao.org
+RUN npm cache clean --force
+RUN npm config set strict-ssl false
+
+RUN npm install pnpm@9.0.2 -g && pnpm install && pnpm build:prod
 
 FROM nginx:1.23.3-alpine as production-stage
 COPY --from=build-stage /data/rill-flow-ui/dist /usr/share/nginx/html/dist
 COPY --from=build-stage /data/rill-flow-ui/deploy/nginx.conf /etc/nginx/nginx.conf.template
+COPY --from=build-submodule-stage /data/rill-flow-graph/dist /usr/share/nginx/html/dist/flow-graph
 
-RUN echo "🎉  启动服务  🎉"
-
-# 启动 Nginx 服务
-# 在容器启动时替换 Nginx 配置文件中的模板变量
 CMD /bin/sh -c "envsubst '\$BACKEND_SERVER' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
-RUN echo "🎉 架 🎉 设 🎉 成 🎉 功 🎉"
-

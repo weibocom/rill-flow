@@ -27,6 +27,7 @@ import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -36,6 +37,11 @@ import java.util.Map;
 @Slf4j
 public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath {
     Configuration conf = Configuration.builder().options(Option.DEFAULT_PATH_LEAF_TO_NULL).build();
+
+    @Value("${rill.flow.function.trigger.uri}")
+    private String rillFlowFunctionTriggerUri;
+    @Value("${rill.flow.server.host}")
+    private String serverHost;
 
     @Override
     public void mapping(Map<String, Object> context, Map<String, Object> input, Map<String, Object> output, List<Mapping> rules) {
@@ -55,7 +61,21 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
             boolean intolerance = mapping.getTolerance() != null && !mapping.getTolerance();
             try {
                 String source = mapping.getSource();
-                Object sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
+                Object sourceValue = null;
+                String[] infos = source.split("\\.");
+                if (source.startsWith("$.tasks.") && infos.length > 3) {
+                    String taskName = infos[2];
+                    String key = infos[3];
+                    if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
+                        sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
+                        String[] queryInfos = source.split("\\?");
+                        if (queryInfos.length > 0) {
+                            sourceValue += '&' + queryInfos[1];
+                        }
+                    }
+                } else {
+                    sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
+                }
 
                 Object transformedValue = transformSourceValue(sourceValue, context, input, output, mapping.getTransform());
 

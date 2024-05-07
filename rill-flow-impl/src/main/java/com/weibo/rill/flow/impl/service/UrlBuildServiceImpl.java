@@ -28,12 +28,15 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class UrlBuildServiceImpl implements UrlBuildService {
-    @Value("${rill_flow_dag_redo_url}")
-    private String redoUrl;
+    @Value("${rill_flow_dag_redo_uri}")
+    private String redoUri;
+    @Value("${rill.flow.server.host}")
+    private String serverHost;
 
     @Override
     public String buildRedoUrl(String executionId, String taskNamesString) {
         URIBuilder uriBuilder;
+        String redoUrl = serverHost + redoUri;
         try {
             uriBuilder = new URIBuilder(redoUrl);
             uriBuilder.addParameter("execution_id", executionId);

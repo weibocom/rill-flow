@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -53,8 +52,8 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
     private AuthHeaderGenerator authHeaderGenerator;
 
     @Override
-    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task) {
-        authHeaderGenerator.appendRequestHeader(httpHeaders, executionId, task);
+    public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
+        authHeaderGenerator.appendRequestHeader(httpHeaders, executionId, task, input);
         if (task != null && task.getTask() instanceof FunctionTask functionTask) {
             if (FunctionPattern.TASK_SCHEDULER.equals(functionTask.getPattern())
                     || FunctionPattern.TASK_ASYNC.equals(functionTask.getPattern())) {
@@ -69,9 +68,7 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         HttpParameter httpParameter = buildRequestParams(executionId, input);
         Map<String, Object> queryParams = httpParameter.getQueryParams();
         queryParams.put("name", taskInfoName);
-        Map<String, Object> body = httpParameter.getBody();
-        httpParameter.setBody(Optional.ofNullable((Map<String, Object>) body.get("data")).orElse(Maps.newHashMap()));
-        log.info("buildRequestParams result queryParams:{} body:{}, executionId:{}， taskInfoName:{}", queryParams, body, executionId, taskInfoName);
+        log.info("buildRequestParams result queryParams:{} body:{}, executionId:{}， taskInfoName:{}", queryParams, httpParameter.getBody(), executionId, taskInfoName);
         return httpParameter;
     }
 
@@ -81,24 +78,24 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
 
         Map<String, Object> queryParams = Maps.newHashMap();
         Map<String, Object> body = Maps.newHashMap();
-        Map<String, Object> functionInput = Maps.newHashMap();
         Map<String, Object> callback = Maps.newHashMap();
-        Map<String, String> header= Maps.newHashMap();
+        Map<String, String> header = Maps.newHashMap();
 
         queryParams.put("execution_id", executionId);
-        body.put("data", functionInput);
-        body.put("group_id", executionId);
+        body.put("execution_id", executionId);
         Optional.ofNullable(input).ifPresent(inputMap -> inputMap.forEach((key, value) -> {
-            if (key.startsWith("query_params_") && value instanceof Map) {
-                queryParams.putAll((Map<String, Object>) value);
-            } else if (key.startsWith("request_config_") && value instanceof Map) {
+            if (!(value instanceof Map)) {
+                body.put(key, value);
+            } else if (key.startsWith("request_config_") || key.equals("body")) {
                 body.putAll((Map<String, Object>) value);
-            } else if (key.startsWith("request_callback_") && value instanceof Map) {
+            } else if (key.startsWith("query_params_") || key.equals("query")) {
+                queryParams.putAll((Map<String, Object>) value);
+            } else if (key.startsWith("request_callback_")) {
                 callback.putAll((Map<String, Object>) value);
-            } else if (key.startsWith("request_header_") && value instanceof Map) {
+            } else if (key.startsWith("request_header_") || key.equals("header")) {
                 header.putAll((Map<String, String>) value);
             } else {
-                functionInput.put(key, value);
+                body.put(key, value);
             }
         }));
 
@@ -128,12 +125,18 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
     }
 
     @Override
-    public ResponseEntity<String> invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime) {
+    public String invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime) {
         RestTemplate restTemplate = defaultRestTemplate;
         String cause = null;
         for (int i = 1; i <= maxInvokeTime; i++) {
             try {
-                return restTemplate.exchange(new URI(url), method, requestEntity, String.class);
+                String result;
+                if (method == HttpMethod.GET) {
+                    result = restTemplate.getForObject(url, String.class);
+                } else {
+                    result = restTemplate.postForObject(new URI(url), requestEntity, String.class);
+                }
+                return result;
             } catch (RestClientResponseException e) {
                 throw e;
             } catch (Exception e) {

@@ -1,6 +1,6 @@
 ## Introduction
 
-This is a description of Rill Flow UI frontend development based on [Vue vben admin](https://github.com/vbenjs/vue-vben-admin) and [Diagramming Engine x6](https://x6.antv.antgroup.com/) 开发
+This is a description of Rill Flow UI frontend development based on [Vue vben admin](https://github.com/vbenjs/vue-vben-admin).
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ This is a description of Rill Flow UI frontend development based on [Vue vben ad
 - [Vue-Router-Next](https://next.router.vuejs.org/) - Familiarity with basic usage of Vue Router
 - [Ant-Design-Vue](https://2x.antdv.com/docs/vue/introduce-cn/) - Basic usage of UI components
 - [Mock.js](https://github.com/nuysoft/Mock) - Familiarity with Mock.js syntax
-- [图编辑引擎 X6](https://x6.antv.antgroup.com/) - Understanding of x6 diagramming engine basics
+- [QianKun](https://qiankun.umijs.org/zh/guide) - Basic usage of QianKun
 
 
 ## Installation and Usage
@@ -22,11 +22,11 @@ This is a description of Rill Flow UI frontend development based on [Vue vben ad
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 ```
 
-- Install Node.js version v16.20.2 and set it as the default global version:
+- Install Node.js version v18.19.0 and set it as the default global version:
 
 ```shell
-nvm install v16.20.2
-nvm alias default v16.20.2
+nvm install v18.19.0
+nvm alias default v18.19.0
 ```
 
 - Install pnpm:

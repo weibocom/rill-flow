@@ -22,14 +22,13 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
 
 public interface HttpInvokeHelper {
 
-    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task);
+    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input);
 
     HttpParameter functionRequestParams(String executionId, String taskInfoName, Resource resource, Map<String, Object> input);
 
@@ -37,5 +36,5 @@ public interface HttpInvokeHelper {
 
     String buildUrl(Resource resource, Map<String, Object> queryParams);
 
-    ResponseEntity<String> invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime);
+    String invokeRequest(String executionId, String taskInfoName, String url, HttpEntity<?> requestEntity, HttpMethod method, int maxInvokeTime);
 }

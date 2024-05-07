@@ -1,0 +1,19 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: httpGetSample
+tasks:
+  - category: pass
+    name: startNode
+    next: callApiNode
+  - category: function
+    name: callApiNode
+    pattern: task_sync
+    resourceName: http://sample-executor:8000/hello.json
+    requestType: get
+    inputMappings:
+      - target: $.input.query.user
+        source: $.context.user
+    outputMappings:
+      - target: $.context.result
+        source: $.output.result

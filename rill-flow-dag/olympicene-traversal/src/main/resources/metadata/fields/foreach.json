@@ -1,124 +1,130 @@
 {
   "name": {
     "type": "string",
-    "name": "任务名称",
+    "title": "任务名称",
     "required": true,
-    "default_value": ""
+    "default": ""
+  },
+  "title": {
+    "type": "string",
+    "title": "节点名称",
+    "required": false,
+    "default": ""
   },
   "synchronization": {
     "type": "object",
-    "name": "并发控制",
+    "title": "并发控制",
     "required": false,
-    "fields": {
+    "properties": {
       "conditions": {
-        "type": "list",
-        "name": "控制条件",
+        "type": "array",
+        "title": "控制条件",
         "required": false,
-        "data": {
+        "items": {
           "type": "string"
         }
       },
       "maxConcurrency": {
         "type": "integer",
         "required": false,
-        "name": "最大并发量"
+        "title": "最大并发量"
       }
     }
   },
   "iterationMapping": {
     "type": "object",
-    "name": "循环条件控制",
+    "title": "循环条件控制",
     "required": true,
-    "fields": {
+    "properties": {
       "collection": {
         "type": "string",
-        "name": "待循环集合",
+        "title": "待循环集合",
         "required": true
       },
       "item": {
         "type": "string",
-        "name": "子 context 元素名称",
+        "title": "子 context 元素名称",
         "required": true
       },
       "identity": {
         "type": "string",
-        "name": "本次循环的别名",
+        "title": "本次循环的别名",
         "required": false
       }
     }
   },
-  "input_mappings": {
-    "type": "list",
-    "name": "输入映射",
+  "inputMappings": {
+    "type": "array",
+    "title": "输入映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输入来源",
+          "title": "输入来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输入目标",
+          "title": "输入目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输入映射处理 aviator 表达式",
+          "title": "输入映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
       }
     }
   },
-  "output_mappings": {
-    "type": "list",
-    "name": "输入映射",
+  "outputMappings": {
+    "type": "array",
+    "title": "输出映射",
     "required": true,
-    "data": {
+    "items": {
       "type": "object",
-      "fields": {
+      "properties": {
         "source": {
           "type": "string",
-          "name": "输入来源",
+          "title": "输出来源",
           "required": true
         },
         "target": {
           "type": "string",
-          "name": "输入目标",
+          "title": "输出目标",
           "required": true
         },
         "reference": {
           "type": "string",
-          "name": "commonMapping 引用",
+          "title": "commonMapping 引用",
           "required": true
         },
         "transform": {
           "type": "string",
-          "name": "输入映射处理 aviator 表达式",
+          "title": "输出映射处理 aviator 表达式",
           "required": false
         },
         "tolerance": {
           "type": "boolean",
-          "name": "容忍错误",
+          "title": "容忍错误",
           "required": false
         },
-        "required_group": [
+        "requiredGroup": [
           ["source", "target"],
           ["reference"]
         ]
@@ -126,16 +132,16 @@
     }
   },
   "tasks": {
-    "type": "list",
-    "name": "任务列表",
+    "type": "array",
+    "title": "任务列表",
     "required": true,
-    "data": {
+    "items": {
       "type": "task"
     }
   },
   "next": {
     "type": "string",
-    "name": "下一节点",
+    "title": "下一节点",
     "required": false
   }
 }

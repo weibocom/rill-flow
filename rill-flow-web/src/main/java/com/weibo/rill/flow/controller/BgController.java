@@ -31,10 +31,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,8 +75,9 @@ public class BgController {
     @ApiOperation(value = "获取流程图详情")
     @GetMapping(value = "/get_descriptor.json")
     public Map<String, Object> getDescriptor(
+            HttpServletResponse response,
             @ApiParam(value = "流程图ID") @RequestParam(value = "id") String descriptorId
-    ) {
+            ) {
         JSONObject descriptor = dagDescriptorFacade.getDescriptor(descriptorId);
         return Map.of("data", descriptor, "message", "", "success", true);
     }
@@ -94,32 +97,29 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().forEach(businessId -> {
-            descriptorManager.getFeature(businessId).forEach(featureId -> {
-                descriptorManager.getAlias(businessId, featureId).forEach(alia -> {
-                    descriptorManager.getVersion(businessId, featureId, alia).forEach(version -> {
-                        String descriptorId = String.valueOf(version.get("descriptor_id"));
-                        long createTime = Long.parseLong(String.valueOf(version.get("create_time")));
+        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
+            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
+                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
+                    List<Map> versions = descriptorManager.getVersion(bussinessId, featureId, alia);
+                    if (CollectionUtils.isNotEmpty(versions)) {
                         DAGRecord record = DAGRecord.builder()
-                                .businessId(businessId)
+                                .businessId(bussinessId)
                                 .featureId(featureId)
-                                .alia(alia)
-                                .descriptorId(descriptorId)
-                                .createTime(createTime)
+                                .alias(alia)
+                                .descriptorId(String.valueOf(versions.get(0).get("descriptor_id")))
+                                .createTime(Long.parseLong(String.valueOf(versions.get(versions.size()-1).get("create_time"))))
+                                .updateTime(Long.parseLong(String.valueOf(versions.get(0).get("create_time"))))
                                 .build();
                         dagRecordList.add(record);
-                    });
+                    }
                 });
             });
         });
 
         dagRecordList.sort((a, b) -> b.getCreateTime().compareTo(a.getCreateTime()));
-        result.put("list", dagRecordList);
-        result.put("total", dagRecordList.size());
-        result.put("pageSize", dagRecordList.size() / pageSize + 1);
 
         log.info("record curr:{}, pageSize:{}, result:{}", current, pageSize, result.toJSONString());
-        return Map.of("data", result, "message", "", "success", true);
+        return Map.of("items", dagRecordList, "total", dagRecordList.size());
     }
 
     /**
@@ -160,7 +160,7 @@ public class BgController {
 
         Map<String, Object> result = dagRuntimeFacade.getBasicDAGInfo(executionId, false);
         appendTraceInfo(result);
-        return result;
+        return Map.of("data", result, "message", "", "success", true);
     }
 
     private void appendTraceInfo(Map<String, Object> result) {
@@ -224,7 +224,7 @@ public class BgController {
         String user = "{\n" +
                 "\t\"realName\": \"admin\",\n" +
                 "\t\"password\": \"123456\",\n" +
-                "\t\"homePath\": \"/flow-instance/list\",\n" +
+                "\t\"homePath\": \"/flow-definition/list\",\n" +
                 "\t\"roles\": [{\n" +
                 "\t\t\"roleName\": \"Super Admin\",\n" +
                 "\t\t\"value\": \"super\"\n" +

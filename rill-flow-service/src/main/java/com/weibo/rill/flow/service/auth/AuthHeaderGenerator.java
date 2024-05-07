@@ -19,6 +19,8 @@ package com.weibo.rill.flow.service.auth;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import org.springframework.http.HttpHeaders;
 
+import java.util.Map;
+
 public interface AuthHeaderGenerator {
-    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task);
+    void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input);
 }
