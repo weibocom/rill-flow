@@ -21,10 +21,7 @@ class SimpleRetryPolicyTest extends Specification {
         taskInvokeMsg.setInvokeTimeInfos(List.of(new InvokeTimeInfo(), new InvokeTimeInfo()))
         taskInfo.setTaskInvokeMsg(taskInvokeMsg)
 
-        Retry retry1 = new Retry()
-        retry1.setMaxRetryTimes(3)
-        retry1.setIntervalInSeconds(3)
-        retry1.setMultiplier(2)
+        Retry retry1 = new Retry(3, 3, 2, null)
         context1.setRetryConfig(retry1)
         context1.setTaskInfo(taskInfo)
         context1.setTaskStatus(TaskStatus.FAILED)
