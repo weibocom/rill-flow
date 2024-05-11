@@ -93,7 +93,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ github.event.inputs.releaseVersion != '' && format('weibocom/rill-flow:latest,weibocom/rill-flow:{0}',github.event.inputs.releaseVersion) || 'weibocom/rill-flow:latest' }}
       - name: Build and push for UI to DockerHub
-        uses: docker/build-push-ui-action@v6
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
