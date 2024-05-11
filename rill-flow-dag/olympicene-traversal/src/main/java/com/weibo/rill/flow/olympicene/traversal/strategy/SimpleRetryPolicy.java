@@ -22,6 +22,7 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext;
 import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
         }
 
         List<String> retryConditions = Optional.ofNullable(context.getRetryConfig()).map(Retry::getConditions).orElse(null);
-        if (retryConditions == null || retryConditions.isEmpty()) {
+        if (CollectionUtils.isEmpty(retryConditions)) {
             return needRetry(context);
         }
         boolean matchRetry = ConditionsUtil.conditionsAnyMatch(retryConditions, output, "output");

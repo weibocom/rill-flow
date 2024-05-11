@@ -50,9 +50,13 @@ class SimpleRetryPolicyTest extends Specification {
 
     def "NeedRetry"() {
         expect:
+        // need retry when failed
         simpleRetryPolicy.needRetry(context1) == true
+        // do not need retry when succeed
         simpleRetryPolicy.needRetry(context2) == false
+        // need retry when failed even with retry conditions but without output parameter
         simpleRetryPolicy.needRetry(context3) == true
+        // do not need retry when failed with retried times equal or more than max retry times
         simpleRetryPolicy.needRetry(context4) == false
     }
 
@@ -62,19 +66,28 @@ class SimpleRetryPolicyTest extends Specification {
         Map<String, Object> output2 = Map.of("a", 0, "b", 0, "c", 0)
         Map<String, Object> output3 = Map.of("a", 1, "b", 0, "c", 0)
         then:
+        // need retry when failed and all retry conditions matched
         simpleRetryPolicy.needRetry(context1, output1) == true
+        // do not need retry when succeed
         simpleRetryPolicy.needRetry(context2, output1) == false
+        // need retry when failed and all retry conditions matched
         simpleRetryPolicy.needRetry(context3, output1) == true
+        // do not need retry when failed and all retry conditions not matched
         simpleRetryPolicy.needRetry(context3, output2) == false
+        // need retry when failed and any retry conditions matched
         simpleRetryPolicy.needRetry(context3, output3) == true
+        // do not need retry when failed with retried times equal or more than max retry times
         simpleRetryPolicy.needRetry(context4, output1) == false
     }
 
     @Unroll
     def "CalculateRetryInterval"() {
         expect:
+        // 3 * 2 ^ 2 == 12
         simpleRetryPolicy.calculateRetryInterval(context1) == 12
+        // 1 * 1 ^ 2 == 1
         simpleRetryPolicy.calculateRetryInterval(context2) == 1
+        // 0 * 1 ^ 2 == 0
         simpleRetryPolicy.calculateRetryInterval(context3) == 0
     }
 }
