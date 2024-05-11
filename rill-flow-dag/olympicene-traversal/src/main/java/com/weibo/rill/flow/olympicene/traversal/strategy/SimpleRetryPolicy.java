@@ -56,11 +56,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
             return needRetry(context);
         }
         boolean matchRetry = ConditionsUtil.conditionsAnyMatch(retryConditions, output, "output");
-        if (matchRetry) {
-            return needRetry(context);
-        } else {
-            return false;
-        }
+        return matchRetry && needRetry(context);
     }
 
     @Override
