@@ -85,56 +85,39 @@
   };
 
   function buildSchema(item: InputSchemaValueItem) {
+    const labelWidth = 100
+    const title = item.desc === undefined ? item.name : item.desc;
     if (item.type === 'Number') {
+
       return {
         type: 'number',
-        title: item.name,
+        title: title,
         'x-decorator': 'FormItem',
         'x-component': 'InputNumber',
         required: item.required,
-        'x-component-props': {
-          style: {
-            // width: '240px',
-          },
-        },
         'x-decorator-props': {
-          tooltip: item.desc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
+          labelWidth: labelWidth,
         },
       };
     } else if (item.type === 'Boolean') {
       return {
         type: 'boolean',
-        title: item.name,
+        title: title,
         'x-decorator': 'FormItem',
         'x-component': 'Switch',
         required: item.required,
-        'x-component-props': {
-          style: {
-            // width: '240px',
-          },
-        },
         'x-decorator-props': {
-          tooltip: item.desc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
         },
       };
     } else if (item.type === 'JSON') {
       return {
         type: 'string',
-        title: '文本框',
+        title: title,
         'x-decorator': 'FormItem',
         'x-component': 'Input.TextArea',
-        'x-component-props': {
-          style: {
-            // width: 400,
-          },
-        },
         'x-decorator-props': {
-          tooltip: item.desc,
-          wrapperAlign: 'right',
           labelAlign: 'left',
         },
         required: true,
@@ -142,14 +125,13 @@
     }
     return {
       type: 'string',
-      title: item.name,
+      title: title,
       required: item.required,
       'x-decorator': 'FormItem',
       'x-component': 'Input',
       'x-decorator-props': {
-        tooltip: item.desc,
-        wrapperAlign: 'right',
         labelAlign: 'left',
+        labelWidth: labelWidth,
       },
     };
   }

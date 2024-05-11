@@ -11,6 +11,12 @@
     "required": false,
     "default": ""
   },
+  "description": {
+    "type": "string",
+    "title": "节点描述",
+    "required": false,
+    "default": ""
+  },
   "synchronization": {
     "type": "object",
     "title": "并发控制",

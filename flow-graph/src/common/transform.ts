@@ -41,6 +41,7 @@ function getBaseConfig(node) {
     status,
     nodePrototype,
     label,
+    name,
   } = node;
   let _width,
     _height,
@@ -91,7 +92,7 @@ function getBaseConfig(node) {
       icon: icon,
       nodePrototype: nodePrototype,
       nodeId: id,
-      name: label,
+      name: name,
       status: status,
     },
     icon,
@@ -155,11 +156,16 @@ export const getJsonByJsonPaths = (paths) => {
 export const getJsonPathByJsonSchema = (data) => {
   // data是一个map，该map的key为string类型，value是map类型。data可以理解为一个树。将其转换成key为非叶子节点以.间隔，value为叶子节点
   const list = [];
-
   function isBaseType(type) {
     return type === 'string' || type === 'boolean' || type === 'number';
   }
-  function addToList(obj, prefix = '') {
+  function addToList(obj, prefix = '', isFinish = false) {
+    if (isFinish) {
+      if (!list.includes(prefix.slice(0, -1))) {
+        list.push(prefix.slice(0, -1));
+      }
+      return;
+    }
     if (typeof obj === 'object') {
       if (isBaseType(obj?.type)) {
         // 去重并加入到list中
@@ -170,7 +176,12 @@ export const getJsonPathByJsonSchema = (data) => {
       }
 
       if (obj?.type === 'array') {
-        addToList(obj.items.properties, prefix + '*.');
+        if (obj?.bizType === 'array-to-map') {
+          addToList(obj.items.properties, prefix, true);
+        } else {
+          // TODO 直接将对应数据保存
+          addToList(obj.items.properties, prefix + '*.');
+        }
         return;
       }
 

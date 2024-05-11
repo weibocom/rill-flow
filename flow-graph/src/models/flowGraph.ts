@@ -34,6 +34,10 @@ export interface FlowGraph {
 
   updateNodeTaskMappingInfos(nodeId: string, taskMappingInfos: object);
 
+  updateNodeTaskOutput(nodeId: string, outputSchema: object);
+
+  updateNodeTaskTitle(nodeId: string, title: string);
+
   containNode(nodeName: string);
 
   toJSON();

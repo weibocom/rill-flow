@@ -67,7 +67,6 @@
   import EditDagMeta from './EditDagMeta.vue';
   import DagTestRun from './DagTestRun.vue';
   import DagExecutionModal from "./DagExecutionModal.vue";
-  import CodeEdit from "@/src/components/ToolBar/CodeEdit.vue";
   import { useFlowStoreWithOut } from '../../store/modules/flowGraphStore';
   import { ref, watch } from "vue";
   import { dagStatusColor } from "@/src/common/dagStatusStyle";

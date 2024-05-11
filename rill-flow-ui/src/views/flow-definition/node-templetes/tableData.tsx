@@ -144,8 +144,8 @@ export function getFormConfig(): Partial<FormProps> {
         component: 'Select',
         componentProps: {
           options: [
-            { label: t('routes.flow.definitions.node_templates_detail.option.disable'), value: 1 },
-            { label: t('routes.flow.definitions.node_templates_detail.option.enable'), value: 0 },
+            { label: t('routes.flow.definitions.node_templates_detail.option.enable'), value: 1 },
+            { label: t('routes.flow.definitions.node_templates_detail.option.disable'), value: 0 },
           ],
           defaultValue: 1,
           onChange: (e: number) => {

@@ -38,6 +38,7 @@ public abstract class BaseTask {
 
     private String name;
     private String title;
+    private String description;
     private String category;
     private String next;
     private boolean tolerance = false;

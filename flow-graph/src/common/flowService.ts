@@ -119,10 +119,10 @@ export function getReferences(nodeId: string): TreeData[] {
     }
     const taskName = node.task.name;
     const nodePath = '$.' + taskName;
-    const output = JSON.parse(nodePrototype.template.output);
+    const output = node.task.outputSchema === undefined ? JSON.parse(nodePrototype.template.output): node.task.outputSchema;
 
     const treeData = convertSchemaToTreeData(output, nodePath);
-    treeDataList.push({ title: taskName, value: nodePath, children: treeData });
+    treeDataList.push({ title: node.task.title, value: nodePath, children: treeData });
   });
   return treeDataList;
 }
@@ -137,13 +137,14 @@ export function convertInputSchemaToTreeData(inputSchema): TreeData[] {
   }
   const treeData = [];
   const inputSchemaData = new TreeData();
-  inputSchemaData.title = 'context';
+  inputSchemaData.title = '上下文';
   inputSchemaData.value = '$.context';
   inputSchemaData.children = [];
   const inputSchemaDataChildren = [];
   for (const dataKey in inputSchema) {
     const treeData = new TreeData();
-    treeData.title = inputSchema[dataKey].name + '【' + inputSchema[dataKey].type+ '】';
+    const title = (inputSchema[dataKey].desc === '' || inputSchema[dataKey].desc === undefined) ? inputSchema[dataKey].name: inputSchema[dataKey].desc;
+    treeData.title = title + '【' + inputSchema[dataKey].type+ '】';
     treeData.value = '$.context.' + inputSchema[dataKey].name;
     treeData.children = [];
     inputSchemaDataChildren.push(treeData);
@@ -161,7 +162,6 @@ export function convertInputSchemaToTreeData(inputSchema): TreeData[] {
  */
 export function convertSchemaToTreeData(schema, currentPath = '$'): TreeData[] {
   const treeData = [];
-
   if (schema.type === 'object') {
     if (schema?.properties === undefined) {
       return treeData;
@@ -204,7 +204,7 @@ export function removeOldInputMappings(currentNode: RillNode, parameters: Map<st
   const newMappings = [];
   for (const mapping of currentNode.task.inputMappings) {
     if (parameters.has(mapping.target)) {
-      const sourceInfos = mapping.source.split('.');
+      const sourceInfos = mapping.source.toString().split('.');
       if (sourceInfos.length < 3) {
         continue;
       }
@@ -304,6 +304,13 @@ function generateOutputMappingsForOneTask(taskName: string, mappingParametersKey
     const outputMapping: Mapping = new Mapping();
     outputMapping.source = source;
     outputMapping.target = target;
+    if(outputNode.task.category === 'pass') {
+      outputNode.task.outputMappings.filter(mapping => {
+        return mapping.transform !== undefined
+      }).map(mapping => {
+        outputMapping.transform = mapping.transform
+      })
+    }
     outputNode.task.outputMappings.push(outputMapping);
   });
 }
@@ -370,24 +377,60 @@ export function getMappingByMappingParameters(mappingParametersKey: string, mapp
 /**
  * 通过 mappingParametersObject 获取 key 和 object
  */
-export function convertObjectToMappingParametersMap(obj: any, currentKey = ''): Map<string, MappingParameters> {
+export function convertObjectToMappingParametersMap(nodeSchema: any, obj: any, currentKey = ''): Map<string, MappingParameters> {
   const result = new Map<string, MappingParameters>();
 
   for (const key in obj) {
+    if (Array.isArray(obj[key])) {
+      if (nodeSchema !== undefined && typeof nodeSchema === 'string') {
+        const nodeTemplateSchema = JSON.parse(nodeSchema);
+        // bizType类型的参数将list装成map保存
+        if (nodeTemplateSchema?.properties?.[key]?.bizType === 'array-to-map') {
+          for (const id in obj[key]) {
+            const parameters: MappingParameters = new MappingParameters();
+            parameters.key = obj[key][id].key
+            const editType =  typeof obj[key][id].value === "object" ? getMappingEditTypeEnumByType(obj[key][id].value.attr) : MappingEditTypeEnum.INPUT
+            parameters.type = editType
+            if (editType === undefined) {
+              console.log('convertObjectToMappingParametersMap editType:', editType)
+            }
+            parameters[editType] = typeof obj[key][id].value === "object" ? obj[key][id].value[editType] : obj[key][id].value
+            result.set('$.input.' + key + '.' + obj[key][id].key, parameters);
+          }
+
+          continue;
+        }
+      }
+      // 常规参数直接保存
+      const parameters: MappingParameters = new MappingParameters();
+      parameters.key = key
+      parameters.type = MappingEditTypeEnum.INPUT
+      parameters.input = obj[key]
+      result.set('$.input.' + key, parameters);
+      continue;
+    }
     if (typeof obj[key] === 'object' && obj[key] !== null
       && (obj[key]['attr'] === null || typeof obj[key]['attr'] !== 'string')) {
       const newKey = currentKey ? `${currentKey}.${key}` : key;
-      const subResult = convertObjectToMappingParametersMap(obj[key], newKey);
+      const subResult = convertObjectToMappingParametersMap(nodeSchema, obj[key], newKey);
       subResult.forEach((value, subKey) => {
         result.set(subKey, value);
       });
-    } else {
+    } else if (typeof obj[key] === 'string') {
+      const parameters: MappingParameters = new MappingParameters();
+      parameters.key = key
+      parameters.type = MappingEditTypeEnum.INPUT
+      parameters.input = obj[key]
+      result.set('$.input.' + key, parameters);
+      continue;
+    }
+    else {
       const newKey = currentKey ? `${currentKey}.${key}` : key;
       const parameters: MappingParameters = new MappingParameters();
       parameters.key = newKey;
       parameters.type = getMappingEditTypeEnumByType(obj[key]['attr']);
       if (parameters.type === undefined) {
-        console.error(`未知的类型：${obj[key]['attr']}`);
+        console.error(`未知的类型：`, key, obj[key]);
         continue;
       } else if (parameters.type === MappingEditTypeEnum.REFERENCE) {
         if (obj[key]['reference'] === undefined) {

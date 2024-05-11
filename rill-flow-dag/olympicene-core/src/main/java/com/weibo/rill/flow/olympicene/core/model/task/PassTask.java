@@ -40,6 +40,7 @@ public class PassTask extends BaseTask {
     @JsonCreator
     public PassTask(@JsonProperty("name") String name,
                     @JsonProperty("title") String title,
+                    @JsonProperty("description") String description,
                     @JsonProperty("category") String category,
                     @JsonProperty("next") String next,
                     @JsonProperty("inputMappings") List<Mapping> inputMappings,
@@ -51,7 +52,7 @@ public class PassTask extends BaseTask {
                     @JsonProperty("keyExp") String keyExp,
                     @JsonProperty("parameters") Map<String, Object> parameters,
                     @JsonProperty("templateId") String templateId) {
-        super(name, title, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         Optional.ofNullable(timeline).ifPresent(it -> it.setTimeoutInSeconds(null));
     }
 

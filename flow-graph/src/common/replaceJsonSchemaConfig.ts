@@ -1,6 +1,7 @@
 import TreeSelectWidget from '../components/Widget/TreeSelectWidget.vue';
+import CodeEditWidget from "@/src/components/Widget/CodeEditWidget.vue";
 
-function buildSchemaProperties(typeData: any, references: any) {
+function buildSchemaProperties(typeData: any, references: any, bizType: string) {
   return {
     attr: {
       title: '类型',
@@ -22,7 +23,7 @@ function buildSchemaProperties(typeData: any, references: any) {
       'ui:hidden': "{{parentFormData.attr !== 'reference'}}",
       'ui:width': '60%',
       'ui:widget': TreeSelectWidget,
-      'ui:treeData': references,
+      'ui:treeData': references
     },
   };
 }
@@ -39,7 +40,19 @@ export function replaceUIWidget(json, references) {
   if (typeof json === 'object') {
     if (getBaseTypeSet().has(json?.type)) {
       // 进行替换操作
-      json['properties'] = buildSchemaProperties(json?.type, references);
+      // TODO
+      //  1. 根据参数类型进行替换 ps: ui:type: none, code, params, select
+      if (json?.bizType === 'none' || json?.bizType === 'select') {
+        json['ui:width'] = '40%'
+        return;
+      }
+
+      if (json?.bizType === 'code') {
+        json['ui:widget'] = CodeEditWidget
+        json['ui:codeOptions'] = {mode: 'python'}
+        return;
+      }
+      json['properties'] = buildSchemaProperties(json?.type, references, json?.bizType);
       delete json['type'];
       return;
     }
