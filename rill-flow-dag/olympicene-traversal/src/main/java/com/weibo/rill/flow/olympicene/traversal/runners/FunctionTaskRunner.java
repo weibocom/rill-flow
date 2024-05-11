@@ -28,8 +28,8 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Retry;
 import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext;
-import com.weibo.rill.flow.olympicene.core.model.strategy.RetryPolicy;
-import com.weibo.rill.flow.olympicene.core.model.strategy.SimpleRetryPolicy;
+import com.weibo.rill.flow.olympicene.traversal.strategy.RetryPolicy;
+import com.weibo.rill.flow.olympicene.traversal.strategy.SimpleRetryPolicy;
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
@@ -37,6 +37,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
@@ -135,12 +136,13 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
                 .executionId(executionId)
                 .build();
 
+        Map<String, Object> output = null;
         try {
             String dispatchRet = dagDispatcher.dispatch(dispatchInfo);
             JsonNode dispatchRetJson = getRetJson(dispatchRet);
 
             TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(dispatchRetJson);
-            Map<String, Object> output = buildOutput(dispatchRetJson);
+            output = buildOutput(dispatchRetJson);
             log.info("dispatchTask success, executionId:{}, taskName:{}, output:{}",
                     executionId, taskInfo.getName(), output);
             NotifyInfo notifyInfo = NotifyInfo.builder()
@@ -149,6 +151,12 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
                     .taskInvokeMsg(taskInvokeMsg)
                     .build();
 
+            Retry retry = ((FunctionTask) taskInfo.getTask()).getRetry();
+            RetryContext retryContext = RetryContext.builder().retryConfig(retry).taskStatus(notifyInfo.getTaskStatus()).taskInfo(taskInfo).build();
+            if (retryPolicy.needRetry(retryContext, output)) {
+                return handleRetryCallback(executionId, taskInfo, notifyInfo);
+            }
+
             return executionCallback(executionId, taskInfo, notifyInfo, output, needUpdateContext);
         } catch (Exception e) {
             log.error("dispatchTask fails, executionId:{}, taskName:{}, functionPattern:{}, errorMsg:{}",
@@ -156,7 +164,7 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             Retry retry = ((FunctionTask) taskInfo.getTask()).getRetry();
             RetryContext retryContext = RetryContext.builder().retryConfig(retry).taskStatus(TaskStatus.FAILED).taskInfo(taskInfo).build();
-            if (retryPolicy.needRetry(retryContext)) {
+            if (retryPolicy.needRetry(retryContext, output)) {
                 NotifyInfo notifyInfo = NotifyInfo.builder().retryContext(retryContext).build();
                 if (Optional.ofNullable(taskInfo.getTaskInvokeMsg()).map(TaskInvokeMsg::getMsg).isEmpty()) {
                     notifyInfo.setTaskInvokeMsg(TaskInvokeMsg.builder().msg(e.getMessage()).build());
@@ -204,10 +212,10 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
             return TaskStatus.FAILED;
         }
         if (CollectionUtils.isNotEmpty(functionTask.getSuccessConditions())) {
-            return conditionsAllMatch(functionTask.getSuccessConditions(), output, "output") ? TaskStatus.SUCCEED : TaskStatus.FAILED;
+            return ConditionsUtil.conditionsAllMatch(functionTask.getSuccessConditions(), output, "output") ? TaskStatus.SUCCEED : TaskStatus.FAILED;
         }
         if (CollectionUtils.isNotEmpty(functionTask.getFailConditions())) {
-            return conditionsAllMatch(functionTask.getFailConditions(), output, "output") ? TaskStatus.FAILED : TaskStatus.SUCCEED;
+            return ConditionsUtil.conditionsAllMatch(functionTask.getFailConditions(), output, "output") ? TaskStatus.FAILED : TaskStatus.SUCCEED;
         }
         if (taskStatus != null) {
             return taskStatus;
@@ -300,7 +308,7 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
                                               Map<String, Object> output, Function<TaskStatus, Boolean> needUpdateContext) {
         RetryContext retryContext = RetryContext.builder().retryConfig(((FunctionTask) taskInfo.getTask()).getRetry())
                 .taskStatus(notifyInfo.getTaskStatus()).taskInfo(taskInfo).build();
-        boolean needRetry = retryPolicy.needRetry(retryContext);
+        boolean needRetry = retryPolicy.needRetry(retryContext, output);
         log.info("executionCallback start executionId:{}, taskInfoName:{}, needRetry:{}", executionId, taskInfo.getName(), needRetry);
 
         if (needRetry) {

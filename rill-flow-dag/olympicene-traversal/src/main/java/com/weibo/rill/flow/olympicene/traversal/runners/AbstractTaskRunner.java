@@ -20,9 +20,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.google.common.collect.*;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
@@ -54,11 +51,6 @@ import java.util.*;
 public abstract class AbstractTaskRunner implements TaskRunner {
     private static final String NORMAL_SKIP_MSG = "skip due to dependent tasks return or degrade";
     public static final String EXPECTED_COST = "expected_cost";
-
-    protected final Configuration valuePathConf = Configuration.builder()
-            .options(Option.SUPPRESS_EXCEPTIONS)
-            .options(Option.AS_PATH_LIST)
-            .build();
 
     protected final InputOutputMapping inputOutputMapping;
     protected final DAGInfoStorage dagInfoStorage;
@@ -456,20 +448,6 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         if (taskInfo.getTaskStatus().isCompleted()) {
             throw new DAGTraversalException(TraversalErrorCode.DAG_ILLEGAL_STATE.getCode(), String.format("repeated finish task %s", taskInfoName));
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected boolean conditionsAllMatch(List<String> conditions, Map<String, Object> valueMap, String mapType) {
-        return conditions.stream()
-                .map(condition -> JsonPath.using(valuePathConf).parse(ImmutableMap.of(mapType, valueMap)).read(condition))
-                .allMatch(it -> CollectionUtils.isNotEmpty((List<Object>) it));
-    }
-
-    @SuppressWarnings("unchecked")
-    protected boolean conditionsAnyMatch(List<String> conditions, Map<String, Object> valueMap, String mapType) {
-        return conditions.stream()
-                .map(condition -> JsonPath.using(valuePathConf).parse(ImmutableMap.of(mapType, valueMap)).read(condition))
-                .anyMatch(it -> CollectionUtils.isNotEmpty((List<Object>) it));
     }
 
     protected void skipFollowingTasks(String executionId, TaskInfo taskInfo, Set<TaskInfo> skippedTasks) {

@@ -37,6 +37,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.helper.Stasher;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPath;
@@ -162,7 +163,7 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
                 return -1;
             }
 
-            boolean needSyncControl = conditionsAllMatch(synchronization.getConditions(), input, "input");
+            boolean needSyncControl = ConditionsUtil.conditionsAllMatch(synchronization.getConditions(), input, "input");
             if (!needSyncControl) {
                 log.warn("maxGroupsToRun conditions mismatch executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
                 return -1;

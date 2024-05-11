@@ -62,7 +62,6 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public HttpParameter functionRequestParams(String executionId, String taskInfoName, Resource resource, Map<String, Object> input) {
         HttpParameter httpParameter = buildRequestParams(executionId, input);
