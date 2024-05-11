@@ -31,7 +31,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.core.utils.ConditionsUtil;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;

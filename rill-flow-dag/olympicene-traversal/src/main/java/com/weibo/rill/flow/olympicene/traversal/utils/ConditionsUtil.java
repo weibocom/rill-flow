@@ -1,4 +1,4 @@
-package com.weibo.rill.flow.olympicene.core.utils;
+package com.weibo.rill.flow.olympicene.traversal.utils;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.Configuration;

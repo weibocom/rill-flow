@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.olympicene.core.model.strategy;
+package com.weibo.rill.flow.olympicene.traversal.strategy;
 
+import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext;
 
 import java.util.Map;
 

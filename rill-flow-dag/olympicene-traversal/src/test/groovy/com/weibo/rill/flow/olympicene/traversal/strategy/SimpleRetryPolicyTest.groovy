@@ -1,10 +1,11 @@
-package com.weibo.rill.flow.olympicene.core.model.strategy
+package com.weibo.rill.flow.olympicene.traversal.strategy
 
 import com.weibo.rill.flow.interfaces.model.strategy.Retry
 import com.weibo.rill.flow.interfaces.model.task.InvokeTimeInfo
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus
+import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext
 import spock.lang.Specification
 import spock.lang.Unroll
 
