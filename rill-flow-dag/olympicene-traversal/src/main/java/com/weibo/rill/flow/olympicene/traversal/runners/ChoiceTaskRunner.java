@@ -31,6 +31,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
@@ -104,7 +105,7 @@ public class ChoiceTaskRunner extends AbstractTaskRunner {
 
                     boolean condition = false;
                     try {
-                        List<String> result = JsonPath.using(valuePathConf).parse(ImmutableMap.of("input", input)).read(it.getCondition());
+                        List<String> result = JsonPath.using(ConditionsUtil.valuePathConf).parse(ImmutableMap.of("input", input)).read(it.getCondition());
                         condition = !result.isEmpty();
                     } catch (Exception e) {
                         log.warn("choiceTask {} evaluation condition expression {} exception. ", taskInfo.getName(), it.getCondition(), e);
