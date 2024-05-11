@@ -3,9 +3,9 @@
     <a class="header-github-link" :href="GITHUB_URL" target="_blank"></a>
   </Tooltip>
 </template>
-<script lang="ts">
-import { GITHUB_URL } from "@/settings/siteSetting";
-
+<script lang="ts" setup>
+  import { GITHUB_URL } from '@/settings/siteSetting';
+  import { Tooltip } from 'ant-design-vue';
 </script>
 
 <style scoped>
@@ -27,6 +27,3 @@ import { GITHUB_URL } from "@/settings/siteSetting";
       no-repeat;
   }
 </style>
-<script setup lang="ts">
-import { Tooltip } from "ant-design-vue";
-</script>
