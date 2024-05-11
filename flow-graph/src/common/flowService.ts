@@ -143,8 +143,8 @@ export function convertInputSchemaToTreeData(inputSchema): TreeData[] {
   const inputSchemaDataChildren = [];
   for (const dataKey in inputSchema) {
     const treeData = new TreeData();
-    treeData.title = inputSchema[dataKey].paramsName + '【' + inputSchema[dataKey].paramsType+ '】';
-    treeData.value = '$.context.' + inputSchema[dataKey].paramsName;
+    treeData.title = inputSchema[dataKey].name + '【' + inputSchema[dataKey].type+ '】';
+    treeData.value = '$.context.' + inputSchema[dataKey].name;
     treeData.children = [];
     inputSchemaDataChildren.push(treeData);
   }
