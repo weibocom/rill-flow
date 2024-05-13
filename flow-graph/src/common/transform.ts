@@ -1,4 +1,5 @@
 import { Lang } from '@antv/x6';
+import { InputSchemaTypeEnum } from "../models/enums/InputSchemaTypeEnum";
 
 export function getVueNodeConfig(node) {
   const { label, width, height, id, data, position, ports, icon, status } = getBaseConfig(node);
@@ -176,10 +177,9 @@ export const getJsonPathByJsonSchema = (data) => {
       }
 
       if (obj?.type === 'array') {
-        if (obj?.bizType === 'array-to-map') {
+        if (obj?.bizType === InputSchemaTypeEnum.ARRAY_TO_MAP) {
           addToList(obj.items.properties, prefix, true);
         } else {
-          // TODO 直接将对应数据保存
           addToList(obj.items.properties, prefix + '*.');
         }
         return;

@@ -9,12 +9,14 @@
   import { registerApps } from './qiankun';
   import config from './config';
   import { useFlowGraphStoreWithOut } from '@/store/modules/flowGraphStore';
+  import { useLocale } from '@/locales/useLocale';
 
   const subApps: any[] = [];
   const { flowGraphApp } = config;
   onMounted(() => {
     const flowGraphStore = useFlowGraphStoreWithOut();
     flowGraphApp.props['flowParams'] = toRaw(flowGraphStore.getFlowGraphParams);
+    flowGraphApp.props['language'] = useLocale().getLocale.value;
     subApps.push(flowGraphApp);
     if (!window.qiankunStarted) {
       window.qiankunStarted = true;

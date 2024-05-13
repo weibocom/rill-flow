@@ -2,7 +2,7 @@
   <a-modal
     v-model:visible="open"
     wrap-class-name="full-modal-to-xl"
-    title="Dag详情"
+    :title="t('toolBar.showDag.detail')"
     width="70%"
     :footer="null"
   >
@@ -27,6 +27,8 @@
   import Codemirror from 'codemirror-editor-vue3';
   import 'codemirror/addon/display/placeholder.js';
   import 'codemirror/mode/javascript/javascript.js';
+  import { useI18n } from "vue-i18n";
+  const { t } = useI18n();
 
   const activeKey = ref('1');
   const open = ref<boolean>(false);

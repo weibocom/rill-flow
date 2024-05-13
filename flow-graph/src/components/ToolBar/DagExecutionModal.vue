@@ -2,35 +2,35 @@
   <a-modal
     v-model:visible="open"
     wrap-class-name="full-modal-to-xl"
-    title="执行详情"
+    :title="t('toolBar.dagExecutionDetail.title')"
     width="60%"
     :footer="null"
   >
     <a-card>
       <a-tabs v-model:activeKey="activeKey">
-        <a-tab-pane key="1" tab="执行详情">
+        <a-tab-pane key="1" :tab="t('toolBar.dagExecutionDetail.title')">
           <a-descriptions :column="1" bordered :label-style="{ width: '20%' }">
-            <a-descriptions-item label="执行ID">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.id')">
               <a-typography-paragraph copyable underline strong>
                 {{ form.executionId }}
               </a-typography-paragraph>
             </a-descriptions-item>
-            <a-descriptions-item label="状态">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.status')">
               <a-tag :color="dagStatusColor(form.dagStatus)">
                 {{ form.dagStatus }}
               </a-tag>
             </a-descriptions-item>
-            <a-descriptions-item label="进度">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.process')">
               <a-progress :percent="form.process" />
             </a-descriptions-item>
-            <a-descriptions-item label="开始时间">{{ form.startTime }}</a-descriptions-item>
-            <a-descriptions-item label="结束时间">{{ form.endTime }}</a-descriptions-item>
-            <a-descriptions-item label="异常信息">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.startTime')">{{ form.startTime }}</a-descriptions-item>
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.endTime')">{{ form.endTime }}</a-descriptions-item>
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.errorMsg')">
               <a-typography-paragraph code>
                 {{ errorMsg }}
               </a-typography-paragraph>
             </a-descriptions-item>
-            <a-descriptions-item label="上下文信息" layout="vertical">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.context')" layout="vertical">
               <a-table
                 :data-source="formContextDataSource"
                 :columns="formContextColumns"
@@ -41,14 +41,14 @@
                 </template>
               </a-table>
             </a-descriptions-item>
-            <a-descriptions-item label="Trace日志信息">
+            <a-descriptions-item :label="t('toolBar.dagExecutionDetail.trace')">
               <a-typography-link :href="form.traceUrl" target="_bank">
                 {{ form.traceUrl }}
               </a-typography-link>
             </a-descriptions-item>
           </a-descriptions>
         </a-tab-pane>
-        <a-tab-pane key="2" tab="其他" disabled>
+        <a-tab-pane key="2" :tab="t('toolBar.dagExecutionDetail.other')" disabled>
           <a-card title="" />
         </a-tab-pane>
       </a-tabs>
@@ -57,7 +57,7 @@
   <a-modal
     v-model:visible="showCodemirror"
     wrap-class-name="full-modal-to-xl"
-    title="详情"
+    :title="t('toolBar.dagExecutionDetail.detail')"
     width="50%"
     :footer="null"
   >
@@ -74,12 +74,14 @@
   import moment from 'moment/moment';
   import { dagStatusColor } from '../../common/dagStatusStyle';
   import Codemirror from 'codemirror-editor-vue3';
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
 
   const form = ref<DagExecutionShowInfo>();
   const open = ref<boolean>(false);
   const activeKey = ref('1');
   const formContextDataSource = ref([]);
-  const errorMsg = ref('暂无');
+  const errorMsg = ref(t('toolBar.dagExecutionDetail.defaultOtherMsg'));
   const maxTextLength = ref(100);
   const codeValue = ref({});
   const showCodemirror = ref(false);
@@ -88,12 +90,12 @@
   });
   const formContextColumns = ref([
     {
-      title: '参数名',
+      title: t('toolBar.dagExecutionDetail.paramsName'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: '参数值',
+      title: t('toolBar.dagExecutionDetail.paramsValue'),
       dataIndex: 'value',
       key: 'value',
       ellipsis: true,
@@ -103,7 +105,7 @@
   function reset() {
     activeKey.value = '1';
     formContextDataSource.value = [];
-    errorMsg.value = '暂无';
+    errorMsg.value = t('toolBar.dagExecutionDetail.defaultOtherMsg');
   }
   Channel.eventListener(CustomEventTypeEnum.TOOL_BAR_EXECUTION_DETAIL, () => {
     reset();

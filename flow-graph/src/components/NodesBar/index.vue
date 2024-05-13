@@ -1,5 +1,5 @@
 <template>
-  <div class="title">节点列表</div>
+  <div class="title">{{t('nodeBar.list')}}</div>
   <div class="context">
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane
@@ -30,6 +30,8 @@
     NodeCategory,
   } from '../../models/enums/nodeCategory';
   import { ref, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
 
   const flowGraphStore = useFlowStoreWithOut();
   const nodePrototypeRegistry = ref(flowGraphStore.getNodePrototypeRegistry());

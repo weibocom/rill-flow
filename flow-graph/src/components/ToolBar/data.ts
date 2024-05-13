@@ -1,4 +1,9 @@
+import { useI18nStoreWithOut } from "../../store/modules/i18nStore";
+
 export function getSaveFormSchema() {
+  const { t } = useI18nStoreWithOut().getI18n().global;
+  const labelWidth = 100;
+  console.log('getSaveFormSchema', useI18nStoreWithOut().getI18n(), t('toolBar.saveDag.businessName'))
   return {
     type: 'object',
     properties: {
@@ -13,30 +18,42 @@ export function getSaveFormSchema() {
             type: 'void',
             'x-component': 'FormStep.StepPane',
             'x-component-props': {
-              title: '流程基本信息',
+              title: t('toolBar.saveDag.baseInfo'),
             },
             properties: {
               workspace: {
                 type: 'string',
-                title: '业务名称',
+                title: t('toolBar.saveDag.businessName'),
                 required: true,
                 disabled: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
+                'x-decorator-props': {
+                  labelAlign: 'left',
+                  labelWidth: labelWidth,
+                },
               },
               dagName: {
                 type: 'string',
-                title: '服务名称',
+                title: t('toolBar.saveDag.serviceName'),
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
+                'x-decorator-props': {
+                  labelAlign: 'left',
+                  labelWidth: labelWidth,
+                },
               },
               alias: {
                 type: 'string',
-                title: '别名',
+                title: t('toolBar.saveDag.alias'),
                 required: false,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
+                'x-decorator-props': {
+                  labelAlign: 'left',
+                  labelWidth: labelWidth,
+                },
               }
             },
           },
@@ -44,7 +61,7 @@ export function getSaveFormSchema() {
             type: 'void',
             'x-component': 'FormStep.StepPane',
             'x-component-props': {
-              title: '输入参数列表',
+              title: t('toolBar.saveDag.inputSchemaLists'),
             },
             properties: getInputSchema(),
           },
@@ -55,12 +72,13 @@ export function getSaveFormSchema() {
 }
 
 export function getInputSchema() {
+  const { t } = useI18nStoreWithOut().getI18n().global;
   return {
     inputSchema: {
       type: 'array',
       'x-component': 'ArrayItems',
       'x-decorator': 'FormItem',
-      title: '输入参数',
+      title: t('toolBar.saveDag.inputParams'),
       required: false,
       items: {
         type: 'object',
@@ -76,14 +94,14 @@ export function getInputSchema() {
               },
               name: {
                 type: 'string',
-                title: '参数名',
+                title: t('toolBar.saveDag.paramsName'),
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
               },
               type: {
                 type: 'string',
-                title: '参数类型',
+                title: t('toolBar.saveDag.paramsType'),
                 required: true,
                 'x-decorator': 'FormItem',
                 'x-component': 'Select',
@@ -113,7 +131,7 @@ export function getInputSchema() {
               },
               required: {
                 type: 'boolean',
-                title: '参数是否必填',
+                title: t('toolBar.saveDag.paramsRequired'),
                 'x-decorator': 'FormItem',
                 'x-component': 'Switch',
                 required: true,
@@ -124,7 +142,7 @@ export function getInputSchema() {
               },
               desc: {
                 type: 'string',
-                title: '参数描述',
+                title: t('toolBar.saveDag.paramsDesc'),
                 required: false,
                 'x-decorator': 'FormItem',
                 'x-component': 'Input',
@@ -141,7 +159,7 @@ export function getInputSchema() {
       properties: {
         add: {
           type: 'void',
-          title: '添加输入参数',
+          title: t('toolBar.saveDag.addInputParams'),
           'x-component': 'ArrayItems.Addition',
         },
       },
@@ -150,15 +168,16 @@ export function getInputSchema() {
 }
 
 export function getOutputSchema() {
+  const { t } = useI18nStoreWithOut().getI18n().global;
   return {
     type: 'object',
-    title: '输出参数列表',
+    title: t('toolBar.saveDag.outputSchemaLists'),
     properties: {
       outputSchema: {
         type: 'array',
         'x-component': 'ArrayItems',
         'x-decorator': 'FormItem',
-        title: '输出参数',
+        title: t('toolBar.saveDag.outputParams'),
         required: false,
         items: {
           type: 'object',
@@ -174,14 +193,14 @@ export function getOutputSchema() {
                 },
                 name: {
                   type: 'string',
-                  title: '参数名',
+                  title: t('toolBar.saveDag.paramsName'),
                   required: true,
                   'x-decorator': 'FormItem',
                   'x-component': 'Input',
                 },
                 type: {
                   type: 'string',
-                  title: '参数类型',
+                  title: t('toolBar.saveDag.paramsType'),
                   required: true,
                   'x-decorator': 'FormItem',
                   'x-component': 'Select',
@@ -211,7 +230,7 @@ export function getOutputSchema() {
                 },
                 required: {
                   type: 'boolean',
-                  title: '参数是否必填',
+                  title: t('toolBar.saveDag.paramsRequired'),
                   'x-decorator': 'FormItem',
                   'x-component': 'Switch',
                   required: true,
@@ -222,7 +241,7 @@ export function getOutputSchema() {
                 },
                 desc: {
                   type: 'string',
-                  title: '参数描述',
+                  title: t('toolBar.saveDag.paramsDesc'),
                   required: false,
                   'x-decorator': 'FormItem',
                   'x-component': 'Input',
@@ -239,7 +258,7 @@ export function getOutputSchema() {
         properties: {
           add: {
             type: 'void',
-            title: '添加输出参数',
+            title: t('toolBar.saveDag.addOutputParams'),
             'x-component': 'ArrayItems.Addition',
           },
         },

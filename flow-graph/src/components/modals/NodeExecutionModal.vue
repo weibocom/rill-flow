@@ -2,45 +2,45 @@
   <a-modal
     v-model:visible="open"
     wrap-class-name="full-modal-to-xl"
-    title="节点详情"
+    :title="t('toolBar.executionNodeInfo.nodeDetail')"
     width="60%"
     :footer="null"
   >
     <a-card>
       <a-tabs v-model:activeKey="activeKey">
-        <a-tab-pane key="1" tab="节点详情">
+        <a-tab-pane key="1" :tab="t('toolBar.executionNodeInfo.nodeDetail')">
           <a-descriptions :column="1" bordered :label-style="{ width: '20%' }">
-            <a-descriptions-item label="节点名称" v-if="isShowTaskItem('name', taskDatail)">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.nodeName')" v-if="isShowTaskItem('name', taskDatail)">
               <a-typography-paragraph copyable underline strong>
                 {{ taskDatail.name }}
               </a-typography-paragraph>
             </a-descriptions-item>
             <a-descriptions-item
-              label="资源类型"
+              :label="t('toolBar.executionNodeInfo.resourceProtocol')"
               v-if="isShowTaskItem('resourceProtocol', taskDatail)"
             >
               <a-typography-paragraph strong>
                 {{ taskDatail['resourceProtocol'] }}
               </a-typography-paragraph>
             </a-descriptions-item>
-            <a-descriptions-item label="资源地址" v-if="isShowTaskItem('resourceName', taskDatail)">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.resourceName')" v-if="isShowTaskItem('resourceName', taskDatail)">
               <a-typography-paragraph strong>
                 {{ taskDatail['resourceName'] }}
               </a-typography-paragraph>
             </a-descriptions-item>
-            <a-descriptions-item label="状态" v-if="isShowTaskItem('status', taskDatail)">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.status')" v-if="isShowTaskItem('status', taskDatail)">
               <a-tag :color="dagStatusColor(taskDatail['status'])">
                 {{ taskDatail['status'] }}
               </a-tag>
             </a-descriptions-item>
-            <a-descriptions-item label="同步执行" v-if="isShowTaskItem('pattern', taskDatail)">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.sync')" v-if="isShowTaskItem('pattern', taskDatail)">
               <a-typography-paragraph >
                 <a-switch v-model:checked="isSync" disabled="true" style="margin-bottom: 5px" />
               </a-typography-paragraph>
             </a-descriptions-item>
-            <a-descriptions-item label="开始时间">{{ taskStartTime }}</a-descriptions-item>
-            <a-descriptions-item label="结束时间">{{ taskEndTime }}</a-descriptions-item>
-            <a-descriptions-item label="节点输入信息" layout="vertical">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.startTime')">{{ taskStartTime }}</a-descriptions-item>
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.endTime')">{{ taskEndTime }}</a-descriptions-item>
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.nodeInputInfo')" layout="vertical">
               <a-table
                 :data-source="nodeInputDataSource"
                 :columns="formContextColumns"
@@ -51,7 +51,7 @@
                 </template>
               </a-table>
             </a-descriptions-item>
-            <a-descriptions-item label="节点输出信息" layout="vertical">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.nodeOutputInfo')" layout="vertical">
               <a-table
                 :data-source="nodeOutputDataSource"
                 :columns="formContextColumns"
@@ -62,19 +62,19 @@
                 </template>
               </a-table>
             </a-descriptions-item>
-            <a-descriptions-item label="异常信息">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.errorMsg')">
               <a-typography-text code>
                 {{ errorMsg }}
               </a-typography-text>
             </a-descriptions-item>
-            <a-descriptions-item label="输入映射信息" layout="vertical">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.inputMappings')" layout="vertical">
               <a-table
                 :data-source="nodeInputMappingsSource"
                 :columns="nodeMappingsColumns"
                 :pagination="false"
               />
             </a-descriptions-item>
-            <a-descriptions-item label="输出映射信息" layout="vertical">
+            <a-descriptions-item :label="t('toolBar.executionNodeInfo.outputMappings')" layout="vertical">
               <a-table
                 :data-source="nodeOutputMappingsDataSource"
                 :columns="nodeMappingsColumns"
@@ -83,15 +83,15 @@
             </a-descriptions-item>
           </a-descriptions>
         </a-tab-pane>
-        <a-tab-pane key="2" tab="其他" disabled>
-          <a-card title="">暂无</a-card>
+        <a-tab-pane key="2" :tab="t('toolBar.executionNodeInfo.other')" disabled>
+          <a-card title="">{{ t('toolBar.executionNodeInfo.defaultOtherMsg') }}}</a-card>
         </a-tab-pane>
       </a-tabs>
     </a-card>
     <a-modal
       v-model:visible="showCodemirror"
       wrap-class-name="full-modal-to-xl"
-      title="详情"
+      :title="t('toolBar.executionNodeInfo.detail')"
       width="50%"
       :footer="null"
     >
@@ -110,6 +110,8 @@
   import { dagStatusColor } from '@/src/common/dagStatusStyle';
   import moment from 'moment';
   import Codemirror from 'codemirror-editor-vue3';
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
 
   const open = ref<boolean>(false);
   const activeKey = ref('1');
@@ -120,7 +122,7 @@
   const nodeOutputDataSource = ref([]);
   const nodeInputMappingsSource = ref([]);
   const nodeOutputMappingsDataSource = ref([]);
-  const errorMsg = ref('暂无');
+  const errorMsg = ref(t('toolBar.executionNodeInfo.defaultOtherMsg'));
   const maxTextLength = ref(100);
   const showCodemirror = ref(false);
   const codeValue = ref({});
@@ -129,12 +131,12 @@
   });
   const formContextColumns = ref([
     {
-      title: '参数名',
+      title: t('toolBar.executionNodeInfo.paramsName'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: '参数值',
+      title: t('toolBar.executionNodeInfo.paramsValue'),
       dataIndex: 'value',
       key: 'value',
       ellipsis: true,
@@ -148,12 +150,12 @@
   }
   const nodeMappingsColumns = ref([
     {
-      title: '参数来源',
+      title: t('toolBar.executionNodeInfo.paramsValue'),
       dataIndex: 'source',
       key: 'source',
     },
     {
-      title: '参数目标位置',
+      title: t('toolBar.executionNodeInfo.paramsValue'),
       dataIndex: 'target',
       key: 'target',
       ellipsis: true,
@@ -172,7 +174,7 @@
     nodeOutputDataSource.value = [];
     nodeInputMappingsSource.value = [];
     nodeOutputMappingsDataSource.value = [];
-    errorMsg.value = '暂无';
+    errorMsg.value = t('toolBar.executionNodeInfo.defaultOtherMsg');
   }
   Channel.eventListener(CustomEventTypeEnum.NODE_CLICK, (nodeCell) => {
     reset();

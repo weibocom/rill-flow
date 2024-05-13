@@ -1,8 +1,10 @@
 <template>
-    <a-modal v-model:visible="open" class="modal" title="流程基础信息编辑" width="70%" :footer="null">
+    <a-modal v-model:visible="open" class="modal" :title="t('toolBar.editDagMeta.detail')" width="70%" :footer="null">
       <a-card v-if="showQuickCreateButton">
-        一键导入:
-        <a-switch v-model:checked="quickCreate" checked-children="开" un-checked-children="关">
+        {{ t('toolBar.editDagMeta.quickCreate') }}:
+        <a-switch v-model:checked="quickCreate"
+                  :checked-children="t('toolBar.editDagMeta.quickCreateOpen')"
+                  :un-checked-children="t('toolBar.editDagMeta.quickCreateClose')">
         </a-switch>
       </a-card>
       <a-card>
@@ -19,7 +21,7 @@
                     }
                   "
                 >
-                  上一步
+                  {{ t('toolBar.editDagMeta.lastStep') }}
                 </a-button>
                 <a-button
                   :disabled="!formStep.allowNext"
@@ -30,9 +32,9 @@
                     }
                   "
                 >
-                  下一步
+                  {{ t('toolBar.editDagMeta.nextStep') }}
                 </a-button>
-                <Submit :disabled="formStep.allowNext" @submit="handleOk">保存</Submit>
+                <Submit :disabled="formStep.allowNext" @submit="handleOk">{{ t('toolBar.editDagMeta.save') }}</Submit>
               </FormButtonGroup>
             </template>
           </FormConsumer>
@@ -43,7 +45,7 @@
               <Codemirror v-model:value="yamlCode" :options="yamlOptions" border />
             </a-tab-pane>
           </a-tabs>
-          <a-button type="primary" @click="save">提交</a-button>
+          <a-button type="primary" @click="save">{{ t('toolBar.editDagMeta.submit') }}</a-button>
         </div>
       </a-card>
     </a-modal>
@@ -78,6 +80,8 @@
   import {message} from "ant-design-vue";
   import yaml from 'js-yaml';
   import { OptEnum } from "@/src/models/enums/optEnum";
+  import { useI18n } from "vue-i18n";
+  const { t } = useI18n();
 
   const open = ref<boolean>(false);
   const quickCreate = ref<boolean>(false);

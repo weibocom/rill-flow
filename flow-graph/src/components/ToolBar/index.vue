@@ -1,53 +1,35 @@
 <template>
   <div class="bar">
     <a-tooltip class="showStatus mx-20" v-if="opt === 'display'">
-      当前执行状态:
+      {{ t('toolBar.dagExecutionDetail.title') }}:
       <a-tag :color="dagStatusColor(dagStatus)">
         {{ dagStatus }}
       </a-tag>
     </a-tooltip>
     <a-tooltip placement="bottom" v-if="opt !== 'display'">
-      <template #title>
-        <span>编辑DAG的基本信息</span>
-      </template>
-      <a-button name="edit" @click="handleClick" class="item-space" size="small">编辑</a-button>
+      <a-button name="edit" @click="handleClick" class="item-space" size="small">{{ t('toolBar.editDagMeta.title') }}</a-button>
     </a-tooltip>
 
     <a-tooltip placement="bottom" v-if="opt !== 'display'">
-      <template #title>
-        <span>保存已修改内容</span>
-      </template>
-      <a-button name="save" @click="handleClick" class="item-space" size="small">保存</a-button>
+      <a-button name="save" @click="handleClick" class="item-space" size="small">{{ t('toolBar.saveDag.title') }}</a-button>
     </a-tooltip>
 
     <a-tooltip placement="bottom" v-if="opt !== 'display'">
-      <template #title>
-        <span>提交Dag的测试任务</span>
-      </template>
       <a-button name="submitDagTestRun" @click="handleClick" class="item-space" size="small"
-        >测试</a-button
+        >{{ t('toolBar.testRun.title') }}</a-button
       >
     </a-tooltip>
 
     <a-tooltip placement="bottom" v-if="opt !== 'display'">
-      <template #title>
-        <span>DagYaml信息</span>
-      </template>
-      <a-button name="toJSON" @click="handleClick" class="item-space" size="small"> 流程详情 </a-button>
+      <a-button name="toJSON" @click="handleClick" class="item-space" size="small"> {{ t('toolBar.showDag.title') }} </a-button>
     </a-tooltip>
 
     <a-tooltip placement="bottom" v-if="opt === 'display'">
-      <template #title>
-        <span>执行详情</span>
-      </template>
-      <a-button name="executionDetail" @click="handleClick" class="item-space" size="small"> 执行详情 </a-button>
+      <a-button name="executionDetail" @click="handleClick" class="item-space" size="small"> {{ t('toolBar.dagExecutionDetail.title') }} </a-button>
     </a-tooltip>
 
     <a-tooltip placement="bottom" v-if="opt === 'display'">
-      <template #title>
-        <span>刷新</span>
-      </template>
-      <a-button name="refresh" @click="handleClick" class="item-space" size="small"> 刷新
+      <a-button name="refresh" @click="handleClick" class="item-space" size="small"> {{ t('toolBar.refresh') }}
       </a-button>
     </a-tooltip>
 
@@ -70,8 +52,8 @@
   import { useFlowStoreWithOut } from '../../store/modules/flowGraphStore';
   import { ref, watch } from "vue";
   import { dagStatusColor } from "@/src/common/dagStatusStyle";
-
-
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
   const opt = ref('');
   const flowGraphStore = useFlowStoreWithOut();
   opt.value = flowGraphStore.getFlowParams().opt;

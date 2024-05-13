@@ -30,6 +30,14 @@ export const useFlowParamsStore = defineStore('flow-params', () => {
     localStorage.setItem('flowParams', JSON.stringify(params));
   }
 
+  function setLanguage(language: string) {
+    localStorage.setItem('language', language);
+  }
+
+  function getLanguage() {
+    return localStorage.getItem("language");
+  }
+
   function getFlowGraph(): FlowGraph {
     return flowGraph.value;
   }
@@ -44,6 +52,8 @@ export const useFlowParamsStore = defineStore('flow-params', () => {
     getFlowGraph,
     setFlowParams,
     getNodePrototypeRegistry,
+    setLanguage,
+    getLanguage,
   };
 });
 

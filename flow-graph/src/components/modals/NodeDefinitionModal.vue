@@ -2,16 +2,16 @@
   <a-modal
     v-model:visible="open"
     wrap-class-name="full-modal-to-xl"
-    title="节点编辑"
+    :title="t('toolBar.nodeInfo.edit')"
     @ok="handleOk"
     width="70%"
   >
     <a-card>
       <a-tabs v-model:activeKey="activeKey">
-        <a-tab-pane key="1" tab="基础设置" v-if="nodeCategory === NodeCategory.TEMPLATE_NODE">
+        <a-tab-pane key="1" :tab="t('toolBar.nodeInfo.basicSettings')" v-if="nodeCategory === NodeCategory.TEMPLATE_NODE">
           <a-card>
               <a-space>
-                节点名称:
+                {{ t('toolBar.nodeInfo.name') }}:
                 <a-input v-model:value="nodeTitle"/>
               </a-space>
           </a-card>
@@ -22,15 +22,15 @@
           </a-card>
           <a-card title="Output">
             <a-card>
-              编辑: <a-switch v-model:checked="editOutputSwitch" checked-children="开" un-checked-children="关"/>
+              {{ t('toolBar.nodeInfo.outputEdit') }}: <a-switch v-model:checked="editOutputSwitch" :checked-children="t('toolBar.nodeInfo.outputEditOpen')" :un-checked-children="t('toolBar.nodeInfo.outputEditClose')"/>
               <a-tabs v-if="editOutputSwitch" v-model:activeKey="outputActiveKey">
-              <a-tab-pane key="1" tab="基础模式">
+              <a-tab-pane key="1" :tab="t('toolBar.nodeInfo.basicMode')">
                 <FormProvider :form="outputForm" class="form"  >
                   <SchemaField :schema="outputSchema" />
                 </FormProvider>
 
               </a-tab-pane>
-              <a-tab-pane key="2" tab="高级模式">
+              <a-tab-pane key="2" :tab="t('toolBar.nodeInfo.advanceMode')">
                 <Codemirror v-model:value="nodeOutputStr"
                             :options="codeOptions"
                             border
@@ -39,7 +39,7 @@
               </a-tab-pane>
             </a-tabs>
             </a-card>
-            <a-card title="Output详情">
+            <a-card :title="t('toolBar.nodeInfo.outputDetail')">
               <a-tree
                 v-model:expandedKeys="expandedKeys"
                 v-model:selectedKeys="selectedKeys"
@@ -48,7 +48,7 @@
             </a-card>
           </a-card>
         </a-tab-pane>
-        <a-tab-pane key="2" tab="高级设置">
+        <a-tab-pane key="2" :tab="t('toolBar.nodeInfo.advancedSettings')">
           <a-card title="">
             <VueForm v-model="fieldsSchemaData" :schema="fieldsSchema" :formProps="formProps">
               <div slot-scope="{ fieldsSchemaData }"></div>
@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, shallowRef, toRaw, watch } from "vue";
+  import { reactive, ref, shallowRef, toRaw } from "vue";
   import { Channel } from '../../common/transmit';
   import { CustomEventTypeEnum } from '../../common/enums';
   import VueForm from '@lljj/vue3-form-ant';
@@ -84,7 +84,7 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
   import {
     ArrayItems,
     DatePicker,
-    FormButtonGroup, FormCollapse,
+    FormCollapse,
     FormItem,
     FormStep,
     Input, InputNumber, PreviewText,
@@ -95,6 +95,9 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
   import { createSchemaField, FormProvider } from "@formily/vue";
   import { createForm } from "@formily/core";
   import { InputSchemaValueItem } from "@/src/models/inputSchema";
+  import { useI18n } from 'vue-i18n';
+  import { InputSchemaHandlerFactory } from "../../common/inputSchemaStyleHandler";
+  const { t } = useI18n();
 
   const outputForm = ref();
   outputForm.value = createForm();
@@ -127,6 +130,7 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
   const editOutputSwitch = ref<boolean>(false);
   const nodeTitle = ref('');
   let jsonSchemaFormData = reactive({});
+  let oldJsonSchemaFormData = reactive({});
   const codeOptions = ref({
     mode: 'application/json',
   });
@@ -136,28 +140,6 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
   const formProps = ref({});
   const nodeOutputStr = ref("");
   const nodeRef = ref(null);
-
-  function getSchemaFormDataByReference(
-    inputMapping: Mapping,
-    flowGraph: FlowGraph,
-    inputTargetParam: string,
-  ): object {
-    let isNodeTemplate = false;
-    if (inputMapping.source.startsWith('$.context.')) {
-      const maybeTaskName = inputMapping.source.split('.')[2];
-      isNodeTemplate = flowGraph.containNode(maybeTaskName);
-    }
-    return {
-      key: inputTargetParam,
-      value: {
-        attr: 'reference',
-        reference: isNodeTemplate
-          ? inputMapping.source.replace('.context', '')
-          : inputMapping.source,
-        input: '',
-      },
-    };
-  }
 
   function renderInputSchemaForm(
     node: RillNode,
@@ -220,76 +202,19 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
     const schemaParamsList = getJsonPathByJsonSchema(templateSchemaOri.properties);
     let jsonSchemaFormDataList = [];
     for (const inputTargetParam of schemaParamsList) {
-      const inputMapping = inputMappingMap.get(inputTargetParam);
       const nodeSchema = JSON.parse(nodePrototype.template.schema)?.properties
-      if (nodeSchema !== undefined && (nodeSchema[inputTargetParam]?.bizType === 'array-to-map')) {
-        const properties = nodeSchema[inputTargetParam]?.items?.properties
-        const arrayValue = []
-        const arrayItemMap = {}
-        for (const key of inputMappingMap.keys()){
-          if (key.split('.')[0] === inputTargetParam) {
-            const itemKey = key.split('.')[1]
-            arrayItemMap[itemKey] = inputMappingMap.get(key)
-            if (properties['value']?.bizType === 'none') {
-              arrayValue.push({
-                key: itemKey,
-                value: inputMappingMap.get(key).source
-              })
-            } else {
-              const formData = getJsonSchemaFormDataItem(itemKey, inputMappingMap.get(key), flowGraph)
-              if (formData === null) {
-                continue;
-              }
-              arrayValue.push(formData)
-            }
-          }
-        }
+      if (nodeSchema === undefined) {
+        continue;
+      }
 
-        jsonSchemaFormDataList.push({
-          key: inputTargetParam,
-          value: arrayValue
-        })
+      let result = InputSchemaHandlerFactory.getHandler(nodeSchema[inputTargetParam]?.bizType).showSchemaValueHandle(inputTargetParam, nodeSchema, inputMappingMap, flowGraph)
+      if (result === null) {
         continue;
       }
-      if (inputMapping === undefined) {
-        continue;
-      }
-      if (nodeSchema !== undefined && (nodeSchema[inputTargetParam]?.bizType === 'code' || nodeSchema[inputTargetParam]?.bizType === 'none')) {
-
-        if (nodeSchema[inputTargetParam]?.oneOf) {
-          const select = nodeSchema[inputTargetParam]?.oneOf
-        }
-        jsonSchemaFormDataList.push({
-          key: inputTargetParam,
-          value: inputMapping.source
-        })
-        continue;
-      }
-      const formData = getJsonSchemaFormDataItem(inputTargetParam, inputMapping, flowGraph)
-      if (formData === null) {
-        continue;
-      }
-      jsonSchemaFormDataList.push(formData);
+      jsonSchemaFormDataList.push(result);
     }
     jsonSchemaFormData = getJsonByJsonPaths(jsonSchemaFormDataList);
-  }
-
-  function getJsonSchemaFormDataItem(key: string,inputMapping:Mapping, flowGraph: FlowGraph) {
-    const inputFormData = {
-      key: key,
-      value: {
-        attr: 'input',
-        input: inputMapping.source,
-        reference: '',
-      },
-    };
-    if (inputMapping?.source === undefined) {
-      return null;
-    }
-    const formData = inputMapping.source.toString().startsWith('$.')
-      ? getSchemaFormDataByReference(inputMapping, flowGraph, key)
-      : inputFormData;
-    return formData;
+    oldJsonSchemaFormData = getJsonByJsonPaths(jsonSchemaFormDataList);
   }
 
   // 监听点击事件后弹modal
@@ -370,6 +295,7 @@ import { reactive, ref, shallowRef, toRaw, watch } from "vue";
       flowGraph.updateNodeTaskMappingInfos(
         nodeRef.value.id,
         toRaw(jsonSchemaFormData),
+        toRaw(oldJsonSchemaFormData),
       );
 
       if (editOutputSwitch.value) {

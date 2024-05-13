@@ -1,5 +1,12 @@
 <template>
-  <a-modal v-model:visible="open" title="测试任务" width="70%" @ok="handleOk()" okText="提交" cancelText="取消">
+  <a-modal
+    v-model:visible="open"
+    :title="t('toolBar.testRun.detail')"
+    width="70%"
+    @ok="handleOk()"
+    :okText="t('toolBar.testRun.okText')"
+    :cancelText="t('toolBar.testRun.cancelText')"
+  >
     <a-card>
       <FormProvider :form="form">
         <SchemaField :schema="schema" />
@@ -30,6 +37,8 @@
   import { submitDagTask } from '../../api/flow';
   import { DagSubmitTaskParams } from '../../api/types';
   import { message } from 'ant-design-vue';
+  import { useI18n } from "vue-i18n";
+  const { t } = useI18n();
 
   const open = ref<boolean>(false);
   const form = ref();
@@ -98,6 +107,8 @@
         'x-decorator-props': {
           labelAlign: 'left',
           labelWidth: labelWidth,
+          tooltip: title,
+          tooltipLayout: 'text',
         },
       };
     } else if (item.type === 'Boolean') {
@@ -109,6 +120,9 @@
         required: item.required,
         'x-decorator-props': {
           labelAlign: 'left',
+          labelWidth: labelWidth,
+          tooltip: title,
+          tooltipLayout: 'text',
         },
       };
     } else if (item.type === 'JSON') {
@@ -119,6 +133,9 @@
         'x-component': 'Input.TextArea',
         'x-decorator-props': {
           labelAlign: 'left',
+          labelWidth: labelWidth,
+          tooltip: title,
+          tooltipLayout: 'text',
         },
         required: true,
       };
@@ -132,6 +149,8 @@
       'x-decorator-props': {
         labelAlign: 'left',
         labelWidth: labelWidth,
+        tooltip: title,
+        tooltipLayout: 'text',
       },
     };
   }

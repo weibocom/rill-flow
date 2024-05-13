@@ -18,10 +18,9 @@ import {graphConfig} from "../config/graphConfig";
 import {OptEnum} from "./enums/optEnum";
 import {
   convertObjectToMappingParametersMap,
-  getFieldsSchemaData, getMappingByMappingParameters, isArray, isObject,
-  removeOldInputMappings, updateOutputMappings
+  getFieldsSchemaData, isArray, isObject,
+  updateInputMappings, updateOutputMappings
 } from "../common/flowService";
-import {Mapping} from "./task/mapping";
 
 export class X6FlowGraph implements FlowGraph {
   private nodes: RillNode[] = new Array<RillNode>();
@@ -481,7 +480,7 @@ export class X6FlowGraph implements FlowGraph {
     const currentNode = this.getNode(nodeId);
     currentNode.task.outputSchema = outputSchema;
   }
-  public updateNodeTaskMappingInfos(nodeId: string, mappingParametersObject: object) {
+  public updateNodeTaskMappingInfos(nodeId: string, mappingParametersObject: object, oldTaskMappingInfos: object) {
     // 1. 通过 nodeId 获取当前 node
     const currentNode = this.getNode(nodeId);
     const flowGraphStore = useFlowStoreWithOut();
@@ -490,23 +489,15 @@ export class X6FlowGraph implements FlowGraph {
 
     // 2. 将 mappingParametersObject 转换为 Map<string, MappingParameters> 的 parametersMap
     const parametersMap = convertObjectToMappingParametersMap(nodePrototype?.template?.schema, mappingParametersObject);
-    console.log('parametersMap', parametersMap, currentNode.nodePrototypeId, nodePrototype)
+    const oldParametersMap = convertObjectToMappingParametersMap(nodePrototype?.template?.schema, oldTaskMappingInfos);
+    console.log('parametersMap', parametersMap, currentNode.nodePrototypeId, nodePrototype, mappingParametersObject)
 
-    // 3. 删除 currentNode.task.inputMappings 中 key 已存在的数据，并添加新的数据
+    // 3. 更新节点的inputMappings。
     const oldSources: Map<string, Set<string>> = new Map<string, Set<string>>();
-    removeOldInputMappings(currentNode, parametersMap, oldSources);
-
-    // 4. 遍历 parametersMap，生成 inputMapping
     const outputTasks: Map<string, Set<string>> = new Map<string, Set<string>>();
-    for (const [key, params] of parametersMap) {
-      const mapping: Mapping = getMappingByMappingParameters(key, params, outputTasks);
-      if (mapping === undefined) {
-        continue;
-      }
-      currentNode.task.inputMappings.push(mapping);
-    }
+    updateInputMappings(currentNode, parametersMap, oldSources, oldParametersMap, outputTasks);
 
-    // 5. 更新 outputTask 的 outputMappings
+    // 4. 更新 outputTask 的 outputMappings
     updateOutputMappings(oldSources, outputTasks, parametersMap);
   }
 
