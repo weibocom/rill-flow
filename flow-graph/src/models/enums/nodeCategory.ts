@@ -1,14 +1,16 @@
+import { useI18n } from "vue-i18n";
 export enum NodeCategory {
   BASE_NODE = "0",
   TEMPLATE_NODE = "1"
 }
 
 export function getNodeCategoryName(nodeCategory: NodeCategory) {
+  const { t } = useI18n();
   switch (nodeCategory) {
     case NodeCategory.BASE_NODE:
-      return '基础节点';
+      return t('nodeBar.baseNodes');
     case NodeCategory.TEMPLATE_NODE:
-      return '模板节点';
+      return t('nodeBar.templateNodes');
   }
 }
 

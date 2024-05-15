@@ -7,7 +7,7 @@ import { useFlowStoreWithOut } from './store/modules/flowGraphStore';
 import { FlowParams } from './models/flowParams';
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
-
+import { initI18n } from './locales/i18n';
 import * as Icons from '@ant-design/icons-vue';
 let app;
 const flowGraphStore = useFlowStoreWithOut();
@@ -17,6 +17,7 @@ const render = (container) => {
   setupStore(app);
   app.use(router)
     .use(Antd)
+    .use(initI18n(flowGraphStore.getLanguage()))
     .mount(container ? container.querySelector('#flow-graph') : '#flow-graph');
 
   nextTick(() => {
@@ -51,6 +52,7 @@ const initQianKun = () => {
       }
 
       flowGraphStore.setFlowParams(params);
+      flowGraphStore.setLanguage(props['language'] || 'zh_CN');
       render(container);
     },
     bootstrap() {},

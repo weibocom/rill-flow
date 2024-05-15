@@ -2,7 +2,7 @@
   <a-modal
     v-model:visible="open"
     wrap-class-name="full-modal-to-xl"
-    title="详情"
+    :title="t('toolBar.saveDag.detail')"
     width="70%"
     :footer="null"
   >
@@ -20,7 +20,7 @@
                   }
                 "
               >
-                上一步
+                {{ t('toolBar.saveDag.lastStep') }}
               </a-button>
               <a-button
                 :disabled="!formStep.allowNext"
@@ -30,9 +30,9 @@
                   }
                 "
               >
-                下一步
+                {{ t('toolBar.saveDag.nextStep') }}
               </a-button>
-              <Submit :disabled="formStep.allowNext" @submit="handleOk">提交</Submit>
+              <Submit :disabled="formStep.allowNext" @submit="handleOk">{{ t('toolBar.saveDag.submit') }}</Submit>
             </FormButtonGroup>
           </template>
         </FormConsumer>
@@ -67,6 +67,8 @@
   import { submitDagInfo } from '@/src/api/flow';
   import { DagSubmitParams } from '@/src/api/types';
   import { message } from 'ant-design-vue';
+  import { useI18n } from "vue-i18n";
+  const { t } = useI18n();
 
   const open = ref<boolean>(false);
 

@@ -13,14 +13,14 @@
               onClick: handleEdit.bind(null, record),
             },
             {
-              label: t('routes.flow.definitions.node_templates_detail.option.disable'),
+              label: t('routes.flow.definitions.node_templates_detail.option.enable'),
               ifShow: (_action) => {
                 return record.node_type !== 'meta' && record.enable === 1;
               },
               onClick: handleEnableDisable.bind(null, record.id, false),
             },
             {
-              label: t('routes.flow.definitions.node_templates_detail.option.enable'),
+              label: t('routes.flow.definitions.node_templates_detail.option.disable'),
               ifShow: (_action) => {
                 return record.node_type !== 'meta' && record.enable === 0;
               },

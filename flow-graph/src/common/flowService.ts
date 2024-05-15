@@ -7,7 +7,6 @@ import {getNodeCategoryByNumber, NodeCategory} from "../models/enums/nodeCategor
 import {TreeData} from "../models/graph/treeData";
 import {MappingParameters} from "../models/mappingParameters";
 import {
-  getMappingEditTypeEnumByType,
   MappingEditTypeEnum
 } from "../models/enums/mappingEditTypeEnum";
 import {Mapping} from "../models/task/mapping";
@@ -18,6 +17,9 @@ import {Channel} from "./transmit";
 import {CustomEventTypeEnum} from "./enums";
 import {NodePrototype} from "../models/nodeTemplate";
 import yaml from 'js-yaml';
+import { useI18nStoreWithOut } from "../store/modules/i18nStore";
+import { InputSchemaHandlerFactory } from "./inputSchemaStyleHandler";
+import { InputSchemaTypeEnum } from "../models/enums/InputSchemaTypeEnum";
 
 // 保存节点分组信息
 export function saveNodeGroups(queryTemplateNodesUrls: string[]) {
@@ -119,10 +121,11 @@ export function getReferences(nodeId: string): TreeData[] {
     }
     const taskName = node.task.name;
     const nodePath = '$.' + taskName;
-    const output = JSON.parse(nodePrototype.template.output);
+    const output = node.task.outputSchema === undefined ? JSON.parse(nodePrototype.template.output): node.task.outputSchema;
 
     const treeData = convertSchemaToTreeData(output, nodePath);
-    treeDataList.push({ title: taskName, value: nodePath, children: treeData });
+    let title = node.task.title === undefined ? node.task.name : node.task.title;
+    treeDataList.push({ title: title, value: nodePath, children: treeData });
   });
   return treeDataList;
 }
@@ -137,13 +140,15 @@ export function convertInputSchemaToTreeData(inputSchema): TreeData[] {
   }
   const treeData = [];
   const inputSchemaData = new TreeData();
-  inputSchemaData.title = 'context';
+  const { t } = useI18nStoreWithOut().getI18n().global;
+  inputSchemaData.title = t('context');
   inputSchemaData.value = '$.context';
   inputSchemaData.children = [];
   const inputSchemaDataChildren = [];
   for (const dataKey in inputSchema) {
     const treeData = new TreeData();
-    treeData.title = inputSchema[dataKey].name + '【' + inputSchema[dataKey].type+ '】';
+    const title = (inputSchema[dataKey].desc === '' || inputSchema[dataKey].desc === undefined) ? inputSchema[dataKey].name: inputSchema[dataKey].desc;
+    treeData.title = title + '【' + inputSchema[dataKey].type+ '】';
     treeData.value = '$.context.' + inputSchema[dataKey].name;
     treeData.children = [];
     inputSchemaDataChildren.push(treeData);
@@ -161,7 +166,6 @@ export function convertInputSchemaToTreeData(inputSchema): TreeData[] {
  */
 export function convertSchemaToTreeData(schema, currentPath = '$'): TreeData[] {
   const treeData = [];
-
   if (schema.type === 'object') {
     if (schema?.properties === undefined) {
       return treeData;
@@ -197,14 +201,15 @@ function getQueryUrlByOpt(flowParams: FlowParams) {
   }
 }
 
-export function removeOldInputMappings(currentNode: RillNode, parameters: Map<string, MappingParameters>, oldSources: Map<string, Set<string>>) {
+export function updateInputMappings(currentNode: RillNode, parameters: Map<string, MappingParameters>, oldSources: Map<string, Set<string>>, oldParameters: Map<string, MappingParameters>, outputTasks: Map<string, Set<string>>) {
   if (currentNode.task.inputMappings === undefined) {
     currentNode.task.inputMappings = [];
   }
+  // 1. 构建模版默认inputMappings
   const newMappings = [];
   for (const mapping of currentNode.task.inputMappings) {
     if (parameters.has(mapping.target)) {
-      const sourceInfos = mapping.source.split('.');
+      const sourceInfos = mapping.source.toString().split('.');
       if (sourceInfos.length < 3) {
         continue;
       }
@@ -214,11 +219,20 @@ export function removeOldInputMappings(currentNode: RillNode, parameters: Map<st
       }
       sources.add(mapping.source);
       oldSources.set(sourceInfos[2], sources);
-    } else {
+    } else if (!oldParameters.has(mapping.target)) {
+      // 模版节点中默认的参数需要再次添加到mapping中
       newMappings.push(mapping);
     }
   }
+  // 2. 更新节点参数对应的inputMappings
   currentNode.task.inputMappings = newMappings;
+  for (const [key, params] of parameters) {
+    const mapping: Mapping = getMappingByMappingParameters(key, params, outputTasks);
+    if (mapping === undefined) {
+      continue;
+    }
+    currentNode.task.inputMappings.push(mapping);
+  }
 }
 
 export function getFieldsSchemaData(node: RillNode, nodePrototype: NodePrototype): object {
@@ -370,37 +384,29 @@ export function getMappingByMappingParameters(mappingParametersKey: string, mapp
 /**
  * 通过 mappingParametersObject 获取 key 和 object
  */
-export function convertObjectToMappingParametersMap(obj: any, currentKey = ''): Map<string, MappingParameters> {
-  const result = new Map<string, MappingParameters>();
+export function convertObjectToMappingParametersMap(nodeSchema: string, obj: any, currentKey = ''): Map<string, MappingParameters> {
+  let result = new Map<string, MappingParameters>();
+  let nodeTemplateSchema = nodeSchema !== undefined ? JSON.parse(nodeSchema) : {};
 
   for (const key in obj) {
+    let bizType = nodeTemplateSchema?.properties?.[key]?.bizType !== undefined ? nodeTemplateSchema?.properties?.[key]?.bizType : InputSchemaTypeEnum.NORMAL;
+    if (Array.isArray(obj[key]) || typeof obj[key] === 'string') {
+      let arrayToMapResult = InputSchemaHandlerFactory.getHandler(bizType).saveSchemaValueHandle(key, obj[key])
+      result = new Map([...result, ...arrayToMapResult])
+      continue;
+    }
+
     if (typeof obj[key] === 'object' && obj[key] !== null
       && (obj[key]['attr'] === null || typeof obj[key]['attr'] !== 'string')) {
       const newKey = currentKey ? `${currentKey}.${key}` : key;
-      const subResult = convertObjectToMappingParametersMap(obj[key], newKey);
+      const subResult = convertObjectToMappingParametersMap(nodeSchema, obj[key], newKey);
       subResult.forEach((value, subKey) => {
         result.set(subKey, value);
       });
     } else {
       const newKey = currentKey ? `${currentKey}.${key}` : key;
-      const parameters: MappingParameters = new MappingParameters();
-      parameters.key = newKey;
-      parameters.type = getMappingEditTypeEnumByType(obj[key]['attr']);
-      if (parameters.type === undefined) {
-        console.error(`未知的类型：${obj[key]['attr']}`);
-        continue;
-      } else if (parameters.type === MappingEditTypeEnum.REFERENCE) {
-        if (obj[key]['reference'] === undefined) {
-          continue;
-        }
-        parameters.reference = obj[key]['reference'];
-      } else if (parameters.type === MappingEditTypeEnum.INPUT) {
-        if (obj[key]['input'] === undefined) {
-          continue;
-        }
-        parameters.input = obj[key]['input'];
-      }
-      result.set('$.input.' + newKey, parameters);
+      let arrayToMapResult = InputSchemaHandlerFactory.getHandler(InputSchemaTypeEnum.REFERENCE).saveSchemaValueHandle(newKey, obj[key])
+      result = new Map([...result, ...arrayToMapResult])
     }
   }
 

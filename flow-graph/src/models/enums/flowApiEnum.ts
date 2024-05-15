@@ -4,5 +4,5 @@ export enum FlowApiEnum {
   QUERY_EXECUTION = '/flow/bg/get_execution.json',
   SUBMIT_EXECUTION = '/flow/submit.json',
   QUERY_META_NODES = '/flow/template/get_meta_data_list.json',
-  QUERY_NODE_PROTOTYPES = '/flow/template/get_template_prototypes.json',
+  QUERY_NODE_PROTOTYPES = '/flow/template/get_template_prototypes.json?enable=1',
 }

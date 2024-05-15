@@ -1,5 +1,5 @@
 <template>
-  <div class="title">节点列表</div>
+  <div class="title">{{t('nodeBar.list')}}</div>
   <div class="context">
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane
@@ -13,7 +13,7 @@
           :key="nodeVO.id"
           @mousedown="startDrag(nodeVO, $event)"
         >
-          <NodeTemplate :label="nodeVO.name" :icon="nodeVO.icon" />
+          <NodeTemplate :label="nodeVO.title" :icon="nodeVO.icon" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -30,6 +30,8 @@
     NodeCategory,
   } from '../../models/enums/nodeCategory';
   import { ref, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
 
   const flowGraphStore = useFlowStoreWithOut();
   const nodePrototypeRegistry = ref(flowGraphStore.getNodePrototypeRegistry());
@@ -67,6 +69,7 @@
     id: string;
     nodeCategory: NodeCategory;
     name: string;
+    title: string;
     icon: string;
   }
 
@@ -76,8 +79,10 @@
     nodeVO.nodeCategory = nodeCategory;
     if (nodeVO.nodeCategory === NodeCategory.BASE_NODE) {
       nodeVO.name = nodePrototype.meta_data.category;
+      nodeVO.title = nodePrototype.meta_data.category;
     } else {
-      nodeVO.name = nodePrototype.template.name;
+      nodeVO.name = '';
+      nodeVO.title = nodePrototype.template.name;
     }
 
     nodeVO.icon = nodePrototype.icon;
