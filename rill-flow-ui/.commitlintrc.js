@@ -61,7 +61,7 @@ module.exports = {
     },
     customScopesAlign: !scopeComplete ? 'top' : 'bottom',
     defaultScope: scopeComplete,
-    scopes: [...scopes, 'mock'],
+    scopes: [...scopes],
     allowEmptyIssuePrefixs: false,
     allowCustomIssuePrefixs: false,
 

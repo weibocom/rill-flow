@@ -3,7 +3,6 @@ import { useI18nStoreWithOut } from "../../store/modules/i18nStore";
 export function getSaveFormSchema() {
   const { t } = useI18nStoreWithOut().getI18n().global;
   const labelWidth = 100;
-  console.log('getSaveFormSchema', useI18nStoreWithOut().getI18n(), t('toolBar.saveDag.businessName'))
   return {
     type: 'object',
     properties: {
