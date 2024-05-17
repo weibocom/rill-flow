@@ -11,7 +11,6 @@ This is a description of Rill Flow UI frontend development based on [Vue vben ad
 - [Es6+](http://es6.ruanyifeng.com/) - Understanding of ES6 syntax
 - [Vue-Router-Next](https://next.router.vuejs.org/) - Familiarity with basic usage of Vue Router
 - [Ant-Design-Vue](https://2x.antdv.com/docs/vue/introduce-cn/) - Basic usage of UI components
-- [Mock.js](https://github.com/nuysoft/Mock) - Familiarity with Mock.js syntax
 - [QianKun](https://qiankun.umijs.org/zh/guide) - Basic usage of QianKun
 
 
