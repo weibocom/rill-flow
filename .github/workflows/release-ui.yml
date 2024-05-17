@@ -1,0 +1,60 @@
+name: Release Rill Flow UI
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'executors/**'
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Define the release version"
+        required: true
+        default: ""
+      developmentVersion:
+        description: "Define the snapshot version"
+        required: true
+        default: ""
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 拉取源码
+      - uses: actions/checkout@v3
+        with:
+          token: ${{secrets.RELEASE_TOKEN}}
+      - name: Configure Git User
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+      - name: Verify Whether a Release is Ready
+        id: release
+        shell: bash
+        run: |
+          if [ "${{ github.event.inputs.releaseVersion }}" != "" ] && [ "${{ github.event.inputs.developmentVersion }}" != "" ]; then
+            echo "auto_release=true" >> $GITHUB_ENV
+          else
+            echo "auto_release=false" >> $GITHUB_ENV
+          fi
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push for UI to DockerHub
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: .
+          file: ./rill-flow-ui/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ github.event.inputs.releaseVersion != '' && format('weibocom/rill-flow-ui:latest,weibocom/rill-flow-ui:{0}',github.event.inputs.releaseVersion) || 'weibocom/rill-flow-ui:latest' }}
+
