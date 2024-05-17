@@ -4,7 +4,6 @@ FROM node:18.12.1-alpine as build-stage
 WORKDIR /data/rill-flow-ui
 COPY ./rill-flow-ui/ ./
 
-RUN npm config set registry https://registry.npm.taobao.org
 RUN npm cache clean --force
 RUN npm config set strict-ssl false
 
@@ -16,7 +15,6 @@ FROM node:18.12.1-alpine as build-submodule-stage
 WORKDIR /data/rill-flow-graph
 COPY ./flow-graph ./
 
-RUN npm config set registry https://registry.npm.taobao.org
 RUN npm cache clean --force
 RUN npm config set strict-ssl false
 

@@ -3,7 +3,6 @@ FROM node:18.12.1-alpine as build-stage
 WORKDIR /data/flow-graph
 COPY . ./
 
-RUN npm config set registry https://registry.npm.taobao.org
 RUN npm cache clean --force
 RUN npm config set strict-ssl false
 
