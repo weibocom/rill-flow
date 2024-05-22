@@ -92,6 +92,25 @@ public class DAGRuntimeFacade {
     @Autowired
     private OlympiceneFacade olympiceneFacade;
 
+    public boolean updateDagStatus(String executionId, DAGStatus status) {
+        if (StringUtils.isBlank(executionId) || status == null) {
+            throw new IllegalArgumentException("executionId or status is blank");
+        }
+        DAGInfo dagInfo = runtimeStorage.getBasicDAGInfo(executionId);
+
+        if (dagInfo == null) {
+            throw new IllegalArgumentException("executionId not found " + executionId);
+        }
+
+        if (dagInfo.getDagStatus().ordinal() >= status.ordinal()) {
+            return false;
+        }
+
+        dagInfo.setDagStatus(status);
+        runtimeStorage.saveDAGInfo(executionId, dagInfo);
+        return true;
+    }
+
     public Map<String, Object> convertDAGInfo(String dagDescriptor) {
         try {
             DAG dag = dagStringParser.parse(dagDescriptor);
