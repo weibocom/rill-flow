@@ -19,6 +19,9 @@ package com.weibo.rill.flow.impl.auth;
 import com.weibo.rill.flow.common.util.AuthHttpUtil;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.service.auth.AuthHeaderGenerator;
+import com.weibo.rill.flow.service.dconfs.BizDConfs;
+import com.weibo.rill.flow.service.util.ExecutionIdUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,9 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
     @Value("${rill_flow_auth_secret_key}")
     private String authSecret;
 
+    @Autowired
+    private BizDConfs bizDConfs;
+
     @Override
     public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
         Map<String, String> paramMap = new TreeMap<>();
@@ -47,7 +53,12 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
             paramMap.put("task_name", task.getName());
         }
         paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
-        AuthHttpUtil.addSignToParam(paramMap, authSecret);
+        if (executionId != null && bizDConfs.getGenerateAuthHeaderBusinessIds() != null
+                && bizDConfs.getGenerateAuthHeaderBusinessIds().contains(ExecutionIdUtil.getBusinessId(executionId))
+                && input.get("generate_auth") != null && Boolean.getBoolean(String.valueOf(input.get("generate_auth")))
+        ) {
+            AuthHttpUtil.addSignToParam(paramMap, authSecret);
+        }
         httpHeaders.add("X-Callback-Url", flowServerHost + flowCallbackUri + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
     }
 }
