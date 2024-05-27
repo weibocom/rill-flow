@@ -79,7 +79,7 @@ export class X6FlowGraph implements FlowGraph {
     if (getNodeCategoryByNumber(nodePrototype.node_category) === NodeCategory.TEMPLATE_NODE) {
       const taskYaml = nodePrototype.template.task_yaml;
       const fields = yaml.load(taskYaml);
-      taskName = fields?.name;
+      taskName = fields?.name === undefined ? fields?.category : fields?.name;
     } else {
       taskName = nodePrototype.meta_data.category;
     }
@@ -255,7 +255,7 @@ export class X6FlowGraph implements FlowGraph {
     }
     const nodeCategory = getNodeCategoryByNumber(nodePrototype.node_category);
     if (nodeCategory === NodeCategory.TEMPLATE_NODE) {
-      node.task.taskTemplateId = Number(node.nodePrototypeId);
+      node.task.taskTemplateId = node.nodePrototypeId;
     }
   }
 
@@ -462,7 +462,7 @@ export class X6FlowGraph implements FlowGraph {
         continue;
       }
       for (const inputMapping of inputMappings) {
-        const source = inputMapping.source;
+        const source = String(inputMapping.source);
         if (source === undefined || !source.startsWith('$.context.' + oldTaskName + '.')) {
           continue;
         }

@@ -206,8 +206,7 @@
       if (nodeSchema === undefined) {
         continue;
       }
-
-      let result = InputSchemaHandlerFactory.getHandler(nodeSchema[inputTargetParam]?.bizType).showSchemaValueHandle(inputTargetParam, nodeSchema, inputMappingMap, flowGraph)
+      let result = InputSchemaHandlerFactory.getHandler(getBizTypeByJsonPath(inputTargetParam, nodeSchema)).showSchemaValueHandle(inputTargetParam, nodeSchema, inputMappingMap, flowGraph)
       if (result === null) {
         continue;
       }
@@ -215,6 +214,15 @@
     }
     jsonSchemaFormData = getJsonByJsonPaths(jsonSchemaFormDataList);
     oldJsonSchemaFormData = getJsonByJsonPaths(jsonSchemaFormDataList);
+  }
+
+  function getBizTypeByJsonPath(path: string, schema: JSON) {
+    let bizType
+    path.split('.').forEach(item => {
+      schema = schema[item]?.properties ? schema[item].properties : schema[item];
+      bizType = schema?.bizType;
+    })
+    return bizType;
   }
 
   // 监听点击事件后弹modal
@@ -246,7 +254,6 @@
 
     // 2.2 获取 fieldsSchemaData 数据，填充表单
     fieldsSchemaData.value = getFieldsSchemaData(node, nodePrototype);
-
     open.value = true;
   });
 
@@ -269,6 +276,8 @@
 
   function getFieldsSchemaData(node: RillNode, nodePrototype: NodePrototype): object {
     let fields = {};
+    let nodeTaskFields = JSON.parse(JSON.stringify(node.task));
+
     if (
       getNodeCategoryByNumber(nodePrototype.node_category) == NodeCategory.TEMPLATE_NODE &&
       nodePrototype.template !== undefined
@@ -280,7 +289,7 @@
       return fields;
     }
     for (const field of Object.keys(node.task)) {
-      fields[field] = node.task[field];
+      fields[field] = nodeTaskFields[field];
     }
     return fields;
   }

@@ -5,7 +5,7 @@ export class BaseTask {
   name: string;
   title: string;
   category: string;
-  taskTemplateId: number;
+  taskTemplateId: string;
   next: string;
   inputMappings: Mapping[];
   outputMappings: Mapping[];

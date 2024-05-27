@@ -5,12 +5,12 @@ import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  console.log("micro app: ", mode, env.VITE_BASE_URL, "http://localhost:7001/flow-graph/")
+  console.log("micro app: ", mode, env.VITE_BASE_URL)
   return {
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV),
     },
-    base: mode === 'development' ? env.VITE_BASE_URL : "/flow-graph/",
+    base: env.VITE_BASE_URL,
     plugins: [
       vue(),
       qiankun('flow-graph', {
