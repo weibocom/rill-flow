@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow</artifactId>
-        <version>0.1.11</version>
+        <version>0.1.12-SNAPSHOT</version>
     </parent>
     <artifactId>rill-flow-trigger</artifactId>
     <packaging>jar</packaging>
