@@ -1,5 +1,6 @@
 package com.weibo.rill.flow.impl.auth
 
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo
 import com.weibo.rill.flow.service.dconfs.BizDConfs
 import org.springframework.http.HttpHeaders
 import spock.lang.Specification
@@ -59,7 +60,7 @@ class FlowAuthHeaderGeneratorTest extends Specification {
         Map<String, Object> input = new HashMap<>()
         input.put("generate_auth", true)
         when:
-        flowAuthHeaderGenerator.appendRequestHeader(httpHeaders, "business2", null, input)
+        flowAuthHeaderGenerator.appendRequestHeader(httpHeaders, "business2", new TaskInfo(name: "testTask"), input)
         then:
         httpHeaders.get("X-Callback-Url").get(0).contains("sign")
     }
