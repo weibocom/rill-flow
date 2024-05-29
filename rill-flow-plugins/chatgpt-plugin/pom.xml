@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow-plugins</artifactId>
-        <version>0.1.10</version>
+        <version>0.1.11-SNAPSHOT</version>
     </parent>
 
     <name>ServicePlugin Maven Webapp</name>
