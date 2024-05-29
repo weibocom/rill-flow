@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableMap;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.model.User;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
 import io.swagger.annotations.Api;
 import org.apache.commons.collections.CollectionUtils;
@@ -41,14 +40,6 @@ public class DAGRuntimeController {
 
     @Autowired
     private DAGRuntimeFacade dagRuntimeFacade;
-
-    @RequestMapping(value = "complete_dag.json", method = RequestMethod.POST)
-    public Map<String, String> completeDAG(User flowUser,
-                                           @RequestParam(value = EXECUTION_ID) String executionId,
-                                           @RequestParam(value = "success", defaultValue = "true", required = false) boolean success) {
-        boolean ret = dagRuntimeFacade.updateDagStatus(executionId, success ? DAGStatus.SUCCEED : DAGStatus.FAILED);
-        return ImmutableMap.of("ret", ret? "ok" : "failed");
-    }
 
     @RequestMapping(value = "service_check.json", method = RequestMethod.GET)
     public Map<String, String> serviceCheck() {
