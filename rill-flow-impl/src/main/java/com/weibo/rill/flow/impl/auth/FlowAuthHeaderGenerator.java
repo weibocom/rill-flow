@@ -27,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 @Service("authHeaderGenerator")
@@ -53,9 +54,10 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
             paramMap.put("task_name", task.getName());
         }
         paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
-        if (executionId != null && bizDConfs.getGenerateAuthHeaderBusinessIds() != null
-                && bizDConfs.getGenerateAuthHeaderBusinessIds().contains(ExecutionIdUtil.getBusinessId(executionId))
-                || "1".equals(String.valueOf(input.get("generate_auth"))) || "true".equalsIgnoreCase(String.valueOf(input.get("generate_auth")))
+        Set<String> authBusinessWhiteList = bizDConfs.getGenerateAuthHeaderBusinessIds();
+        String generateAuth = String.valueOf(input.get("generate_auth")).toLowerCase();
+        if (executionId != null && authBusinessWhiteList.contains(ExecutionIdUtil.getBusinessId(executionId))
+                || Set.of("1", "true").contains(generateAuth)
         ) {
             AuthHttpUtil.addSignToParam(paramMap, authSecret);
             input.remove("generate_auth");
