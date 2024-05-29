@@ -19,7 +19,7 @@
     <parent>
         <artifactId>rill-flow</artifactId>
         <groupId>com.weibo</groupId>
-        <version>0.1.10-SNAPSHOT</version>
+        <version>0.1.10</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
