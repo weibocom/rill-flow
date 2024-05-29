@@ -61,4 +61,5 @@ public interface BizDConfs {
 
     Map<String, Integer> getRedisBusinessIdToRuntimeSubmitContextMaxSize();
     Map<String, Integer> getRedisBusinessIdToRuntimeCallbackContextMaxSize();
+    Set<String> getGenerateAuthHeaderBusinessIds();
 }
