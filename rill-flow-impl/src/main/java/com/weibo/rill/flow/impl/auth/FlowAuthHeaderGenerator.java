@@ -57,7 +57,7 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
         Set<String> authBusinessWhiteList = bizDConfs.getGenerateAuthHeaderBusinessIds();
         String generateAuth = String.valueOf(input.get("generate_auth")).toLowerCase();
         if (executionId != null && authBusinessWhiteList.contains(ExecutionIdUtil.getBusinessId(executionId))
-                || Set.of("1", "true").contains(generateAuth)
+                || "1".equals(generateAuth) || "true".equals(generateAuth)
         ) {
             AuthHttpUtil.addSignToParam(paramMap, authSecret);
             input.remove("generate_auth");
