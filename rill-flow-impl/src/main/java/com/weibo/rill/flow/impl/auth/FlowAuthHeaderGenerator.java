@@ -55,7 +55,7 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
         paramMap.put("ts", String.valueOf(System.currentTimeMillis()));
         if (executionId != null && bizDConfs.getGenerateAuthHeaderBusinessIds() != null
                 && bizDConfs.getGenerateAuthHeaderBusinessIds().contains(ExecutionIdUtil.getBusinessId(executionId))
-                && ("1".equals(String.valueOf(input.get("generate_auth"))) || "true".equalsIgnoreCase(String.valueOf(input.get("generate_auth"))))
+                || "1".equals(String.valueOf(input.get("generate_auth"))) || "true".equalsIgnoreCase(String.valueOf(input.get("generate_auth")))
         ) {
             AuthHttpUtil.addSignToParam(paramMap, authSecret);
             input.remove("generate_auth");
