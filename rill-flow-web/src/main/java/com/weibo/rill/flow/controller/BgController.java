@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 @Api(tags = {"管理后台接口"})
 @RequestMapping("/flow/bg")
 public class BgController {
-    private static final String EXECUTION_ID = "execution_id";
     private static final String BUSINESS_IDS = "business_ids";
 
     @Value("${rill_flow_trace_query_host:}")
@@ -176,31 +175,6 @@ public class BgController {
         }
     }
 
-    /**
-     * 节点类型列表
-     *
-     * @return
-     */
-    @GetMapping(value = "/edit/dag_op_groups.json")
-    public Map<String, Object> getDagOpGroups() {
-        List<Map<String, Object>> groups = dagDescriptorFacade.getDagOpGroups();
-        return Map.of("data", groups, "message", "", "success", true);
-    }
-
-    /**
-     * 临时调试使用，后续上线需要删掉
-     *
-     * @param flowUser
-     * @param executionId
-     * @param brief
-     * @return
-     */
-    @RequestMapping(value = "get.json", method = RequestMethod.GET)
-    public Map<String, Object> get(User flowUser,
-                                   @RequestParam(value = EXECUTION_ID) String executionId,
-                                   @RequestParam(value = "brief", defaultValue = "false") boolean brief) {
-        return ImmutableMap.of("ret", dagRuntimeFacade.getBasicDAGInfo(executionId, brief));
-    }
 
     @PostMapping(value = "/user/login.json")
     public Map<String, Object> convert(@RequestBody UserLoginRequest request) {
