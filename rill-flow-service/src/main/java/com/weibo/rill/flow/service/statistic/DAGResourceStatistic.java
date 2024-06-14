@@ -178,14 +178,7 @@ public class DAGResourceStatistic {
             ResourceStatus resourceStatus = getResourceStatus(executionId, taskName, resourceName);
             resourceStatus.setUpdateTime(updateTime);
 
-            int retryIntervalSeconds = Optional.ofNullable(urlRet)
-                    .map(it -> it.containsKey("data") ? it.getJSONObject("data") : it)
-                    .map(it -> it.getJSONObject("sys_info"))
-                    .map(it -> it.getInteger("retry_interval_seconds"))
-                    .orElseGet(() -> Optional.ofNullable(urlRet)
-                            .map(it -> it.getJSONObject("error_detail"))
-                            .map(it -> it.getInteger("retry_interval_seconds"))
-                            .orElse(0));
+            int retryIntervalSeconds = getRetryIntervalSeconds(urlRet);
             if (retryIntervalSeconds > 0) {
                 resourceStatus.setResourceLimitedTime(updateTime + retryIntervalSeconds * 1000L);
                 log.info("update function url resource limit, executionId:{}, resourceName:{}, retryIntervalSeconds:{}",
@@ -195,6 +188,17 @@ public class DAGResourceStatistic {
             log.warn("updateUrlTypeResourceStatus fails, executionId:{}, resourceName:{}, errorMsg:{}",
                     executionId, resourceName, e.getMessage());
         }
+    }
+
+    private static int getRetryIntervalSeconds(JSONObject urlRet) {
+        return Optional.ofNullable(urlRet)
+                .map(it -> it.containsKey("data") && it.get("data") instanceof Map<?,?> ? it.getJSONObject("data") : it)
+                .map(it -> it.getJSONObject("sys_info"))
+                .map(it -> it.getInteger("retry_interval_seconds"))
+                .orElseGet(() -> Optional.ofNullable(urlRet)
+                        .map(it -> it.getJSONObject("error_detail"))
+                        .map(it -> it.getInteger("retry_interval_seconds"))
+                        .orElse(0));
     }
 
     public void updateFlowTypeResourceStatus(String executionId, String taskName, String resourceName, DAG dag) {
