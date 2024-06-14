@@ -179,7 +179,7 @@ public class DAGResourceStatistic {
             resourceStatus.setUpdateTime(updateTime);
 
             int retryIntervalSeconds = Optional.ofNullable(urlRet)
-                    .map(it -> it.containsKey("data") ? it.getJSONObject("data") : it)
+                    .map(it -> it.containsKey("data") && it.get("data") instanceof Map<?,?> ? it.getJSONObject("data") : it)
                     .map(it -> it.getJSONObject("sys_info"))
                     .map(it -> it.getInteger("retry_interval_seconds"))
                     .orElseGet(() -> Optional.ofNullable(urlRet)
