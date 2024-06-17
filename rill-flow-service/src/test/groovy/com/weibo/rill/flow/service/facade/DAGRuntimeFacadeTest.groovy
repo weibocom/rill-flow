@@ -43,7 +43,18 @@ class DAGRuntimeFacadeTest extends Specification {
         runtimeStorage.getBasicDAGInfo(*_) >> dagInfo
         runtimeStorage.saveDAGInfo(*_) >> null
         expect:
-        dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.SUCCEED) == false
         dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.FAILED) == true
+    }
+
+    def "test updateDagStatus throw exception"() {
+        given:
+        DAGInfo dagInfo = new DAGInfo()
+        dagInfo.setDagStatus(DAGStatus.SUCCEED)
+        runtimeStorage.getBasicDAGInfo(*_) >> dagInfo
+        runtimeStorage.saveDAGInfo(*_) >> null
+        when:
+        dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.SUCCEED)
+        then:
+        thrown IllegalArgumentException
     }
 }
