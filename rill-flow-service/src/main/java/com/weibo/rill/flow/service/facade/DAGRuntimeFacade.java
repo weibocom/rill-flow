@@ -103,14 +103,17 @@ public class DAGRuntimeFacade {
         }
 
         if (dagInfo.getDagStatus().ordinal() >= status.ordinal()) {
-            return false;
+            throw new IllegalArgumentException("status is " + dagInfo.getDagStatus() + " now, and cannot be set to " + status);
         }
 
         dagInfo.setDagStatus(status);
         runtimeStorage.saveDAGInfo(executionId, dagInfo);
 
-        runtimeStorage.clearDAGInfo(executionId);
-        runtimeStorage.clearContext(executionId);
+        // clear dag info and context after expire time
+        if (status.isCompleted()) {
+            runtimeStorage.clearDAGInfo(executionId);
+            runtimeStorage.clearContext(executionId);
+        }
         return true;
     }
 

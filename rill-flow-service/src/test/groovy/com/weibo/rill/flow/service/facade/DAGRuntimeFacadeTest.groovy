@@ -8,6 +8,12 @@ import spock.lang.Specification
 class DAGRuntimeFacadeTest extends Specification {
     RuntimeStorage runtimeStorage = Mock(RuntimeStorage)
     DAGRuntimeFacade dagRuntimeFacade = new DAGRuntimeFacade(runtimeStorage: runtimeStorage)
+
+    def setup() {
+        runtimeStorage.clearDAGInfo(*_) >> null
+        runtimeStorage.clearContext(*_) >> null
+    }
+
     def "test updateDagStatus execution id null"() {
         when:
         dagRuntimeFacade.updateDagStatus(null, null)

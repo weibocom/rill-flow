@@ -47,8 +47,8 @@ public class DAGRuntimeController {
                                            @RequestParam(value = EXECUTION_ID) String executionId,
                                            @RequestParam(value = "success", defaultValue = "true", required = false) boolean success) {
         try {
-            boolean ret = dagRuntimeFacade.updateDagStatus(executionId, success ? DAGStatus.SUCCEED : DAGStatus.FAILED);
-            return ImmutableMap.of("code", "0", "message", ret ? "ok" : "failed");
+            dagRuntimeFacade.updateDagStatus(executionId, success ? DAGStatus.SUCCEED : DAGStatus.FAILED);
+            return ImmutableMap.of("code", "0", "message", "success");
         } catch (Exception e) {
             return ImmutableMap.of("code", "-1", "message", e.getMessage());
         }
