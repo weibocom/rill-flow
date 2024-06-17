@@ -45,6 +45,7 @@
       if (flowGraphStore.getNodePrototypeRegistry().isEmpty()) {
         return;
       }
+      nodePrototypeMap.value = new Map<NodeCategory, NodeVO[]>();
       nodePrototypeRegistry.value.getNodePrototypes().forEach((nodePrototype) => {
         const nodeCategoryNumber = nodePrototype.node_category;
         const nodeCategory = getNodeCategoryByNumber(nodeCategoryNumber);

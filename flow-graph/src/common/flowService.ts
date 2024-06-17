@@ -20,7 +20,6 @@ import yaml from 'js-yaml';
 import { useI18nStoreWithOut } from "../store/modules/i18nStore";
 import { InputSchemaHandlerFactory } from "./inputSchemaStyleHandler";
 import { InputSchemaTypeEnum } from "../models/enums/InputSchemaTypeEnum";
-
 // 保存节点分组信息
 export function saveNodeGroups(queryTemplateNodesUrls: string[]) {
   const flowGraphStore = useFlowStoreWithOut();
@@ -30,7 +29,9 @@ export function saveNodeGroups(queryTemplateNodesUrls: string[]) {
   }
   queryTemplateNodesUrls.forEach((url) => {
     queryTemplateNodes(url).then((res) => {
+      const urlSearchParams = new URLSearchParams(url)
       res.forEach((node) => {
+        node.id = urlSearchParams.get('source') ? urlSearchParams.get('source') + node.id : node.id;
         nodePrototypeRegistry.add(node);
       });
     });
@@ -391,7 +392,8 @@ export function convertObjectToMappingParametersMap(nodeSchema: string, obj: any
   for (const key in obj) {
     let bizType = nodeTemplateSchema?.properties?.[key]?.bizType !== undefined ? nodeTemplateSchema?.properties?.[key]?.bizType : InputSchemaTypeEnum.NORMAL;
     if (Array.isArray(obj[key]) || typeof obj[key] === 'string') {
-      let arrayToMapResult = InputSchemaHandlerFactory.getHandler(bizType).saveSchemaValueHandle(key, obj[key])
+      const newKey = currentKey ? `${currentKey}.${key}` : key;
+      let arrayToMapResult = InputSchemaHandlerFactory.getHandler(bizType).saveSchemaValueHandle(newKey, obj[key])
       result = new Map([...result, ...arrayToMapResult])
       continue;
     }

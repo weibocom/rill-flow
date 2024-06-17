@@ -118,6 +118,9 @@ public class BizDConfsImpl implements BizDConfs {
     @Value("#{'${weibo.flow.sys.exp.filter.ignore.logs:}'.split(',')}")
     private Set<String> sysExpFilterIgnoreLogs;
 
+    @Value("#{'${weibo.flow.generate.auth.header.business.ids:}'.split(',')}")
+    private Set<String> generateAuthHeaderBusinessIds;
+
     @Value("#{${weibo.flow.tenant.defined.task.invoke.profile.log:{:}}}")
     private Map<String, List<String>> tenantDefinedTaskInvokeProfileLog;
 
