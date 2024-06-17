@@ -108,6 +108,9 @@ public class DAGRuntimeFacade {
 
         dagInfo.setDagStatus(status);
         runtimeStorage.saveDAGInfo(executionId, dagInfo);
+
+        runtimeStorage.clearDAGInfo(executionId);
+        runtimeStorage.clearContext(executionId);
         return true;
     }
 

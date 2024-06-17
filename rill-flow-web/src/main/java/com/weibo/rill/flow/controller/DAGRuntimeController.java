@@ -46,8 +46,12 @@ public class DAGRuntimeController {
     public Map<String, String> completeDAG(User flowUser,
                                            @RequestParam(value = EXECUTION_ID) String executionId,
                                            @RequestParam(value = "success", defaultValue = "true", required = false) boolean success) {
-        boolean ret = dagRuntimeFacade.updateDagStatus(executionId, success ? DAGStatus.SUCCEED : DAGStatus.FAILED);
-        return ImmutableMap.of("ret", ret? "ok" : "failed");
+        try {
+            boolean ret = dagRuntimeFacade.updateDagStatus(executionId, success ? DAGStatus.SUCCEED : DAGStatus.FAILED);
+            return ImmutableMap.of("code", "0", "message", ret ? "ok" : "failed");
+        } catch (Exception e) {
+            return ImmutableMap.of("code", "-1", "message", e.getMessage());
+        }
     }
 
     @RequestMapping(value = "service_check.json", method = RequestMethod.GET)
