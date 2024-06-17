@@ -43,6 +43,7 @@ class DAGRuntimeFacadeTest extends Specification {
         runtimeStorage.getBasicDAGInfo(*_) >> dagInfo
         runtimeStorage.saveDAGInfo(*_) >> null
         expect:
+        dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.KEY_SUCCEED) == true
         dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.FAILED) == true
     }
 
