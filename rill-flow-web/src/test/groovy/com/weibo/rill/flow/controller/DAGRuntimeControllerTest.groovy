@@ -11,7 +11,7 @@ class DAGRuntimeControllerTest extends Specification {
         when:
         dagRuntimeFacade.updateDagStatus(*_) >> ret
         then:
-        dagRuntimeController.completeDAG(null, "test_execution_id", status) == response
+        dagRuntimeController.complete(null, "test_execution_id", status) == response
         where:
         status  | ret     | response
         false   | true    | ["code": "0", "message": "success"]
@@ -22,7 +22,7 @@ class DAGRuntimeControllerTest extends Specification {
         when:
         dagRuntimeFacade.updateDagStatus(*_) >> { throw new RuntimeException("test exception message") }
         then:
-        dagRuntimeController.completeDAG(null, "test_execution_id", status) == response
+        dagRuntimeController.complete(null, "test_execution_id", status) == response
         where:
         status | ret     | response
         true   | true    | ["code": "-1", "message": "test exception message"]
