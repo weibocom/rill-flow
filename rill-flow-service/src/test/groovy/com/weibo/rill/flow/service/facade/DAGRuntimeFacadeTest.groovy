@@ -39,7 +39,7 @@ class DAGRuntimeFacadeTest extends Specification {
     def "test updateDagStatus"() {
         given:
         DAGInfo dagInfo = new DAGInfo()
-        dagInfo.setDagStatus(DAGStatus.SUCCEED)
+        dagInfo.setDagStatus(DAGStatus.RUNNING)
         runtimeStorage.getBasicDAGInfo(*_) >> dagInfo
         runtimeStorage.saveDAGInfo(*_) >> null
         expect:
