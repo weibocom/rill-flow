@@ -42,8 +42,8 @@ public class DAGRuntimeController {
     @Autowired
     private DAGRuntimeFacade dagRuntimeFacade;
 
-    @RequestMapping(value = "complete_dag.json", method = RequestMethod.POST)
-    public Map<String, String> completeDAG(User flowUser,
+    @RequestMapping(value = "complete.json", method = RequestMethod.POST)
+    public Map<String, String> complete(User flowUser,
                                            @RequestParam(value = EXECUTION_ID) String executionId,
                                            @RequestParam(value = "success", defaultValue = "true", required = false) boolean success) {
         try {
