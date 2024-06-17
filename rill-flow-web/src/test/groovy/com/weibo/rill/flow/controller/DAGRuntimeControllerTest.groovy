@@ -13,9 +13,9 @@ class DAGRuntimeControllerTest extends Specification {
         then:
         dagRuntimeController.completeDAG(null, "test_execution_id", status) == response
         where:
-        status | ret     | response
-        true   | true    | ["code": "0", "message": "success"]
-        true   | false   | ["code": "0", "message": "success"]
+        status  | ret     | response
+        false   | true    | ["code": "0", "message": "success"]
+        true    | false   | ["code": "0", "message": "success"]
     }
 
     def "test completeDAG when throw exception"() {
