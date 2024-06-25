@@ -10,10 +10,6 @@ class DAGSubmitCheckerTest extends Specification {
     BizDConfs bizDConfs = Mock(BizDConfs)
     DAGSubmitChecker dagSubmitChecker = new DAGSubmitChecker(switcherManagerImpl: switcherManager, bizDConfs: bizDConfs)
 
-    def setup() {
-        bizDConfs.getRedisBusinessIdToDAGInfoMaxLength() >> ["testBusiness1": 5]
-    }
-
     def "test checkDAGInfoLength when switcher is off"() {
         given:
         switcherManager.getSwitcherState("ENABLE_DAG_INFO_LENGTH_CHECK") >> false
@@ -24,6 +20,7 @@ class DAGSubmitCheckerTest extends Specification {
     def "test checkDAGInfoLength when switcher is on and be limited"() {
         given:
         switcherManager.getSwitcherState("ENABLE_DAG_INFO_LENGTH_CHECK") >> true
+        bizDConfs.getRedisBusinessIdToDAGInfoMaxLength() >> ["testBusiness1": 5]
         when:
         dagSubmitChecker.checkDAGInfoLength("testBusiness1:testFeatureName1_c_0dc48c1d-32a2", ["hello world".bytes])
         then:
@@ -33,6 +30,7 @@ class DAGSubmitCheckerTest extends Specification {
     def "test checkDAGInfoLength when switcher is on"() {
         given:
         switcherManager.getSwitcherState("ENABLE_DAG_INFO_LENGTH_CHECK") >> true
+        bizDConfs.getRedisBusinessIdToDAGInfoMaxLength() >> ["testBusiness1": 5]t
         expect:
         dagSubmitChecker.checkDAGInfoLength("testBusiness1:testFeatureName1_c_0dc48c1d-32a2", null)
         dagSubmitChecker.checkDAGInfoLength("testBusiness2:testFeatureName1_c_0dc48c1d-32a2", ["hello world".bytes])
