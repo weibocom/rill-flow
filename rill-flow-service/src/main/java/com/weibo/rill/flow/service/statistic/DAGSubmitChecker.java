@@ -64,7 +64,7 @@ public class DAGSubmitChecker {
     @Autowired
     private SwitcherManager switcherManagerImpl;
 
-    private static final int DAG_INFO_MAX_LENGTH_CONFIG = 30 * 1024 + 600 * 1024; // dag 描述符最大为 630K 每个任务大小最大为 600B 最大存 1000 个任务
+    private static final int DAG_INFO_MAX_LENGTH_CONFIG = 30 * 1024 + 600 * 1024; // dag 描述符最大为 30K 每个任务大小最大为 600B 最大存 1000 个任务
 
     public ResourceCheckConfig getCheckConfig(String resourceCheck) {
         if (StringUtils.isBlank(resourceCheck)) {
