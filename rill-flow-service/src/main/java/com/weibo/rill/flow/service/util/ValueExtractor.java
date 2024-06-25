@@ -30,6 +30,14 @@ public class ValueExtractor {
         }
     }
 
+    public static int getConfiguredValueByBusinessId(String businessId, Map<String, Integer> timeConfigMap, int defaultValue) {
+        try {
+            return timeConfigMap.getOrDefault(businessId, defaultValue);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     private ValueExtractor() {
 
     }

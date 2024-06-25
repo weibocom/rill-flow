@@ -24,11 +24,14 @@ import com.weibo.rill.flow.common.function.ResourceCheckConfig;
 import com.weibo.rill.flow.common.function.ResourceStatus;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.common.util.SerializerUtil;
+import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode;
+import com.weibo.rill.flow.olympicene.storage.exception.StorageException;
 import com.weibo.rill.flow.service.configuration.BeanConfig;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
 import com.weibo.rill.flow.service.dconfs.DynamicClientConfs;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
+import com.weibo.rill.flow.service.util.ValueExtractor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,6 +63,8 @@ public class DAGSubmitChecker {
     private DynamicClientConfs dynamicClientConfs;
     @Autowired
     private SwitcherManager switcherManagerImpl;
+
+    private static final int DAG_INFO_MAX_LENGTH_CONFIG = 30 * 1024 + 600 * 1024; // dag 描述符最大为 630K 每个任务大小最大为 600B 最大存 1000 个任务
 
     public ResourceCheckConfig getCheckConfig(String resourceCheck) {
         if (StringUtils.isBlank(resourceCheck)) {
@@ -292,6 +297,25 @@ public class DAGSubmitChecker {
         });
 
         return flowCheck;
+    }
+
+    public void checkDAGInfoLength(String executionId, List<byte[]> contents) {
+        String businessId = ExecutionIdUtil.getBusinessId(executionId);
+        checkDAGInfoLengthByBusinessId(businessId, contents);
+    }
+
+    public void checkDAGInfoLengthByBusinessId(String businessId, List<byte[]> contents) {
+        if (!switcherManagerImpl.getSwitcherState("ENABLE_DAG_INFO_LENGTH_CHECK") || CollectionUtils.isEmpty(contents)) {
+            return;
+        }
+
+        int length = contents.stream().filter(Objects::nonNull).mapToInt(content -> content.length).sum();
+        int maxLength = ValueExtractor.getConfiguredValueByBusinessId(businessId, bizDConfs.getRedisBusinessIdToDAGInfoMaxLength(), DAG_INFO_MAX_LENGTH_CONFIG);
+        if (length > maxLength) {
+            throw new StorageException(
+                    StorageErrorCode.DAG_LENGTH_LIMITATION.getCode(),
+                    String.format("dag info length:%s exceed the limit", length));
+        }
     }
 
     @Getter
