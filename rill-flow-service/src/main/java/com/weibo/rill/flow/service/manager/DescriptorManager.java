@@ -283,7 +283,7 @@ public class DescriptorManager {
         Set<String> redisRet = redisClient.zrange(businessId, buildVersionRedisKey(businessId, featureName, alias), -1, -1);
         if (CollectionUtils.isEmpty(redisRet)) {
             log.info("getDescriptorRedisKeyByAlias redisRet empty");
-            throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("alias %s value empty", alias));
+            throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("cannot find descriptor: %s:%s:%s", businessId, featureName, alias));
         }
 
         String md5 = redisRet.iterator().next();
