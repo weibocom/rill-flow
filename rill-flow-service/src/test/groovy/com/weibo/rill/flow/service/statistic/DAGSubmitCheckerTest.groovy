@@ -30,7 +30,7 @@ class DAGSubmitCheckerTest extends Specification {
     def "test checkDAGInfoLength when switcher is on"() {
         given:
         switcherManager.getSwitcherState("ENABLE_DAG_INFO_LENGTH_CHECK") >> true
-        bizDConfs.getRedisBusinessIdToDAGInfoMaxLength() >> ["testBusiness1": 5]t
+        bizDConfs.getRedisBusinessIdToDAGInfoMaxLength() >> ["testBusiness1": 5]
         expect:
         dagSubmitChecker.checkDAGInfoLength("testBusiness1:testFeatureName1_c_0dc48c1d-32a2", null)
         dagSubmitChecker.checkDAGInfoLength("testBusiness2:testFeatureName1_c_0dc48c1d-32a2", ["hello world".bytes])
