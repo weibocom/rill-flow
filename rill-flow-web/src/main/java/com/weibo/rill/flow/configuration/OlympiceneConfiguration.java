@@ -42,7 +42,6 @@ import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.manager.DAGClientPool;
 import com.weibo.rill.flow.service.mapping.JsonValueMapping;
 import com.weibo.rill.flow.service.statistic.BusinessTimeChecker;
-import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeRedisClients;
@@ -105,10 +104,9 @@ public class OlympiceneConfiguration {
             @Autowired DAGClientPool dagClientPool,
             @Autowired @Qualifier("runtimeRedisClients") RedisClient redisClient,
             @Autowired DAGInfoDeserializeService dagInfoDeserializeService,
-            @Autowired SwitcherManager switcherManagerImpl,
-            @Autowired DAGSubmitChecker dagSubmitChecker) {
+            @Autowired SwitcherManager switcherManagerImpl) {
         return new RuntimeStorage(redisClient, dagClientPool.getRuntimeStorageClientIdToRedisClient(), bizDConfs,
-                dagInfoDeserializeService, switcherManagerImpl, dagSubmitChecker);
+                dagInfoDeserializeService, switcherManagerImpl);
     }
 
     @Bean

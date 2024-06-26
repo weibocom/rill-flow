@@ -20,21 +20,16 @@ import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDAO;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.util.ValueExtractor;
-
-import java.util.List;
 
 
 public class DAGInfoRedisDAO extends DAGInfoDAO {
     private final BizDConfs bizDConfs;
-    private final DAGSubmitChecker dagSubmitChecker;
 
     public DAGInfoRedisDAO(RedisClient redisClient, BizDConfs bizDConfs,
-                           DAGInfoDeserializeService dagInfoDeserializeService, DAGSubmitChecker dagSubmitChecker) {
+                           DAGInfoDeserializeService dagInfoDeserializeService) {
         super(redisClient, dagInfoDeserializeService);
         this.bizDConfs = bizDConfs;
-        this.dagSubmitChecker = dagSubmitChecker;
     }
 
     @Override
@@ -45,10 +40,5 @@ public class DAGInfoRedisDAO extends DAGInfoDAO {
     @Override
     protected int getUnfinishedStatusReserveTimeInSecond(String executionId) {
         return ValueExtractor.getConfiguredValue(executionId, bizDConfs.getRedisBusinessIdToUnfinishedReserveSecond(), 259200);
-    }
-
-    @Override
-    protected void checkDAGInfoLength(String executionId, List<byte[]> contents) {
-        dagSubmitChecker.checkDAGInfoLength(executionId, contents);
     }
 }

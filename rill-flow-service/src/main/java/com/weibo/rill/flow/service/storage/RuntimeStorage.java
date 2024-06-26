@@ -31,7 +31,6 @@ import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGInfoDeserializeService;
 import com.weibo.rill.flow.olympicene.storage.save.impl.DAGRedisStorage;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.storage.dao.ContextRedisDAO;
 import com.weibo.rill.flow.service.storage.dao.DAGInfoRedisDAO;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
@@ -52,11 +51,10 @@ public class RuntimeStorage implements DAGInfoStorage, DAGContextStorage {
     private final BizDConfs bizDConfs;
 
     public RuntimeStorage(RedisClient redisClient, Map<String, RedisClient> clientIdToRedisClient, BizDConfs bizDConfs,
-                          DAGInfoDeserializeService dagInfoDeserializeService, SwitcherManager switcherManagerImpl,
-                          DAGSubmitChecker dagSubmitChecker) {
+                          DAGInfoDeserializeService dagInfoDeserializeService, SwitcherManager switcherManagerImpl) {
         this.bizDConfs = bizDConfs;
 
-        DAGInfoRedisDAO dagInfoRedisDAO = new DAGInfoRedisDAO(redisClient, bizDConfs, dagInfoDeserializeService, dagSubmitChecker);
+        DAGInfoRedisDAO dagInfoRedisDAO = new DAGInfoRedisDAO(redisClient, bizDConfs, dagInfoDeserializeService);
         ContextRedisDAO contextRedisDAO = new ContextRedisDAO(redisClient, bizDConfs, switcherManagerImpl);
         this.runtimeRedisStorage = new DAGRedisStorage(dagInfoRedisDAO, contextRedisDAO);
 
