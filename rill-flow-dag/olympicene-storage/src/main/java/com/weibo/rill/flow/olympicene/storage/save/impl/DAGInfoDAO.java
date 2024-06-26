@@ -290,12 +290,6 @@ public class DAGInfoDAO {
         }
         List<List<byte[]>> ret = (List<List<byte[]>>) redisClient.eval(RedisScriptManager.dagInfoGetByFieldScript(), executionId, keys, argv);
 
-//        List<byte[]> contents = ret.stream()
-//                .filter(CollectionUtils::isNotEmpty)
-//                .flatMap(Collection::stream)
-//                .toList();
-//        checkDAGInfoLength(executionId, contents);
-
         // dag描述符
         DAG dag = DagStorageSerializer.deserialize(ret.get(0).get(0), DAG.class);
         Map<String, BaseTask> baseTaskMap = getBaseTask(1, Optional.ofNullable(dag).map(DAG::getTasks).orElse(null));
