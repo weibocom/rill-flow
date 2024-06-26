@@ -37,6 +37,7 @@ import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.service.ProtocolPluginService;
+import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,6 +75,8 @@ public class DAGDescriptorFacade {
     private RedisClient redisClient;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private DAGSubmitChecker dagSubmitChecker;
 
     public Map<String, Object> modifyBusiness(boolean add, String businessId) {
         boolean ret = add ? descriptorManager.createBusiness(businessId) : descriptorManager.remBusiness(businessId);
@@ -172,6 +176,9 @@ public class DAGDescriptorFacade {
 
     public Map<String, Object> addDescriptor(String identity, String businessId, String featureName, String alias, String descriptor) {
         try {
+            if (StringUtils.isNotEmpty(descriptor)) {
+                dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
+            }
             String descriptorId = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptor);
 
             Map<String, String> attachments = Maps.newHashMap();

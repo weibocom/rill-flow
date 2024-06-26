@@ -134,13 +134,6 @@ public class DAGInfoDAO {
         this.finishStatusReserveTimeInSecond = finishStatusReserveTimeInSecond;
     }
 
-    // ------------------------------------------------------
-    // 若想动态修改属性值 如: 不同业务设置不同值
-    // 需要继承该类 重写该方法 添加动态设置业务逻辑
-    protected void checkDAGInfoLength(String executionId, List<byte[]> contents) {
-        log.debug("checkDAGInfoLength executionId:{} contents size empty:{}", executionId, CollectionUtils.isEmpty(contents));
-    }
-
     protected int getFinishStatusReserveTimeInSecond(String executionId) {
         log.debug("getFinishStatusReserveTimeInSecond executionId:{}, time:{}", executionId, finishStatusReserveTimeInSecond);
         return finishStatusReserveTimeInSecond;
@@ -159,13 +152,6 @@ public class DAGInfoDAO {
             if (CollectionUtils.isEmpty(dagInfos)) {
                 return null;
             }
-
-            List<byte[]> contents = dagInfos.stream()
-                    .map(array -> array.get(1))
-                    .filter(CollectionUtils::isNotEmpty)
-                    .flatMap(Collection::stream)
-                    .toList();
-            checkDAGInfoLength(executionId, contents);
 
             return deserializeDagInfo(dagInfos);
         } catch (Exception e) {
@@ -303,12 +289,6 @@ public class DAGInfoDAO {
             argv.add(subTaskPrefix);
         }
         List<List<byte[]>> ret = (List<List<byte[]>>) redisClient.eval(RedisScriptManager.dagInfoGetByFieldScript(), executionId, keys, argv);
-
-        List<byte[]> contents = ret.stream()
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(Collection::stream)
-                .toList();
-        checkDAGInfoLength(executionId, contents);
 
         // dag描述符
         DAG dag = DagStorageSerializer.deserialize(ret.get(0).get(0), DAG.class);
