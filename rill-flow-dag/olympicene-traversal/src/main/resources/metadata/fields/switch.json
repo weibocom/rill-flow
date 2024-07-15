@@ -1,0 +1,76 @@
+{
+  "name": {
+    "type": "string",
+    "title": "任务名称",
+    "required": true,
+    "default": ""
+  },
+  "title": {
+    "type": "string",
+    "title": "节点名称",
+    "required": false,
+    "default": ""
+  },
+  "description": {
+    "type": "string",
+    "title": "节点描述",
+    "required": false,
+    "default": ""
+  },
+  "inputMappings": {
+    "type": "array",
+    "title": "输入映射",
+    "required": true,
+    "items": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "title": "输入来源",
+          "required": true
+        },
+        "target": {
+          "type": "string",
+          "title": "输入目标",
+          "required": true
+        },
+        "reference": {
+          "type": "string",
+          "title": "commonMapping 引用",
+          "required": true
+        },
+        "transform": {
+          "type": "string",
+          "title": "输入映射处理 aviator 表达式",
+          "required": false
+        },
+        "tolerance": {
+          "type": "boolean",
+          "title": "容忍错误",
+          "required": false
+        },
+        "requiredGroup": [
+          ["source", "target"],
+          ["reference"]
+        ]
+      }
+    }
+  },
+  "switches": {
+    "type": "array",
+    "required": true,
+    "items": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "title": "判断条件"
+        },
+        "next": {
+          "type": "string",
+          "title": "下一节点"
+        }
+      }
+    }
+  }
+}

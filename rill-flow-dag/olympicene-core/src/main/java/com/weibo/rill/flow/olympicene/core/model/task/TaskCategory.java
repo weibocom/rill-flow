@@ -29,6 +29,9 @@ public enum TaskCategory {
     // 流程控制Task，执行分支语句
     CHOICE("choice", 1),
 
+    // 流程控制Task，执行分支语句
+    SWITCH("switch", 1),
+
     // 流程控制Task，执行循环语句
     FOREACH("foreach", 1),
 
