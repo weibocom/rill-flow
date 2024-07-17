@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,7 +192,18 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
                 context.set(key, new HashMap<>());
             }
         }
-        return JsonPath.using(conf).parse(map).set(path, value).json();
+
+        String[] pathParts = path.split("\\.");
+        List<String> resultPathParts = new ArrayList<>();
+        for (String pathPart : pathParts) {
+            if (pathPart.contains("%46%")) {
+                resultPathParts.add("[" + pathPart.replaceAll("%46%", ".") + "]");
+            } else {
+                resultPathParts.add(pathPart);
+            }
+        }
+
+        return JsonPath.using(conf).parse(map).set(String.join(".", resultPathParts), value).json();
     }
 
     @Override
