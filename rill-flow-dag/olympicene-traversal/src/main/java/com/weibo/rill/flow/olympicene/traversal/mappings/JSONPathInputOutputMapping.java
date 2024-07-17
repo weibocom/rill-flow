@@ -197,7 +197,9 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         List<String> resultPathParts = new ArrayList<>();
         for (String pathPart : pathParts) {
             if (pathPart.contains("%46%")) {
-                resultPathParts.add("[" + pathPart.replaceAll("%46%", ".") + "]");
+                String part = pathPart.replaceAll("%46%", ".");
+                part = part.replaceAll("\"", "\\\\\"");
+                resultPathParts.add("[\"" + part + "\"]");
             } else {
                 resultPathParts.add(pathPart);
             }
