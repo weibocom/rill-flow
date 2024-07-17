@@ -187,7 +187,8 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         DocumentContext context = JsonPath.using(conf).parse(map);
         for (String route : intermediateRoute) {
             if (context.read(route) == null) {
-                context.set(route, new HashMap<>());
+                String key = route.replaceAll("%46%", ".");
+                context.set(key, new HashMap<>());
             }
         }
         return JsonPath.using(conf).parse(map).set(path, value).json();
