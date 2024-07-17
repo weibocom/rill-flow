@@ -55,28 +55,14 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         map.put("output", output);
 
         List<Mapping> mappingRules = rules.stream()
-                .filter(rule -> StringUtils.isNoneBlank(rule.getSource()) && StringUtils.isNoneBlank(rule.getTarget()))
+                .filter(rule -> (StringUtils.isNotBlank(rule.getSource()) || StringUtils.isNotBlank(rule.getTransform()))
+                        && StringUtils.isNotBlank(rule.getTarget()))
                 .toList();
         for (Mapping mapping : mappingRules) {
             boolean intolerance = mapping.getTolerance() != null && !mapping.getTolerance();
             try {
                 String source = mapping.getSource();
-                Object sourceValue = null;
-                String[] infos = source.split("\\.");
-                if (source.startsWith("$.tasks.") && infos.length > 3) {
-                    String taskName = infos[2];
-                    String key = infos[3];
-                    if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
-                        sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
-                        String[] queryInfos = source.split("\\?");
-                        if (queryInfos.length > 0) {
-                            sourceValue += '&' + queryInfos[1];
-                        }
-                    }
-                } else {
-                    sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
-                }
-
+                Object sourceValue = calculateSourceValue(context, source, map);
                 Object transformedValue = transformSourceValue(sourceValue, context, input, output, mapping.getTransform());
 
                 if (transformedValue != null) {
@@ -89,6 +75,28 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
                 }
             }
         }
+    }
+
+    private Object calculateSourceValue(Map<String, Object> context, String source, Map<String, Object> map) {
+        if (StringUtils.isBlank(source)) {
+            return null;
+        }
+        Object sourceValue = null;
+        String[] infos = source.split("\\.");
+        if (source.startsWith("$.tasks.") && infos.length > 3) {
+            String taskName = infos[2];
+            String key = infos[3];
+            if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
+                sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
+                String[] queryInfos = source.split("\\?");
+                if (queryInfos.length > 0) {
+                    sourceValue += '&' + queryInfos[1];
+                }
+            }
+        } else {
+            sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
+        }
+        return sourceValue;
     }
 
     public Object transformSourceValue(Object sourceValue, Map<String, Object> context, Map<String, Object> input,
