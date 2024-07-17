@@ -81,20 +81,24 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         if (StringUtils.isBlank(source)) {
             return null;
         }
-        Object sourceValue = null;
         String[] infos = source.split("\\.");
         if (source.startsWith("$.tasks.") && infos.length > 3) {
             String taskName = infos[2];
             String key = infos[3];
-            if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
-                sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
-                String[] queryInfos = source.split("\\?");
-                if (queryInfos.length > 0) {
-                    sourceValue += '&' + queryInfos[1];
-                }
-            }
+            return tryToGenerateTriggerUrl(context, source, key, taskName);
         } else {
-            sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
+            return source.startsWith("$") ? getValue(map, source) : parseSource(source);
+        }
+    }
+
+    private Object tryToGenerateTriggerUrl(Map<String, Object> context, String source, String key, String taskName) {
+        if (!key.equals("trigger_url") && !key.startsWith("trigger_url?")) {
+            return null;
+        }
+        Object sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
+        String[] queryInfos = source.split("\\?");
+        if (queryInfos.length > 0) {
+            sourceValue += '&' + queryInfos[1];
         }
         return sourceValue;
     }
