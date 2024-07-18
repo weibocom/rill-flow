@@ -75,6 +75,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         }
         for (TaskInfo skipTask : skipTasks) {
             skipFollowingTasks(executionId, skipTask, taskInfosNeedToUpdate);
+            skipTask.setTaskStatus(TaskStatus.SKIPPED);
+            taskInfosNeedToUpdate.add(skipTask);
         }
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         taskInfosNeedToUpdate.add(taskInfo);
