@@ -18,10 +18,12 @@ package com.weibo.rill.flow.olympicene.traversal.mappings;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.aviator.AviatorEvaluator;
-import com.jayway.jsonpath.*;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.InvalidPathException;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath {
@@ -189,19 +194,37 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
             return null;
         }
 
-        List<String> intermediateRoute = Lists.newArrayList();
-        for (int i = 0; i < path.length(); i++) {
-            if (path.charAt(i) == '.') {
-                intermediateRoute.add(path.substring(0, i));
+        String jsonPath = JsonPath.compile(path).getPath();
+        String patternString = "\\[\"(.*?)\"]|\\['(.*?)']";
+
+        // 创建 Pattern 对象
+        Pattern pattern = Pattern.compile(patternString);
+        // 创建 matcher 对象
+        Matcher matcher = pattern.matcher(jsonPath);
+        List<String> jsonPathParts = new ArrayList<>();
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                jsonPathParts.add(matcher.group(1));
+            } else if (matcher.group(2) != null) {
+                jsonPathParts.add(matcher.group(2));
             }
         }
 
-        DocumentContext context = JsonPath.using(conf).parse(map);
-        for (String route : intermediateRoute) {
-            if (context.read(route) == null) {
-                context.set(route, new HashMap<>());
+        jsonPathParts.remove(jsonPathParts.size() - 1);
+
+        Object current = map;
+        for (String part: jsonPathParts) {
+            if (current instanceof Map) {
+                Map<String, Object> mapCurrent = (Map<String, Object>) current;
+                if (!mapCurrent.containsKey(part)) {
+                    mapCurrent.put(part, new HashMap<>());
+                }
+                current = mapCurrent.get(part);
+            } else {
+                break;
             }
         }
+
         return JsonPath.using(conf).parse(map).set(path, value).json();
     }
 
