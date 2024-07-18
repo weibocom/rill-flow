@@ -70,9 +70,16 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<TaskInfo> skipTasks = new HashSet<>();
         for (TaskInfo nextTask : nextTasks) {
             if (skipTaskNames.contains(nextTask.getName())) {
-                nextTask.setTaskStatus(TaskStatus.SKIPPED);
-                taskInfosNeedToUpdate.add(nextTask);
-                skipTasks.add(nextTask);
+                boolean taskNeedSkip = Optional.ofNullable(nextTask.getDependencies())
+                        .filter(dependedTasks -> dependedTasks.stream()
+                                .filter(Objects::nonNull)
+                                .allMatch(dependedTask -> dependedTask.getName().equals(taskInfo.getName())))
+                        .isPresent();
+                if (taskNeedSkip) {
+                    nextTask.setTaskStatus(TaskStatus.SKIPPED);
+                    taskInfosNeedToUpdate.add(nextTask);
+                    skipTasks.add(nextTask);
+                }
             }
         }
         for (TaskInfo skipTask : skipTasks) {
