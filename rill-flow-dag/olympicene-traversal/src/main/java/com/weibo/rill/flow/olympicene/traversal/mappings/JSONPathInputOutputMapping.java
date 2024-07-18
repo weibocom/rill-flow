@@ -188,13 +188,13 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         // 创建 Pattern 对象
         Pattern pattern = Pattern.compile(patternString);
         // 创建 matcher 对象
-        Matcher m = pattern.matcher(jsonPath);
+        Matcher matcher = pattern.matcher(jsonPath);
         List<String> jsonPathParts = new ArrayList<>();
-        while (m.find()) {
-            if (m.group(1) != null) {
-                jsonPathParts.add(m.group(1));
-            } else if (m.group(2) != null) {
-                jsonPathParts.add(m.group(2));
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                jsonPathParts.add(matcher.group(1));
+            } else if (matcher.group(2) != null) {
+                jsonPathParts.add(matcher.group(2));
             }
         }
 
