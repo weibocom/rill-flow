@@ -44,7 +44,6 @@ public class AviatorCache {
                 @Override
                 public Expression load(String script) {
                     try {
-                        JSONPathInputOutputMapping.addAviatorFunctions();
                         return AviatorEvaluator.compile(script);
                     } catch (Exception e) {
                         log.error("aviatorExpression fails, script:{}", script, e);
