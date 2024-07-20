@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.olympicene.traversal.mappings;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
@@ -134,7 +135,16 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
      * </pre>
      */
     public Object doTransform(String transform, Map<String, Object> env) {
+        addAviatorFunctions();
         return AviatorEvaluator.execute(transform, env);
+    }
+
+    private static void addAviatorFunctions() {
+        try {
+            AviatorEvaluator.addStaticFunctions("JSON", JSON.class);
+        } catch (IllegalAccessException | NoSuchMethodException e) {
+            log.warn("add aviator function error", e);
+        }
     }
 
     public static Object parseSource(String source) {
