@@ -24,6 +24,7 @@ import com.googlecode.aviator.Expression;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
+import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ public class AviatorCache {
                 @Override
                 public Expression load(String script) {
                     try {
+                        JSONPathInputOutputMapping.addAviatorFunctions();
                         return AviatorEvaluator.compile(script);
                     } catch (Exception e) {
                         log.error("aviatorExpression fails, script:{}", script, e);
