@@ -139,7 +139,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         return AviatorEvaluator.execute(transform, env);
     }
 
-    private static void addAviatorFunctions() {
+    public static void addAviatorFunctions() {
         try {
             AviatorEvaluator.addStaticFunctions("JSON", JSON.class);
         } catch (IllegalAccessException | NoSuchMethodException e) {
