@@ -456,7 +456,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         setNextTaskSkipStatus(siblingTaskInfos.size(), skippedTasks, currentTaskNext, Sets.newHashSet(taskInfo.getName()));
     }
 
-    private Map<String, TaskInfo> getSiblingTaskInfoMap(String executionId, TaskInfo taskInfo) {
+    protected Map<String, TaskInfo> getSiblingTaskInfoMap(String executionId, TaskInfo taskInfo) {
         Map<String, TaskInfo> siblingTaskInfos = Maps.newHashMap();
         if (DAGWalkHelper.getInstance().isAncestorTask(taskInfo.getName())) {
             Optional.ofNullable(dagInfoStorage.getBasicDAGInfo(executionId))
@@ -469,7 +469,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         return siblingTaskInfos;
     }
 
-    private void setNextTaskSkipStatus(int length, Set<TaskInfo> skippedTasks, List<TaskInfo> nextTaskInfos, Set<String> dependedTaskNames) {
+    protected void setNextTaskSkipStatus(int length, Set<TaskInfo> skippedTasks, List<TaskInfo> nextTaskInfos, Set<String> dependedTaskNames) {
         if (length < 0 || CollectionUtils.isEmpty(nextTaskInfos)) {
             return;
         }
