@@ -93,7 +93,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         taskInfosNeedToUpdate.add(taskInfo);
         updateTaskInvokeEndTime(taskInfo);
 
-        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
+        dagInfoStorage.saveTaskInfos(executionId, new HashSet<>(taskInfosNeedToUpdate.stream()
+                .collect(Collectors.toMap(TaskInfo::getName, s -> s)).values()));
         log.info("run switch task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
