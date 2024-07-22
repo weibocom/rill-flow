@@ -67,7 +67,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
 
         Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         List<TaskInfo> nextTasks = taskInfo.getNext();
-        Set<TaskInfo> skipTasks = new HashSet<>();
+        Set<TaskInfo> skippedNextTasks = new HashSet<>();
+        Set<String> skippedTaskNames = new HashSet<>();
         for (TaskInfo nextTask : nextTasks) {
             if (skipTaskNames.contains(nextTask.getName())) {
                 boolean taskNeedSkip = Optional.ofNullable(nextTask.getDependencies())
@@ -78,12 +79,15 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                 if (taskNeedSkip) {
                     nextTask.setTaskStatus(TaskStatus.SKIPPED);
                     taskInfosNeedToUpdate.add(nextTask);
-                    skipTasks.add(nextTask);
+                    skippedNextTasks.add(nextTask);
+                    skippedTaskNames.add(nextTask.getName());
                 }
             }
         }
-        for (TaskInfo skipTask : skipTasks) {
-            skipFollowingTasks(executionId, skipTask, taskInfosNeedToUpdate);
+        for (TaskInfo skipTask : skippedNextTasks) {
+            Map<String, TaskInfo> siblingTaskInfos = getSiblingTaskInfoMap(executionId, skipTask);
+            List<TaskInfo> currentTaskNext = Optional.ofNullable(siblingTaskInfos.get(skipTask.getName())).map(TaskInfo::getNext).orElse(null);
+            setNextTaskSkipStatus(siblingTaskInfos.size(), taskInfosNeedToUpdate, currentTaskNext, skippedTaskNames);
         }
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         taskInfosNeedToUpdate.add(taskInfo);
