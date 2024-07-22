@@ -20,6 +20,7 @@ package com.weibo.rill.flow.interfaces.model.task;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.weibo.rill.flow.interfaces.model.exception.DAGException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,7 @@ import java.util.*;
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "@json_id"
 )
+@EqualsAndHashCode(of = {"name", "routeName", "taskStatus"})
 public class TaskInfo {
     private BaseTask task;
 
