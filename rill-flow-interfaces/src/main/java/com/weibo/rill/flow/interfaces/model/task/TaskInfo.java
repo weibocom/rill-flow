@@ -32,7 +32,7 @@ import java.util.*;
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "@json_id"
 )
-@EqualsAndHashCode(of = {"name", "routeName"})
+@EqualsAndHashCode(of = {"name", "routeName", "taskStatus"})
 public class TaskInfo {
     private BaseTask task;
 
