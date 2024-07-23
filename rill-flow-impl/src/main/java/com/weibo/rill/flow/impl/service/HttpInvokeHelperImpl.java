@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.impl.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
@@ -27,12 +28,16 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.service.auth.AuthHeaderGenerator;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -50,6 +55,8 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
     @Autowired
     @Qualifier("authHeaderGenerator")
     private AuthHeaderGenerator authHeaderGenerator;
+
+    private final Logger httpAccessLogger = LoggerFactory.getLogger("httpclientaccess");
 
     @Override
     public void appendRequestHeader(HttpHeaders httpHeaders, String executionId, TaskInfo task, Map<String, Object> input) {
@@ -128,20 +135,52 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
         RestTemplate restTemplate = defaultRestTemplate;
         String cause = null;
         for (int i = 1; i <= maxInvokeTime; i++) {
+            long startTime = System.currentTimeMillis();
+            ResponseEntity<String> responseEntity = null;
             try {
-                String result;
                 if (method == HttpMethod.GET) {
-                    result = restTemplate.getForObject(url, String.class);
+                    responseEntity = restTemplate.exchange(new URI(url), method, requestEntity, String.class);
                 } else {
-                    result = restTemplate.postForObject(new URI(url), requestEntity, String.class);
+                    responseEntity = restTemplate.postForEntity(new URI(url), requestEntity, String.class);
                 }
-                return result;
+                return responseEntity.getBody();
             } catch (RestClientResponseException e) {
                 throw e;
             } catch (Exception e) {
                 cause = e.getMessage();
+            } finally {
+                postHttpProcess(url, requestEntity, method, System.currentTimeMillis() - startTime, responseEntity);
             }
         }
         throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(), String.format("dispatchTask http fails due to %s", cause));
+    }
+
+
+    private void postHttpProcess(String url, HttpEntity<?> requestEntity, HttpMethod method, long timeout, ResponseEntity<String> responseEntity) {
+        try {
+            int code = responseEntity == null ? 500 : responseEntity.getStatusCode().value();
+            // 打印 http_access 日志
+            Object requestBody = parseBodyForHttpAccessLog(requestEntity.getBody());
+            String responseBody = responseEntity == null ? "" : responseEntity.getBody();
+            if (responseBody == null) {
+                responseBody = "";
+            }
+            int responseLength = responseBody.length();
+            responseBody = StringUtils.substring(responseBody, 0, 1000);
+            httpAccessLogger.info("{} {} {} {} {} {} {}", timeout, method, code, responseLength, url, requestBody, responseBody);
+        } catch (Exception e) {
+            log.warn("httpAccess log error", e);
+        }
+    }
+
+    private Object parseBodyForHttpAccessLog(Object body) {
+        try {
+            if (body instanceof Map) {
+                return new JSONObject((Map<String, Object>) body).toJSONString();
+            }
+        } catch (Exception e) {
+            log.warn("parseBodyForHttpAccessLog error: ", e);
+        }
+        return body;
     }
 }
