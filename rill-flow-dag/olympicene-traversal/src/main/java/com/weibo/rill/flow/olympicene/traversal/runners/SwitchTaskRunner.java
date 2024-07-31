@@ -66,15 +66,17 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
         // 计算后继及后继的后继节点中需要跳过的节点，更新其状态，并加入 taskInfo 集合返回
-        Set<TaskInfo> taskInfosNeedToUpdate = getTaskInfosNeedToUpdate(taskInfo, skipTaskNames);
+//        Set<TaskInfo> taskInfosNeedToUpdate = getTaskInfosNeedToUpdate(taskInfo, skipTaskNames);
 
         // 更新当前节点状态
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         updateTaskInvokeEndTime(taskInfo);
-        taskInfosNeedToUpdate.add(taskInfo);
+//        taskInfosNeedToUpdate.add(taskInfo);
 
         // 批量写入存储，持久化节点状态
-        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
+//        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
+
+        dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
         log.info("run switch task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
