@@ -50,7 +50,7 @@ import java.util.*;
 
 @Slf4j
 public abstract class AbstractTaskRunner implements TaskRunner {
-    private static final String NORMAL_SKIP_MSG = "skip due to dependent tasks return or degrade";
+    public static final String NORMAL_SKIP_MSG = "skip due to dependent tasks return or degrade";
     public static final String EXPECTED_COST = "expected_cost";
 
     protected final InputOutputMapping inputOutputMapping;
