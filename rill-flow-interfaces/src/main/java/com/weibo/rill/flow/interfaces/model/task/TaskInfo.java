@@ -64,7 +64,6 @@ public class TaskInfo {
     private TaskInfo parent;
     private Map<String, TaskInfo> children = new LinkedHashMap<>();
     private List<TaskInfo> dependencies = new LinkedList<>();
-    private Set<String> skipNextTaskNames;
 
     @Override
     public String toString() {
