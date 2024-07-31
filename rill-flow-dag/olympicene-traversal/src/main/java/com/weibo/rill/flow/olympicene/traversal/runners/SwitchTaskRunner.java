@@ -88,8 +88,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             setNextTaskSkipStatus(siblingTaskInfos.size(), taskInfosNeedToUpdate, currentTaskNext, skippedTaskNames);
         }
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
-        taskInfosNeedToUpdate.add(taskInfo);
         updateTaskInvokeEndTime(taskInfo);
+        taskInfosNeedToUpdate.add(taskInfo);
 
         dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
         log.info("run switch task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());

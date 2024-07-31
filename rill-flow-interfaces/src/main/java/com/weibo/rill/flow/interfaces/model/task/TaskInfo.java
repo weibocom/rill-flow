@@ -65,6 +65,8 @@ public class TaskInfo {
     private Map<String, TaskInfo> children = new LinkedHashMap<>();
     private List<TaskInfo> dependencies = new LinkedList<>();
 
+    private Set<String> skipNextTaskNames = new HashSet<>();
+
     @Override
     public String toString() {
         return "TaskInfo{" +
@@ -101,6 +103,7 @@ public class TaskInfo {
         Optional.ofNullable(taskInfo.getSubGroupKeyJudgementMapping()).filter(it -> !it.isEmpty()).ifPresent(this::setSubGroupKeyJudgementMapping);
         Optional.ofNullable(taskInfo.getSubGroupIndexToIdentity()).filter(it -> !it.isEmpty()).ifPresent(this::setSubGroupIndexToIdentity);
         Optional.ofNullable(taskInfo.getTaskInvokeMsg()).ifPresent(this::setTaskInvokeMsg);
+        Optional.ofNullable(taskInfo.getSkipNextTaskNames()).ifPresent(this::setSkipNextTaskNames);
         if (children == null) {
             children = new LinkedHashMap<>();
         }
@@ -137,6 +140,7 @@ public class TaskInfo {
         taskInfoClone.setName(taskInfo.getName());
         taskInfoClone.setRouteName(taskInfo.getRouteName());
         taskInfoClone.setTaskStatus(taskInfo.getTaskStatus());
+        taskInfoClone.setSkipNextTaskNames(taskInfo.getSkipNextTaskNames());
         taskInfoClone.setSubGroupIndexToStatus(taskInfo.getSubGroupIndexToStatus());
         taskInfoClone.setSubGroupKeyJudgementMapping(taskInfo.getSubGroupKeyJudgementMapping());
         taskInfoClone.setSubGroupIndexToIdentity(taskInfo.getSubGroupIndexToIdentity());
