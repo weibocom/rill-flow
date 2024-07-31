@@ -19,7 +19,10 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
@@ -29,8 +32,6 @@ import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
-import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
-import com.weibo.rill.flow.olympicene.core.model.task.SwitchTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
@@ -174,13 +175,11 @@ public abstract class AbstractTaskRunner implements TaskRunner {
             return CollectionUtils.isNotEmpty(dependentTasks) &&
                     dependentTasks.stream()
                             .allMatch(dependentTask -> {
-                                if ((dependentTask.getTask() instanceof ReturnTask) &&
-                                        dependentTask.getTaskStatus() == TaskStatus.SUCCEED
-                                || dependentTask.getTask() instanceof SwitchTask
-                                        && dependentTask.getSkipNextTaskNames().contains(taskInfo.getName())) {
+                                if (dependentTask.getSkipNextTaskNames().contains(taskInfo.getName())) {
                                     return true;
                                 }
-                                if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade).map(Degrade::getFollowings).orElse(false)) {
+                                if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade)
+                                        .map(Degrade::getFollowings).orElse(false)) {
                                     return true;
                                 }
                                 return dependentTask.getTaskStatus() == TaskStatus.SKIPPED &&
@@ -453,13 +452,13 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         }
     }
 
-    protected void skipFollowingTasks(String executionId, TaskInfo taskInfo, Set<TaskInfo> skippedTasks) {
+    private void skipFollowingTasks(String executionId, TaskInfo taskInfo, Set<TaskInfo> skippedTasks) {
         Map<String, TaskInfo> siblingTaskInfos = getSiblingTaskInfoMap(executionId, taskInfo);
         List<TaskInfo> currentTaskNext = Optional.ofNullable(siblingTaskInfos.get(taskInfo.getName())).map(TaskInfo::getNext).orElse(null);
         setNextTaskSkipStatus(siblingTaskInfos.size(), skippedTasks, currentTaskNext, Sets.newHashSet(taskInfo.getName()));
     }
 
-    protected Map<String, TaskInfo> getSiblingTaskInfoMap(String executionId, TaskInfo taskInfo) {
+    private Map<String, TaskInfo> getSiblingTaskInfoMap(String executionId, TaskInfo taskInfo) {
         Map<String, TaskInfo> siblingTaskInfos = Maps.newHashMap();
         if (DAGWalkHelper.getInstance().isAncestorTask(taskInfo.getName())) {
             Optional.ofNullable(dagInfoStorage.getBasicDAGInfo(executionId))
