@@ -177,8 +177,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
                                 if ((dependentTask.getTask() instanceof ReturnTask) &&
                                         dependentTask.getTaskStatus() == TaskStatus.SUCCEED
                                 || dependentTask.getTask() instanceof SwitchTask
-                                        && dependentTask.getSkipNextTaskNames() != null
-                                        && dependentTask.getSkipNextTaskNames().contains(taskInfo.getName())) {
+                                        && ((SwitchTask) dependentTask.getTask()).getSkipNextTaskNames().contains(taskInfo.getName())) {
                                     return true;
                                 }
                                 if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade).map(Degrade::getFollowings).orElse(false)) {
