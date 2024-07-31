@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class SwitchTaskRunner extends AbstractTaskRunner {
+    private static final String DEFAULT_CONDITION = "default";
+
     public SwitchTaskRunner(InputOutputMapping inputOutputMapping, DAGInfoStorage dagInfoStorage,
                             DAGContextStorage dagContextStorage, DAGStorageProcedure dagStorageProcedure,
                             SwitcherManager switcherManager) {
@@ -87,19 +89,22 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<String> runTaskNames = new HashSet<>();
         DefaultSwitch defaultSwitch = new DefaultSwitch();
         switches.forEach(it -> {
-            if ("default".equals(it.getCondition())) {
+            if (DEFAULT_CONDITION.equals(it.getCondition())) {
                 defaultSwitch.setDefaultCondition(it);
             } else {
                 boolean condition = calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch);
+                // 只要有一个 condition 命中，则不需要执行 default 节点
                 if (condition) {
                     defaultSwitch.setNeedDefault(false);
                 }
+                // 如果当前 condition 命中，并且设置了 break 属性，则不需要执行后续的 condition
                 if (condition && it.isBreak()) {
                     defaultSwitch.setBroken(true);
                 }
             }
         });
-        if (defaultSwitch.isNeedDefault() && defaultSwitch.getDefaultCondition() != null) {
+        // 只要 default 存在，就需要调用
+        if (defaultSwitch.getDefaultCondition() != null) {
             calculateCondition(taskInfo, input, defaultSwitch.getDefaultCondition(), skipTaskNames, runTaskNames, defaultSwitch);
         }
         // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
@@ -131,9 +136,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
         boolean condition = false;
-        if (!defaultSwitch.isBroken()) {
-            condition = judgeCondition(taskInfo, input, switchObj, condition);
-        }
+        condition = judgeCondition(taskInfo, input, switchObj, condition, defaultSwitch);
 
         if (!condition) {
             skipTaskNames.addAll(nextTaskNames);
@@ -143,7 +146,15 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         return condition;
     }
 
-    private static boolean judgeCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj, boolean condition) {
+    private static boolean judgeCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj, boolean condition, DefaultSwitch defaultSwitch) {
+        // 此前的 condition 已经 break，则不执行当前 condition
+        if (defaultSwitch.isBroken()) {
+            return false;
+        }
+        // 如果 condition 为 default 则根据是否需要 default，返回 true 或 false
+        if (DEFAULT_CONDITION.equals(switchObj.getCondition())) {
+            return defaultSwitch.isNeedDefault();
+        }
         try {
             List<String> result = JsonPath.using(ConditionsUtil.valuePathConf)
                     .parse(ImmutableMap.of("input", input)).read(switchObj.getCondition());
