@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 public class SwitchTask extends BaseTask {
 
     List<Switch> switches;
-    Set<String> skipNextTaskNames;
 
     @JsonCreator
     public SwitchTask(
@@ -56,7 +55,6 @@ public class SwitchTask extends BaseTask {
         super(name, title, description, category, null, false, inputMappings, null, progress,
                 degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.switches = switches;
-        this.skipNextTaskNames = new HashSet<>();
         this.setNext(switches.stream().map(Switch::getNext).collect(Collectors.joining(",")));
     }
 
