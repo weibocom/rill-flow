@@ -89,8 +89,9 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<String> runTaskNames = new HashSet<>();
         DefaultSwitch defaultSwitch = new DefaultSwitch();
         switches.forEach(it -> {
+            // default condition 暂不处理，循环结束后统一处理
             if (DEFAULT_CONDITION.equals(it.getCondition())) {
-                defaultSwitch.setDefaultCondition(it);
+                defaultSwitch.getDefaultConditions().add(it);
             } else {
                 boolean condition = calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch);
                 // 只要有一个 condition 命中，则不需要执行 default 节点
@@ -103,10 +104,9 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                 }
             }
         });
-        // 只要 default 存在，就需要调用
-        if (defaultSwitch.getDefaultCondition() != null) {
-            calculateCondition(taskInfo, input, defaultSwitch.getDefaultCondition(), skipTaskNames, runTaskNames, defaultSwitch);
-        }
+        // 循环处理所有 default condition
+        defaultSwitch.getDefaultConditions().forEach(it -> calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch));
+
         // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
         // 因此删除 skipTaskNames 中与 runTaskNames 重合的节点名称
         runTaskNames.forEach(skipTaskNames::remove);
@@ -115,7 +115,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
 
     @Data
     private static class DefaultSwitch {
-        private Switch defaultCondition;
+        private List<Switch> defaultConditions = new ArrayList<>();
         private boolean needDefault = true;
         private boolean isBroken = false;
     }
@@ -128,8 +128,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      * @param switchObj     单个 condition
      * @param skipTaskNames 需要跳过的节点名称集合
      * @param runTaskNames  不需要跳过的节点名称集合
-     * @param defaultSwitch
-     * @return
+     * @param defaultSwitch 默认 condition 信息
+     * @return 是否命中规则
      */
     private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
