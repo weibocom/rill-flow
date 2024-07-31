@@ -30,6 +30,7 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
+import com.weibo.rill.flow.olympicene.core.model.task.SwitchTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
@@ -174,7 +175,9 @@ public abstract class AbstractTaskRunner implements TaskRunner {
                     dependentTasks.stream()
                             .allMatch(dependentTask -> {
                                 if ((dependentTask.getTask() instanceof ReturnTask) &&
-                                        dependentTask.getTaskStatus() == TaskStatus.SUCCEED) {
+                                        dependentTask.getTaskStatus() == TaskStatus.SUCCEED
+                                || dependentTask.getTask() instanceof SwitchTask
+                                        && dependentTask.getSkipNextTaskNames().contains(taskInfo.getName())) {
                                     return true;
                                 }
                                 if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade).map(Degrade::getFollowings).orElse(false)) {

@@ -60,10 +60,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
 
 
         Set<String> skipTaskNames = new HashSet<>();
-        Set<String> runTaskNames = new HashSet<>();
-        calculateConditions(taskInfo, input, switches, skipTaskNames, runTaskNames);
-        // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
-        runTaskNames.forEach(skipTaskNames::remove);
+        calculateConditions(taskInfo, input, switches, skipTaskNames);
+        taskInfo.setSkipNextTaskNames(skipTaskNames);
 
         Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         List<TaskInfo> nextTasks = taskInfo.getNext();
@@ -100,7 +98,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
     }
 
     private static void calculateConditions(TaskInfo taskInfo, Map<String, Object> input, List<Switch> switches,
-                                            Set<String> skipTaskNames, Set<String> runTaskNames) {
+                                            Set<String> skipTaskNames) {
+        Set<String> runTaskNames = new HashSet<>();
         switches.stream()
                 .sorted((a, b) -> a.getCondition().compareToIgnoreCase(b.getCondition()))
                 .forEach(it -> {
@@ -127,5 +126,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                         runTaskNames.addAll(nextTaskNames);
                     }
                 });
+        // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
+        runTaskNames.forEach(skipTaskNames::remove);
     }
 }
