@@ -22,19 +22,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class Switch {
     String condition;
     String next;
+    boolean isBreak;
 
     @JsonCreator
     public Switch(
             @JsonProperty("condition") String condition,
-            @JsonProperty("next") String next
+            @JsonProperty("next") String next,
+            @JsonProperty("break") Boolean isBreak
     ) {
         this.condition = condition;
         this.next = next;
+        this.isBreak = Objects.requireNonNullElse(isBreak, false);
     }
 }

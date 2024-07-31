@@ -16,6 +16,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -84,34 +85,65 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
     private static Set<String> calculateConditions(TaskInfo taskInfo, Map<String, Object> input, List<Switch> switches) {
         Set<String> skipTaskNames = new HashSet<>();
         Set<String> runTaskNames = new HashSet<>();
-        switches.forEach(it -> calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames));
+        DefaultSwitch defaultSwitch = new DefaultSwitch();
+        switches.forEach(it -> {
+            if ("default".equals(it.getCondition())) {
+                defaultSwitch.setDefaultCondition(it);
+            } else {
+                boolean condition = calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch);
+                if (condition) {
+                    defaultSwitch.setNeedDefault(false);
+                }
+                if (condition && it.isBreak()) {
+                    defaultSwitch.setBroken(true);
+                }
+            }
+        });
+        if (defaultSwitch.isNeedDefault() && defaultSwitch.getDefaultCondition() != null) {
+            calculateCondition(taskInfo, input, defaultSwitch.getDefaultCondition(), skipTaskNames, runTaskNames, defaultSwitch);
+        }
         // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
         // 因此删除 skipTaskNames 中与 runTaskNames 重合的节点名称
         runTaskNames.forEach(skipTaskNames::remove);
         return skipTaskNames;
     }
 
+    @Data
+    private static class DefaultSwitch {
+        private Switch defaultCondition;
+        private boolean needDefault = true;
+        private boolean isBroken = false;
+    }
+
     /**
      * 计算单个 condition，将需要跳过的节点名称加入到 skipTaskNames 中，将不需要跳过的节点名称加入到 runTaskNames 中
-     * @param taskInfo 当前 switch 节点
-     * @param input 当前 switch 节点的输入
-     * @param switchObj 单个 condition
+     *
+     * @param taskInfo      当前 switch 节点
+     * @param input         当前 switch 节点的输入
+     * @param switchObj     单个 condition
      * @param skipTaskNames 需要跳过的节点名称集合
-     * @param runTaskNames 不需要跳过的节点名称集合
+     * @param runTaskNames  不需要跳过的节点名称集合
+     * @param defaultSwitch
+     * @return
      */
-    private static void calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
-                                           Set<String> skipTaskNames, Set<String> runTaskNames) {
-        // 如果当前条件没有需要执行的节点，则无需进行计算
-        if (StringUtils.isBlank(switchObj.getNext())) {
-            return;
-        }
+    private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
+                                              Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        if (nextTaskNames.isEmpty()) {
-            return;
+        boolean condition = false;
+        if (!defaultSwitch.isBroken()) {
+            condition = judgeCondition(taskInfo, input, switchObj, condition);
         }
 
-        boolean condition = false;
+        if (!condition) {
+            skipTaskNames.addAll(nextTaskNames);
+        } else {
+            runTaskNames.addAll(nextTaskNames);
+        }
+        return condition;
+    }
+
+    private static boolean judgeCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj, boolean condition) {
         try {
             List<String> result = JsonPath.using(ConditionsUtil.valuePathConf)
                     .parse(ImmutableMap.of("input", input)).read(switchObj.getCondition());
@@ -120,11 +152,6 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             log.warn("switchTask {} evaluation condition expression {} exception. ",
                     taskInfo.getName(), switchObj.getCondition(), e);
         }
-
-        if (!condition) {
-            skipTaskNames.addAll(nextTaskNames);
-        } else {
-            runTaskNames.addAll(nextTaskNames);
-        }
+        return condition;
     }
 }

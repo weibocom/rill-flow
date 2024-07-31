@@ -68,7 +68,12 @@
         },
         "next": {
           "type": "string",
-          "title": "下一节点"
+          "title": "后继节点"
+        },
+        "break": {
+          "type": "boolean",
+          "title": "命中则跳过后续判断",
+          "required": false
         }
       }
     }
