@@ -75,7 +75,7 @@ class DAGInfoDAOTest extends Specification {
                                 args.subList(0, 13) == ['172800', '_placeholder_', '{"workspace":"workspace","dagName":"dagName","version":"1.0.0","type":"flow","tasks":[]}', '_placeholder_', 'execution_id', '"executionId"', 'dag_status', '"not_started"', '@class_#A', 'com.weibo.rill.flow.interfaces.model.task.TaskInfo', '@class_dag_status', 'com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus', 'dag'] &&
                                 args.get(13).startsWith('"dag_descriptor_') &&
                                 args.subList(14, 17) == ['@class_dag', 'java.lang.String', '#A'] &&
-                                args.get(17).endsWith('"name":"A","next":[],"children":{},"dependencies":[]}') &&
+                                args.get(17).endsWith('"name":"A","next":[],"children":{},"dependencies":[],"skip_next_task_names":[]}') &&
                                 args.subList(18, 20) == ['@class_execution_id', 'java.lang.String']
                 }
         )
@@ -104,9 +104,9 @@ class DAGInfoDAOTest extends Specification {
                                 args.subList(0, 13) == ['172800', '_placeholder_', '{"workspace":"workspace","dagName":"dagName","version":"1.0.0","type":"flow","tasks":[]}', '_placeholder_', 'execution_id', '"executionId"', 'dag_status', '"not_started"', '@class_#A', 'com.weibo.rill.flow.interfaces.model.task.TaskInfo', '@class_dag_status', 'com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus', 'dag'] &&
                                 args.get(13).startsWith('"dag_descriptor_') &&
                                 args.subList(14, 17) == ['@class_dag', 'java.lang.String', '#A'] &&
-                                args.get(17).endsWith('"name":"A","next":[],"children":{},"dependencies":[]}') &&
+                                args.get(17).endsWith('"name":"A","next":[],"children":{},"dependencies":[],"skip_next_task_names":[]}') &&
                                 args.subList(18, 24) == ['@class_execution_id', 'java.lang.String', '_placeholder_', '@class_#A1', 'com.weibo.rill.flow.interfaces.model.task.TaskInfo', '#A1'] &&
-                                args.get(24).endsWith('"name":"A1","next":[],"children":{},"dependencies":[]}') &&
+                                args.get(24).endsWith('"name":"A1","next":[],"children":{},"dependencies":[],"skip_next_task_names":[]}') &&
                                 args.subList(25, 28) == ['_placeholder_', 'A', 'sub_task_executionId_A']
                 }
         )
