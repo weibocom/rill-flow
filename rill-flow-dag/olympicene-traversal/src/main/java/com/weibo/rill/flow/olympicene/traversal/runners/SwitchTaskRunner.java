@@ -100,7 +100,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                 continue;
             }
             nextTask.setTaskStatus(TaskStatus.SKIPPED);
-            taskInfo.updateInvokeMsg(TaskInvokeMsg.builder().msg(NORMAL_SKIP_MSG).build());
+            nextTask.updateInvokeMsg(TaskInvokeMsg.builder().msg(NORMAL_SKIP_MSG).build());
             taskInfosNeedToUpdate.add(nextTask);
 //            skippedNextTasks.add(nextTask);
 //            skippedTaskNames.add(nextTask.getName());
