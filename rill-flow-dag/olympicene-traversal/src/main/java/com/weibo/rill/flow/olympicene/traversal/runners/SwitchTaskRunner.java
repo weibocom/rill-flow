@@ -66,7 +66,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
         // 计算后继及后继的后继节点中需要跳过的节点，更新其状态，并加入 taskInfo 集合返回
-        Set<TaskInfo> taskInfosNeedToUpdate = getTaskInfosNeedToUpdate(executionId, taskInfo, skipTaskNames);
+        Set<TaskInfo> taskInfosNeedToUpdate = getTaskInfosNeedToUpdate(taskInfo, skipTaskNames);
 
         // 更新当前节点状态
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
@@ -80,11 +80,11 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
     }
 
-    private Set<TaskInfo> getTaskInfosNeedToUpdate(String executionId, TaskInfo taskInfo, Set<String> skipTaskNames) {
+    private Set<TaskInfo> getTaskInfosNeedToUpdate(TaskInfo taskInfo, Set<String> skipTaskNames) {
         Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         List<TaskInfo> nextTasks = taskInfo.getNext();
-        Set<TaskInfo> skippedNextTasks = new HashSet<>();
-        Set<String> skippedTaskNames = new HashSet<>();
+//        Set<TaskInfo> skippedNextTasks = new HashSet<>();
+//        Set<String> skippedTaskNames = new HashSet<>();
         for (TaskInfo nextTask : nextTasks) {
             if (!skipTaskNames.contains(nextTask.getName())) {
                 continue;
@@ -101,8 +101,8 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             }
             nextTask.setTaskStatus(TaskStatus.SKIPPED);
             taskInfosNeedToUpdate.add(nextTask);
-            skippedNextTasks.add(nextTask);
-            skippedTaskNames.add(nextTask.getName());
+//            skippedNextTasks.add(nextTask);
+//            skippedTaskNames.add(nextTask.getName());
         }
 
         // 递归处理后继的后继们，将需要被跳过的节点的状态设置为 SKIPPED 并加入到 taskInfosNeedToUpdate
