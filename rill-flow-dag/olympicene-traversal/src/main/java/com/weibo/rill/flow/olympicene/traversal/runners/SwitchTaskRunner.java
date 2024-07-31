@@ -2,7 +2,6 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
@@ -65,57 +64,14 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<String> skipTaskNames = calculateConditions(taskInfo, input, switches);
         taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
-        // 计算后继及后继的后继节点中需要跳过的节点，更新其状态，并加入 taskInfo 集合返回
-//        Set<TaskInfo> taskInfosNeedToUpdate = getTaskInfosNeedToUpdate(taskInfo, skipTaskNames);
-
         // 更新当前节点状态
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         updateTaskInvokeEndTime(taskInfo);
-//        taskInfosNeedToUpdate.add(taskInfo);
-
-        // 批量写入存储，持久化节点状态
-//        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
 
         dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
         log.info("run switch task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
-    }
-
-    private Set<TaskInfo> getTaskInfosNeedToUpdate(TaskInfo taskInfo, Set<String> skipTaskNames) {
-        Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
-        List<TaskInfo> nextTasks = taskInfo.getNext();
-//        Set<TaskInfo> skippedNextTasks = new HashSet<>();
-//        Set<String> skippedTaskNames = new HashSet<>();
-        for (TaskInfo nextTask : nextTasks) {
-            if (!skipTaskNames.contains(nextTask.getName())) {
-                continue;
-            }
-            // 只依赖当前节点，且根据 condition 判断需要被跳过的节点，则将其状态设置为 SKIPPED
-            // 除此以外还依赖了其他节点且需要被跳过的节点，在 AbstractTaskRunner 类的 needNormalSkip 方法中进行判断
-            boolean taskNeedSkip = Optional.ofNullable(nextTask.getDependencies())
-                    .filter(dependedTasks -> dependedTasks.stream()
-                            .filter(Objects::nonNull)
-                            .allMatch(dependedTask -> dependedTask.getName().equals(taskInfo.getName())))
-                    .isPresent();
-            if (!taskNeedSkip) {
-                continue;
-            }
-            nextTask.setTaskStatus(TaskStatus.SKIPPED);
-            nextTask.updateInvokeMsg(TaskInvokeMsg.builder().msg(NORMAL_SKIP_MSG).build());
-            taskInfosNeedToUpdate.add(nextTask);
-//            skippedNextTasks.add(nextTask);
-//            skippedTaskNames.add(nextTask.getName());
-        }
-
-        // 递归处理后继的后继们，将需要被跳过的节点的状态设置为 SKIPPED 并加入到 taskInfosNeedToUpdate
-//        for (TaskInfo skipTask : skippedNextTasks) {
-//            Map<String, TaskInfo> siblingTaskInfos = getSiblingTaskInfoMap(executionId, skipTask);
-//            List<TaskInfo> currentTaskNext = Optional.ofNullable(siblingTaskInfos.get(skipTask.getName()))
-//                    .map(TaskInfo::getNext).orElse(null);
-//            setNextTaskSkipStatus(siblingTaskInfos.size(), taskInfosNeedToUpdate, currentTaskNext, skippedTaskNames);
-//        }
-        return taskInfosNeedToUpdate;
     }
 
     /**
