@@ -61,7 +61,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
 
         Set<String> skipTaskNames = new HashSet<>();
         calculateConditions(taskInfo, input, switches, skipTaskNames);
-        switchTask.getSkipNextTaskNames().addAll(skipTaskNames);
+        taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
         Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         List<TaskInfo> nextTasks = taskInfo.getNext();
