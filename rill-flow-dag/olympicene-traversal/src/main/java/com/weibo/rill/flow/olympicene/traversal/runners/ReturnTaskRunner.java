@@ -16,22 +16,22 @@
 
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
-import com.google.common.collect.Sets;
-import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
+import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
-import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -62,17 +62,16 @@ public class ReturnTaskRunner extends AbstractTaskRunner {
         boolean needReturn = ConditionsUtil.conditionsAllMatch(returnTask.getConditions(), input, "input");
         log.info("needReturn conditions {}", needReturn);
 
-        Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         if (!needReturn) {
             taskInfo.setTaskStatus(TaskStatus.SKIPPED);
         } else {
-            skipFollowingTasks(executionId, taskInfo, taskInfosNeedToUpdate);
+            // 标记所有后继节点为需要跳过
+            taskInfo.setSkipNextTaskNames(taskInfo.getNext().stream().map(TaskInfo::getName).collect(Collectors.toSet()));
             taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         }
-        taskInfosNeedToUpdate.add(taskInfo);
         updateTaskInvokeEndTime(taskInfo);
 
-        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
+        dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
         log.info("run return task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();

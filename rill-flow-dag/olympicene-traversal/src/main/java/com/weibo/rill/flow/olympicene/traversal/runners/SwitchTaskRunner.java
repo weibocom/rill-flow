@@ -64,7 +64,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         Set<String> skipTaskNames = calculateConditions(taskInfo, input, switches);
         taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
-        // 更新当前节点状态
+        // 更新当前节点状态和完成事件
         taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         updateTaskInvokeEndTime(taskInfo);
 
