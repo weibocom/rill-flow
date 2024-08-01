@@ -200,7 +200,7 @@ public class OlympiceneAutoConfiguration {
             @Autowired @Qualifier("dagStorageProcedure") DAGStorageProcedure dagStorageProcedure,
             @Autowired @Qualifier("inputOutputMapping") JSONPathInputOutputMapping inputOutputMapping,
             @Autowired SwitcherManager switcherManager) {
-        log.info("begin to init default SuspenseTaskRunner bean");
+        log.info("begin to init default switchTaskRunner bean");
         return new SwitchTaskRunner(inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
     }
 
