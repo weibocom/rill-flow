@@ -99,6 +99,39 @@ class SwitcherTaskTraversalTest extends Specification {
         })
     }
 
+    def "test empty switch"() {
+        given:
+        String text = "workspace: default\n" +
+                "dagName: testSwitch\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "inputSchema: '[{\"required\":true,\"name\":\"input\",\"type\":\"Number\",\"desc\":\"\"}]'\n" +
+                "tasks:\n" +
+                "  - name: switch\n" +
+                "    switches: []\n" +
+                "    description: ''\n" +
+                "    inputMappings:\n" +
+                "      - source: \$.context.input\n" +
+                "        target: \$.input.input\n" +
+                "    category: switch\n" +
+                "    title: ''\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit("executionIdSuccess", dag, ['input':0])
+
+        then:
+        noExceptionThrown()
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.DAG_SUCCEED.getCode() &&
+                        ((DAGCallbackInfo)event.data).dagInfo.dagStatus == DAGStatus.SUCCEED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('switch').taskStatus == TaskStatus.SUCCEED
+            }
+        })
+
+    }
+
     def "test switch condition crosses"() {
         given:
         String text = "workspace: default\n" +

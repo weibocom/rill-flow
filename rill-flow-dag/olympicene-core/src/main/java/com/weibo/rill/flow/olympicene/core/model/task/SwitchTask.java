@@ -44,7 +44,7 @@ public class SwitchTask extends BaseTask {
             @JsonProperty("description") String description,
             @JsonProperty("category") String category,
             @JsonProperty("inputMappings") List<Mapping> inputMappings,
-            @JsonProperty("switches") List<Switch> switches,
+            @JsonProperty(value = "switches") List<Switch> switches,
             @JsonProperty("progress") Progress progress,
             @JsonProperty("degrade") Degrade degrade,
             @JsonProperty("timeline") Timeline timeline,
