@@ -67,7 +67,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
             boolean intolerance = mapping.getTolerance() != null && !mapping.getTolerance();
             try {
                 String source = mapping.getSource();
-                Object sourceValue = calculateSourceValue(context, source, map);
+                Object sourceValue = calculateSourceValue((String) context.get("flow_execution_id"), source, map);
                 Object transformedValue = transformSourceValue(sourceValue, context, input, output, mapping.getTransform());
 
                 if (transformedValue != null) {
@@ -82,7 +82,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         }
     }
 
-    private Object calculateSourceValue(Map<String, Object> context, String source, Map<String, Object> map) {
+    private Object calculateSourceValue(String executionId, String source, Map<String, Object> map) {
         if (StringUtils.isBlank(source)) {
             return null;
         }
@@ -90,17 +90,17 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         if (source.startsWith("$.tasks.") && infos.length > 3) {
             String taskName = infos[2];
             String key = infos[3];
-            return tryToGenerateTriggerUrl(context, source, key, taskName);
+            return tryToGenerateTriggerUrl(executionId, source, key, taskName);
         } else {
             return source.startsWith("$") ? getValue(map, source) : parseSource(source);
         }
     }
 
-    private Object tryToGenerateTriggerUrl(Map<String, Object> context, String source, String key, String taskName) {
+    private Object tryToGenerateTriggerUrl(String executionId, String source, String key, String taskName) {
         if (!key.equals("trigger_url") && !key.startsWith("trigger_url?")) {
             return null;
         }
-        Object sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
+        Object sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + executionId + "&task_name=" + taskName;
         String[] queryInfos = source.split("\\?");
         if (queryInfos.length > 0) {
             sourceValue += '&' + queryInfos[1];
