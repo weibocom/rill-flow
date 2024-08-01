@@ -32,6 +32,10 @@ class InvokeMsgTest extends Specification {
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
     Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
+    def setup() {
+        switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT") >> true
+    }
+
     def "big flow taskInfo and small flow dagInfo and small flow taskInfo invokeMsg"() {
         given:
         String bigFlowYaml = "version: 0.0.1\n" +

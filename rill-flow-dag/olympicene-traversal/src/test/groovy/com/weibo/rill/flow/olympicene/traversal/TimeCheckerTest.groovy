@@ -41,6 +41,7 @@ class TimeCheckerTest extends Specification {
     def setup() {
         timeChecker.redisClient = Mock(RedisClient.class)
         SwitcherManager switcherManager = Mock(SwitcherManager.class)
+        switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT") >> true
         olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, switcherManager)
         timeChecker.timeCheckRunner = olympicene.dagOperations.timeCheckRunner
     }
