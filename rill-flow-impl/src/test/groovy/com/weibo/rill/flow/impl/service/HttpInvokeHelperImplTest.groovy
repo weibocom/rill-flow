@@ -30,4 +30,9 @@ class HttpInvokeHelperImplTest extends Specification {
         ['query': ['user': 'Bob'], 'header': ['content-type': 'application/x-www-form-urlencoded'], 'body': ['title': 'first post']]                  || ['execution_id': "xxx", 'name': "testFunctionRequestParams", 'user': 'Bob']   | ['execution_id': "xxx", 'title': 'first post']                  | ['content-type': 'application/x-www-form-urlencoded']
         ['input_num': 10, 'query': ['user': 'Bob'], 'header': ['content-type': 'application/x-www-form-urlencoded'], 'body': ['title': 'first post']] || ['execution_id': "xxx", 'name': "testFunctionRequestParams", 'user': 'Bob']   | ['execution_id': "xxx", 'input_num': 10, 'title': 'first post'] | ['content-type': 'application/x-www-form-urlencoded']
     }
+
+    @Unroll
+    def "test invokeRequest"() {
+
+    }
 }
