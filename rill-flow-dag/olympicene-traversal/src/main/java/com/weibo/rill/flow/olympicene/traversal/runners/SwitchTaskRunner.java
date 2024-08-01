@@ -1,7 +1,5 @@
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
@@ -57,7 +55,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             taskInfo.updateInvokeMsg(taskInvokeMsg);
             updateTaskInvokeEndTime(taskInfo);
             taskInfo.setTaskStatus(TaskStatus.SUCCEED);
-            dagInfoStorage.saveTaskInfos(executionId, ImmutableSet.of(taskInfo));
+            dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
             return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
         }
 
@@ -156,7 +154,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         }
         try {
             List<String> result = JsonPath.using(ConditionsUtil.valuePathConf)
-                    .parse(ImmutableMap.of("input", input)).read(switchObj.getCondition());
+                    .parse(Map.of("input", input)).read(switchObj.getCondition());
             return !result.isEmpty();
         } catch (Exception e) {
             log.warn("switchTask {} evaluation condition expression {} exception. ",
