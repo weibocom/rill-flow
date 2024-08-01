@@ -29,4 +29,13 @@ class JSONPathInputOutputMappingTest extends Specification {
         then:
         sourceValue == "http://localhost:8080/flow/trigger.json?execution_id=123456&task_name=testTaskName&context=%7B%22trans_finish%22%3A%20true%7D"
     }
+
+    def "test calculateSourceValue when source is \$.tasks but without trigger_url"() {
+        given:
+        Map<String, Object> env = [input:["hello": "world"]]
+        when:
+        String sourceValue = jsonPathInputOutputMapping.calculateSourceValue("123456", "\$.tasks.testTaskName.xxx?context=%7B%22trans_finish%22%3A%20true%7D", env)
+        then:
+        sourceValue == null
+    }
 }
