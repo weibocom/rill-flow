@@ -294,7 +294,7 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             FunctionTask functionTask = (FunctionTask) taskInfo.getTask();
             notifyInfo.setTaskStatus(taskTypeStatus(output, functionTask, notifyInfo.getTaskStatus()));
-            if (notifyInfo.getTaskStatus() == TaskStatus.SUCCEED) {
+            if (notifyInfo.getTaskStatus().isCompleted() && MapUtils.isNotEmpty(output)) {
                 TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
                 notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
             }
