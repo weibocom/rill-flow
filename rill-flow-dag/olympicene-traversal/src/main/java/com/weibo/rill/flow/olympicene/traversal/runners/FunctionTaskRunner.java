@@ -294,8 +294,7 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             FunctionTask functionTask = (FunctionTask) taskInfo.getTask();
             notifyInfo.setTaskStatus(taskTypeStatus(output, functionTask, notifyInfo.getTaskStatus()));
-            TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
-            notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
+            setOutputIntoTaskInvokeMsg(notifyInfo, output);
             Function<TaskStatus, Boolean> needUpdateContext = t -> !t.isFailed()
                     || CollectionUtils.isNotEmpty(functionTask.getSuccessConditions())
                     || CollectionUtils.isNotEmpty(functionTask.getFailConditions());
@@ -303,6 +302,23 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
         });
 
         return executionRef.get();
+    }
+
+    private void setOutputIntoTaskInvokeMsg(NotifyInfo notifyInfo, Map<String, Object> output) {
+        if (!switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT")) {
+            return;
+        }
+        try {
+            TaskInvokeMsg taskInvokeMsg = notifyInfo.getTaskInvokeMsg();
+            if (taskInvokeMsg == null) {
+                taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
+            } else {
+                taskInvokeMsg.setOutput(output);
+            }
+            notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
+        } catch (Exception e) {
+            log.warn("setOutputIntoTaskInvokeMsg fails, notifyInfo:{}", notifyInfo, e);
+        }
     }
 
     private ExecutionResult executionCallback(String executionId, TaskInfo taskInfo, NotifyInfo notifyInfo,
