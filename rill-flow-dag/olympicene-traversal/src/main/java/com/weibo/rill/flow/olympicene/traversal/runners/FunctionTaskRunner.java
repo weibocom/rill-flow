@@ -22,30 +22,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
-import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
-import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
+import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
 import com.weibo.rill.flow.interfaces.model.strategy.Retry;
+import com.weibo.rill.flow.interfaces.model.task.*;
+import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
+import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext;
-import com.weibo.rill.flow.olympicene.traversal.strategy.RetryPolicy;
-import com.weibo.rill.flow.olympicene.traversal.strategy.SimpleRetryPolicy;
-import com.weibo.rill.flow.interfaces.model.task.FunctionPattern;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
+import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
+import com.weibo.rill.flow.olympicene.ddl.serialize.ObjectMapperFactory;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
-import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
-import com.weibo.rill.flow.interfaces.model.task.*;
+import com.weibo.rill.flow.olympicene.traversal.strategy.RetryPolicy;
+import com.weibo.rill.flow.olympicene.traversal.strategy.SimpleRetryPolicy;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -295,6 +294,8 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             FunctionTask functionTask = (FunctionTask) taskInfo.getTask();
             notifyInfo.setTaskStatus(taskTypeStatus(output, functionTask, notifyInfo.getTaskStatus()));
+            TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
+            notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
             Function<TaskStatus, Boolean> needUpdateContext = t -> !t.isFailed()
                     || CollectionUtils.isNotEmpty(functionTask.getSuccessConditions())
                     || CollectionUtils.isNotEmpty(functionTask.getFailConditions());
