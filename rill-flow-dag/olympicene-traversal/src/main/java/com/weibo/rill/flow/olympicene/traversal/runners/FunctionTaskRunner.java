@@ -294,10 +294,13 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
 
             FunctionTask functionTask = (FunctionTask) taskInfo.getTask();
             notifyInfo.setTaskStatus(taskTypeStatus(output, functionTask, notifyInfo.getTaskStatus()));
-            if (notifyInfo.getTaskStatus().isCompleted() && MapUtils.isNotEmpty(output)) {
-                TaskInvokeMsg taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
-                notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
+            TaskInvokeMsg taskInvokeMsg = notifyInfo.getTaskInvokeMsg();
+            if (taskInvokeMsg == null) {
+                taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
+            } else {
+                taskInvokeMsg.setOutput(output);
             }
+            notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
             Function<TaskStatus, Boolean> needUpdateContext = t -> !t.isFailed()
                     || CollectionUtils.isNotEmpty(functionTask.getSuccessConditions())
                     || CollectionUtils.isNotEmpty(functionTask.getFailConditions());
