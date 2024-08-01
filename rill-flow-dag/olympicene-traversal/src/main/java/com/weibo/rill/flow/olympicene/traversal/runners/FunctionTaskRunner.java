@@ -308,17 +308,13 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
         if (!switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT")) {
             return;
         }
-        try {
-            TaskInvokeMsg taskInvokeMsg = notifyInfo.getTaskInvokeMsg();
-            if (taskInvokeMsg == null) {
-                taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
-            } else {
-                taskInvokeMsg.setOutput(output);
-            }
-            notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
-        } catch (Exception e) {
-            log.warn("setOutputIntoTaskInvokeMsg fails, notifyInfo:{}", notifyInfo, e);
+        TaskInvokeMsg taskInvokeMsg = notifyInfo.getTaskInvokeMsg();
+        if (taskInvokeMsg == null) {
+            taskInvokeMsg = buildInvokeMsg(ObjectMapperFactory.getJSONMapper().convertValue(output, JsonNode.class));
+        } else {
+            taskInvokeMsg.setOutput(output);
         }
+        notifyInfo.setTaskInvokeMsg(taskInvokeMsg);
     }
 
     private ExecutionResult executionCallback(String executionId, TaskInfo taskInfo, NotifyInfo notifyInfo,
