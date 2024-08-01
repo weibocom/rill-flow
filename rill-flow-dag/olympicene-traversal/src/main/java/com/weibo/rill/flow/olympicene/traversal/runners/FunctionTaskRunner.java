@@ -305,6 +305,9 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
     }
 
     private void setOutputIntoTaskInvokeMsg(NotifyInfo notifyInfo, Map<String, Object> output) {
+        if (!switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT")) {
+            return;
+        }
         try {
             TaskInvokeMsg taskInvokeMsg = notifyInfo.getTaskInvokeMsg();
             if (taskInvokeMsg == null) {
