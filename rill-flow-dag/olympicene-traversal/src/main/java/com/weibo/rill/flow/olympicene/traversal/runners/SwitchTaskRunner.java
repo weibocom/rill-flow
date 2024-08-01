@@ -135,8 +135,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        boolean condition = false;
-        condition = judgeCondition(taskInfo, input, switchObj, condition, defaultSwitch);
+        boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
         if (!condition) {
             skipTaskNames.addAll(nextTaskNames);
@@ -146,7 +145,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         return condition;
     }
 
-    private static boolean judgeCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj, boolean condition, DefaultSwitch defaultSwitch) {
+    private static boolean judgeCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj, DefaultSwitch defaultSwitch) {
         // 此前的 condition 已经 break，则不执行当前 condition
         if (defaultSwitch.isBroken()) {
             return false;
@@ -158,11 +157,11 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         try {
             List<String> result = JsonPath.using(ConditionsUtil.valuePathConf)
                     .parse(ImmutableMap.of("input", input)).read(switchObj.getCondition());
-            condition = !result.isEmpty();
+            return !result.isEmpty();
         } catch (Exception e) {
             log.warn("switchTask {} evaluation condition expression {} exception. ",
                     taskInfo.getName(), switchObj.getCondition(), e);
+            return false;
         }
-        return condition;
     }
 }
