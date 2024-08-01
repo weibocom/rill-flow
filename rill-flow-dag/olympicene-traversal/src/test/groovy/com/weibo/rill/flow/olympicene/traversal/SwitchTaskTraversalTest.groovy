@@ -20,7 +20,7 @@ import com.weibo.rill.flow.olympicene.traversal.config.OlympiceneFacade
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
 import spock.lang.Specification
 
-class SwitcherTaskTraversalTest extends Specification {
+class SwitchTaskTraversalTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator()])
     DAGLocalStorage dagStorage = new DAGLocalStorage()
     Callback callback = Mock(Callback.class)
@@ -129,7 +129,45 @@ class SwitcherTaskTraversalTest extends Specification {
                         ((DAGCallbackInfo)event.data).dagInfo.tasks.get('switch').taskStatus == TaskStatus.SUCCEED
             }
         })
+    }
 
+    def "test error condition"() {
+        given:
+        String text = "workspace: default\n" +
+                "dagName: testSwitch\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "inputSchema: '[{\"required\":true,\"name\":\"input\",\"type\":\"Number\",\"desc\":\"\"}]'\n" +
+                "tasks:\n" +
+                "  - name: caseA\n" +
+                "    description: ''\n" +
+                "    category: pass\n" +
+                "    title: ''\n" +
+                "  - name: switch\n" +
+                "    switches:\n" +
+                "      - next: caseA\n" +
+                "        condition: \$\$\$\n" +
+                "    description: ''\n" +
+                "    inputMappings:\n" +
+                "      - source: \$.context.input\n" +
+                "        target: \$.input.input\n" +
+                "    category: switch\n" +
+                "    title: ''\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit("executionIdSuccess", dag, ['input':0])
+
+        then:
+        noExceptionThrown()
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.DAG_SUCCEED.getCode() &&
+                        ((DAGCallbackInfo)event.data).dagInfo.dagStatus == DAGStatus.SUCCEED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('switch').taskStatus == TaskStatus.SUCCEED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseA').taskStatus == TaskStatus.SKIPPED
+            }
+        })
     }
 
     def "test switch condition crosses"() {
