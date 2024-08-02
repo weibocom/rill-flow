@@ -42,7 +42,7 @@ class HttpInvokeHelperImplTest extends Specification {
     def "test invokeRequest"() {
         when:
         ResponseEntity<String> responseEntity = new ResponseEntity<>("response body", HttpStatus.OK)
-        HttpEntity<?> requestEntity = new HttpEntity<>(null, null)
+        HttpEntity<?> requestEntity = new HttpEntity<>(Map.of("data", "hello world"), null)
         defaultRestTemplate.exchange(*_) >> responseEntity
         defaultRestTemplate.postForEntity(*_) >> responseEntity
         then:
@@ -50,6 +50,21 @@ class HttpInvokeHelperImplTest extends Specification {
                 "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1) == "response body"
         httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
                 "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1) == "response body"
+    }
+
+    @Unroll
+    def "test invokeRequest return null"() {
+        when:
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(null, HttpStatus.BAD_GATEWAY)
+        HttpEntity<?> requestEntity = new HttpEntity<>(null, null)
+        defaultRestTemplate.exchange(*_) >> responseEntity
+        defaultRestTemplate.postForEntity(*_) >> responseEntity
+        then:
+        noExceptionThrown()
+        httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1) == null
+        httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1) == null
     }
 
     @Unroll
