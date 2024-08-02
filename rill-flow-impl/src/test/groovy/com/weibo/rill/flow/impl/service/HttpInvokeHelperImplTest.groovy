@@ -47,9 +47,9 @@ class HttpInvokeHelperImplTest extends Specification {
         defaultRestTemplate.postForEntity(*_) >> responseEntity
         then:
         httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
-                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1000) == "response body"
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1) == "response body"
         httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
-                "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1000) == "response body"
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1) == "response body"
     }
 
     @Unroll
@@ -59,7 +59,7 @@ class HttpInvokeHelperImplTest extends Specification {
         defaultRestTemplate.exchange(*_) >> { throw new RestClientResponseException("Bad Gateway Timeout", 504, "Bad Gateway Timeout", null, null, null) }
         when:
         httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
-                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1000)
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1)
         then:
         thrown(TaskException.class)
     }
