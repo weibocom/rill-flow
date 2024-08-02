@@ -1,12 +1,17 @@
 package com.weibo.rill.flow.impl.service
 
-
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class HttpInvokeHelperImplTest extends Specification {
-    HttpInvokeHelper httpInvokeHelper = new HttpInvokeHelperImpl()
+    RestTemplate defaultRestTemplate = Mock(RestTemplate)
+    HttpInvokeHelper httpInvokeHelper = new HttpInvokeHelperImpl(defaultRestTemplate: defaultRestTemplate)
 
     @Unroll
     def "functionRequestParams test"() {
@@ -33,6 +38,15 @@ class HttpInvokeHelperImplTest extends Specification {
 
     @Unroll
     def "test invokeRequest"() {
-
+        when:
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("response body", HttpStatus.OK)
+        HttpEntity<?> requestEntity = new HttpEntity<>(null, null)
+        defaultRestTemplate.exchange(*_) >> responseEntity
+        defaultRestTemplate.postForEntity(*_) >> responseEntity
+        then:
+        httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1000) == "response body"
+        httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1000) == "response body"
     }
 }
