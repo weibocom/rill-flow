@@ -1,10 +1,12 @@
 package com.weibo.rill.flow.impl.service
 
+import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -48,5 +50,17 @@ class HttpInvokeHelperImplTest extends Specification {
                 "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1000) == "response body"
         httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
                 "http://localhost:8080/testurl", requestEntity, HttpMethod.POST, 1000) == "response body"
+    }
+
+    @Unroll
+    def "test invokeRequest throw exception"() {
+        given:
+        HttpEntity<?> requestEntity = new HttpEntity<>(null, null)
+        defaultRestTemplate.exchange(*_) >> { throw new RestClientResponseException("Bad Gateway Timeout", 504, "Bad Gateway Timeout", null, null, null) }
+        when:
+        httpInvokeHelper.invokeRequest("testExecutionId", "testTaskName",
+                "http://localhost:8080/testurl", requestEntity, HttpMethod.GET, 1000)
+        then:
+        thrown(TaskException.class)
     }
 }
