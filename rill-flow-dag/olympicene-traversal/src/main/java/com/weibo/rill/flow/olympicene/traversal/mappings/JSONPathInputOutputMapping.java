@@ -102,7 +102,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         }
         Object sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + executionId + "&task_name=" + taskName;
         String[] queryInfos = source.split("\\?");
-        if (queryInfos.length > 0) {
+        if (queryInfos.length > 1) {
             sourceValue += '&' + queryInfos[1];
         }
         return sourceValue;
