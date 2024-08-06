@@ -200,9 +200,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         for (String part: jsonPathParts) {
             if (current instanceof Map) {
                 Map<String, Object> mapCurrent = (Map<String, Object>) current;
-                if (!mapCurrent.containsKey(part)) {
-                    mapCurrent.put(part, new HashMap<>());
-                }
+                mapCurrent.putIfAbsent(part, new HashMap<>());
                 current = mapCurrent.get(part);
             } else {
                 break;
