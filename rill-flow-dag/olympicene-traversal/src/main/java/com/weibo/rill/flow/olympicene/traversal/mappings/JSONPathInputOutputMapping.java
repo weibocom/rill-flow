@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath {
     Configuration conf = Configuration.builder().options(Option.DEFAULT_PATH_LEAF_TO_NULL).build();
+    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[\"(.*?)\"]|\\['(.*?)']");
 
     @Value("${rill.flow.function.trigger.uri}")
     private String rillFlowFunctionTriggerUri;
@@ -183,13 +184,8 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         }
 
         String jsonPath = JsonPath.compile(path).getPath();
-        String patternString = "\\[\"(.*?)\"]|\\['(.*?)']";
-
-        // 创建 Pattern 对象
-        Pattern pattern = Pattern.compile(patternString);
-        // 创建 matcher 对象
-        Matcher matcher = pattern.matcher(jsonPath);
         List<String> jsonPathParts = new ArrayList<>();
+        Matcher matcher = JSONPATH_PATTERN.matcher(jsonPath);
         while (matcher.find()) {
             if (matcher.group(1) != null) {
                 jsonPathParts.add(matcher.group(1));
