@@ -98,6 +98,7 @@
 </script>
 
 <style lang="less" scoped>
+
   .title {
     text-align: center;
     height: 38px;
@@ -108,6 +109,9 @@
   }
   .context {
     margin: 10px;
+    width: 200px;
+    height: 900px;
+    overflow: auto;
 
     .tab-pane {
       margin-top: 10px;
