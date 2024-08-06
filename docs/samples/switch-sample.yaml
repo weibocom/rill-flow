@@ -20,8 +20,7 @@ tasks:
         condition: $.input.[?(@.num >= 5)]
         break: true
       - next: choiceTwoPass
-        condition: $.input.[?(@.num < 5)]
-        break: true
+        condition: default
     inputMappings:
       - target: $.input.num
         source: $.context.random_num
