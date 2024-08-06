@@ -1,0 +1,46 @@
+version: 0.0.1
+type: flow
+workspace: rillFlowSample
+dagName: switchSample
+tasks:
+  - category: pass
+    name: startNode
+    next: randomNode
+  - category: pass
+    name: randomNode
+    outputMappings:
+      - transform: " return rand(source) + 1;  "
+        target: $.context.random_num
+        source: $.context.input_num
+    next: choice
+  - category: switch
+    name: choice
+    switches:
+      - next: choiceOnePass
+        condition: $.input.[?(@.num >= 5)]
+        break: true
+      - next: choiceTwoPass
+        condition: $.input.[?(@.num < 5)]
+        break: true
+    inputMappings:
+      - target: $.input.num
+        source: $.context.random_num
+  - category: pass
+    name: choiceOnePass
+    outputMappings:
+      - target: $.context.choice_num
+        transform: "return 10 * source;"
+        source: $.context.random_num
+    next: printNode
+  - category: pass
+    name: choiceTwoPass
+    next: printNode
+    outputMappings:
+      - target: $.context.choice_num
+        transform: "return -1 * source;"
+        source: $.context.random_num
+  - category: pass
+    name: printNode
+    outputMappings:
+      - target: $.context.result
+        source: $.context.choice_num
