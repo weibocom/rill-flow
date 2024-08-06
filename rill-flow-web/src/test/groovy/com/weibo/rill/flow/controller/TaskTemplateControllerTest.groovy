@@ -23,11 +23,8 @@ import com.weibo.rill.flow.task.template.service.TaskTemplateService
 import spock.lang.Specification
 
 class TaskTemplateControllerTest extends Specification {
-    TaskTemplateController taskTemplateController = new TaskTemplateController()
     TaskTemplateService taskTemplateService = Mock(TaskTemplateService)
-    def setup() {
-        taskTemplateController.taskTemplateService = taskTemplateService
-    }
+    TaskTemplateController taskTemplateController = new TaskTemplateController(taskTemplateService: taskTemplateService)
 
     def "test getMetaDataList"() {
         given:

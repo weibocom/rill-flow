@@ -54,7 +54,7 @@ public class RuntimeStorage implements DAGInfoStorage, DAGContextStorage {
                           DAGInfoDeserializeService dagInfoDeserializeService, SwitcherManager switcherManagerImpl) {
         this.bizDConfs = bizDConfs;
 
-        DAGInfoRedisDAO dagInfoRedisDAO = new DAGInfoRedisDAO(redisClient, bizDConfs, dagInfoDeserializeService, switcherManagerImpl);
+        DAGInfoRedisDAO dagInfoRedisDAO = new DAGInfoRedisDAO(redisClient, bizDConfs, dagInfoDeserializeService);
         ContextRedisDAO contextRedisDAO = new ContextRedisDAO(redisClient, bizDConfs, switcherManagerImpl);
         this.runtimeRedisStorage = new DAGRedisStorage(dagInfoRedisDAO, contextRedisDAO);
 

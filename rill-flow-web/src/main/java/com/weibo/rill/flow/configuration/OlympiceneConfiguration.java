@@ -105,7 +105,8 @@ public class OlympiceneConfiguration {
             @Autowired @Qualifier("runtimeRedisClients") RedisClient redisClient,
             @Autowired DAGInfoDeserializeService dagInfoDeserializeService,
             @Autowired SwitcherManager switcherManagerImpl) {
-        return new RuntimeStorage(redisClient, dagClientPool.getRuntimeStorageClientIdToRedisClient(), bizDConfs, dagInfoDeserializeService, switcherManagerImpl);
+        return new RuntimeStorage(redisClient, dagClientPool.getRuntimeStorageClientIdToRedisClient(), bizDConfs,
+                dagInfoDeserializeService, switcherManagerImpl);
     }
 
     @Bean
