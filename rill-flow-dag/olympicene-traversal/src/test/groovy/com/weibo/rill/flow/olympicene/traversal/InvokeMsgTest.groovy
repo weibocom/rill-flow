@@ -127,7 +127,8 @@ class InvokeMsgTest extends Specification {
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getExecutionId() == "bigFlow" &&
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getCode() == "code" &&
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getMsg() == "msg" &&
-                    ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getExt() == ['ext':'info']
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getExt() == ['ext':'info'] &&
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getTask("A").getTaskInvokeMsg().getOutput() == ['flow_root_execution_id':'bigFlow', 'segments':['gopUrl']]
         })
     }
 }
