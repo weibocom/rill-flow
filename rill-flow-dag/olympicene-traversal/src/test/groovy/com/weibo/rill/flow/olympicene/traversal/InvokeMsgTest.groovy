@@ -32,6 +32,10 @@ class InvokeMsgTest extends Specification {
     SwitcherManager switcherManager = Mock(SwitcherManager.class)
     Olympicene olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, Mock(DefaultTimeChecker.class), switcherManager)
 
+    def setup() {
+        switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT") >> true
+    }
+
     def "big flow taskInfo and small flow dagInfo and small flow taskInfo invokeMsg"() {
         given:
         String bigFlowYaml = "version: 0.0.1\n" +
@@ -122,7 +126,8 @@ class InvokeMsgTest extends Specification {
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getExecutionId() == "bigFlow" &&
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getCode() == "code" &&
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getMsg() == "msg" &&
-                    ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getExt() == ['ext':'info']
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getDagInvokeMsg().getExt() == ['ext':'info'] &&
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getTask("A").getTaskInvokeMsg().getOutput() == ['flow_root_execution_id':'bigFlow', 'segments':['gopUrl']]
         })
     }
 }
