@@ -47,7 +47,8 @@ public class ObjectMapperFactory {
                 new NamedType(ForeachTask.class, "foreach"),
                 new NamedType(PassTask.class, "pass"),
                 new NamedType(SuspenseTask.class, "suspense"),
-                new NamedType(ReturnTask.class, "return")
+                new NamedType(ReturnTask.class, "return"),
+                new NamedType(SwitchTask.class, "switch")
         );
     }
 
@@ -69,7 +70,8 @@ public class ObjectMapperFactory {
                 new NamedType(ForeachTask.class, "foreach"),
                 new NamedType(PassTask.class, "pass"),
                 new NamedType(SuspenseTask.class, "suspense"),
-                new NamedType(ReturnTask.class, "return")
+                new NamedType(ReturnTask.class, "return"),
+                new NamedType(SwitchTask.class, "switch")
         );
     }
 

@@ -19,7 +19,10 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
@@ -29,7 +32,6 @@ import com.weibo.rill.flow.olympicene.core.lock.LockerKey;
 import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
-import com.weibo.rill.flow.olympicene.core.model.task.ReturnTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
@@ -49,7 +51,7 @@ import java.util.*;
 
 @Slf4j
 public abstract class AbstractTaskRunner implements TaskRunner {
-    private static final String NORMAL_SKIP_MSG = "skip due to dependent tasks return or degrade";
+    public static final String NORMAL_SKIP_MSG = "skip due to dependent tasks return or degrade";
     public static final String EXPECTED_COST = "expected_cost";
 
     protected final InputOutputMapping inputOutputMapping;
@@ -173,11 +175,11 @@ public abstract class AbstractTaskRunner implements TaskRunner {
             return CollectionUtils.isNotEmpty(dependentTasks) &&
                     dependentTasks.stream()
                             .allMatch(dependentTask -> {
-                                if ((dependentTask.getTask() instanceof ReturnTask) &&
-                                        dependentTask.getTaskStatus() == TaskStatus.SUCCEED) {
+                                if (dependentTask.getSkipNextTaskNames().contains(taskInfo.getName())) {
                                     return true;
                                 }
-                                if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade).map(Degrade::getFollowings).orElse(false)) {
+                                if (Optional.ofNullable(dependentTask.getTask()).map(BaseTask::getDegrade)
+                                        .map(Degrade::getFollowings).orElse(false)) {
                                     return true;
                                 }
                                 return dependentTask.getTaskStatus() == TaskStatus.SKIPPED &&
@@ -469,7 +471,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
         return siblingTaskInfos;
     }
 
-    private void setNextTaskSkipStatus(int length, Set<TaskInfo> skippedTasks, List<TaskInfo> nextTaskInfos, Set<String> dependedTaskNames) {
+    protected void setNextTaskSkipStatus(int length, Set<TaskInfo> skippedTasks, List<TaskInfo> nextTaskInfos, Set<String> dependedTaskNames) {
         if (length < 0 || CollectionUtils.isEmpty(nextTaskInfos)) {
             return;
         }

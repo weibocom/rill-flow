@@ -17,14 +17,13 @@
 package com.weibo.rill.flow.olympicene.traversal.config;
 
 import com.google.common.collect.Maps;
-import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.event.Callback;
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.result.DAGResultHandler;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.olympicene.traversal.DAGOperations;
 import com.weibo.rill.flow.olympicene.traversal.DAGTraversal;
 import com.weibo.rill.flow.olympicene.traversal.Olympicene;
@@ -88,6 +87,7 @@ public class OlympiceneFacade {
         ForeachTaskRunner foreachTaskRunner = new ForeachTaskRunner(mapping, jsonPath, dagContextStorage, dagInfoStorage, dagStorageProcedure, switcherManager);
         foreachTaskRunner.setStasher(stasher);
         ChoiceTaskRunner choiceTaskRunner = new ChoiceTaskRunner(mapping, dagContextStorage, dagInfoStorage, dagStorageProcedure, switcherManager);
+        SwitchTaskRunner switchTaskRunner = new SwitchTaskRunner(mapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
 
         Map<String, TaskRunner> runners = Maps.newConcurrentMap();
         runners.put(TaskCategory.FUNCTION.getValue(), functionTaskRunner);
@@ -96,6 +96,7 @@ public class OlympiceneFacade {
         runners.put(TaskCategory.SUSPENSE.getValue(), suspenseTaskRunner);
         runners.put(TaskCategory.PASS.getValue(), passTaskRunner);
         runners.put(TaskCategory.RETURN.getValue(), returnTaskRunner);
+        runners.put(TaskCategory.SWITCH.getValue(), switchTaskRunner);
         return runners;
     }
 }
