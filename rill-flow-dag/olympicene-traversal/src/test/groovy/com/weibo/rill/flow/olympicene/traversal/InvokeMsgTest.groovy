@@ -1,6 +1,5 @@
 package com.weibo.rill.flow.olympicene.traversal
 
-
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus
