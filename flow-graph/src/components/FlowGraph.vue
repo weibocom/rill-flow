@@ -72,7 +72,6 @@
 
     .sider {
       position: relative;
-
       z-index: 4;
       border: 1px solid rgb(0 0 0 / 8%);
       background-color: #f7f9fb;
