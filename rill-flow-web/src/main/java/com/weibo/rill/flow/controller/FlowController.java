@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -135,7 +136,8 @@ public class FlowController {
                                        @RequestParam(value = TASK_NAME) String taskName,
                                        @RequestParam(value = "status", required = false) String status,
                                        @RequestParam(value = "context", required = false) String queryContext,
-                                       @RequestBody(required = false) JSONObject context) {
+                                       @RequestBody(required = false) JSONObject context,
+                                       HttpServletRequest httpRequest) {
         JSONObject data = parseTriggerContext(queryContext, context);
         TaskInfo taskInfo = dagInfoStorage.getBasicTaskInfo(executionId, taskName);
         if (taskInfo == null) {

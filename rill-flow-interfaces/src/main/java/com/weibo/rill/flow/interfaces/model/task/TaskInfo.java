@@ -20,6 +20,7 @@ package com.weibo.rill.flow.interfaces.model.task;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.weibo.rill.flow.interfaces.model.exception.DAGException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,7 @@ import java.util.*;
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "@json_id"
 )
+@EqualsAndHashCode(of = {"name", "routeName", "taskStatus"})
 public class TaskInfo {
     private BaseTask task;
 
@@ -62,6 +64,8 @@ public class TaskInfo {
     private TaskInfo parent;
     private Map<String, TaskInfo> children = new LinkedHashMap<>();
     private List<TaskInfo> dependencies = new LinkedList<>();
+
+    private Set<String> skipNextTaskNames = new HashSet<>();
 
     @Override
     public String toString() {
@@ -99,6 +103,7 @@ public class TaskInfo {
         Optional.ofNullable(taskInfo.getSubGroupKeyJudgementMapping()).filter(it -> !it.isEmpty()).ifPresent(this::setSubGroupKeyJudgementMapping);
         Optional.ofNullable(taskInfo.getSubGroupIndexToIdentity()).filter(it -> !it.isEmpty()).ifPresent(this::setSubGroupIndexToIdentity);
         Optional.ofNullable(taskInfo.getTaskInvokeMsg()).ifPresent(this::setTaskInvokeMsg);
+        Optional.ofNullable(taskInfo.getSkipNextTaskNames()).ifPresent(this::setSkipNextTaskNames);
         if (children == null) {
             children = new LinkedHashMap<>();
         }
@@ -135,6 +140,7 @@ public class TaskInfo {
         taskInfoClone.setName(taskInfo.getName());
         taskInfoClone.setRouteName(taskInfo.getRouteName());
         taskInfoClone.setTaskStatus(taskInfo.getTaskStatus());
+        taskInfoClone.setSkipNextTaskNames(taskInfo.getSkipNextTaskNames());
         taskInfoClone.setSubGroupIndexToStatus(taskInfo.getSubGroupIndexToStatus());
         taskInfoClone.setSubGroupKeyJudgementMapping(taskInfo.getSubGroupKeyJudgementMapping());
         taskInfoClone.setSubGroupIndexToIdentity(taskInfo.getSubGroupIndexToIdentity());

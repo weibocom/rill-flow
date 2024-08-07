@@ -193,6 +193,18 @@ public class OlympiceneAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(name = "switchTaskRunner")
+    public SwitchTaskRunner switchTaskRunner(
+            @Autowired @Qualifier("dagContextStorage") DAGContextStorage dagContextStorage,
+            @Autowired @Qualifier("dagInfoStorage") DAGInfoStorage dagInfoStorage,
+            @Autowired @Qualifier("dagStorageProcedure") DAGStorageProcedure dagStorageProcedure,
+            @Autowired @Qualifier("inputOutputMapping") JSONPathInputOutputMapping inputOutputMapping,
+            @Autowired SwitcherManager switcherManager) {
+        log.info("begin to init default switchTaskRunner bean");
+        return new SwitchTaskRunner(inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(name = "returnTaskRunner")
     public ReturnTaskRunner returnTaskRunner(
             @Autowired @Qualifier("dagContextStorage") DAGContextStorage dagContextStorage,
@@ -240,7 +252,8 @@ public class OlympiceneAutoConfiguration {
             @Autowired @Qualifier("suspenseTaskRunner") SuspenseTaskRunner suspenseTaskRunner,
             @Autowired @Qualifier("returnTaskRunner") ReturnTaskRunner returnTaskRunner,
             @Autowired @Qualifier("foreachTaskRunner") ForeachTaskRunner foreachTaskRunner,
-            @Autowired @Qualifier("choiceTaskRunner") ChoiceTaskRunner choiceTaskRunner) {
+            @Autowired @Qualifier("choiceTaskRunner") ChoiceTaskRunner choiceTaskRunner,
+            @Autowired @Qualifier("switchTaskRunner") SwitchTaskRunner switchTaskRunner) {
         log.info("begin to init default Map<TaskCategory, TaskRunner> bean");
         Map<String, TaskRunner> taskRunners = Maps.newConcurrentMap();
         taskRunners.put(TaskCategory.FUNCTION.getValue(), functionTaskRunner);
@@ -249,6 +262,7 @@ public class OlympiceneAutoConfiguration {
         taskRunners.put(TaskCategory.RETURN.getValue(), returnTaskRunner);
         taskRunners.put(TaskCategory.FOREACH.getValue(), foreachTaskRunner);
         taskRunners.put(TaskCategory.CHOICE.getValue(), choiceTaskRunner);
+        taskRunners.put(TaskCategory.SWITCH.getValue(), switchTaskRunner);
         return taskRunners;
     }
 

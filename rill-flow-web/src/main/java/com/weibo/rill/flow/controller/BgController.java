@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableMap;
 import com.weibo.rill.flow.common.model.DAGRecord;
-import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
@@ -30,8 +29,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -115,7 +114,7 @@ public class BgController {
             });
         });
 
-        dagRecordList.sort((a, b) -> b.getCreateTime().compareTo(a.getCreateTime()));
+        dagRecordList.sort((a, b) -> b.getUpdateTime().compareTo(a.getUpdateTime()));
 
         log.info("record curr:{}, pageSize:{}, result:{}", current, pageSize, result.toJSONString());
         return Map.of("items", dagRecordList, "total", dagRecordList.size());
