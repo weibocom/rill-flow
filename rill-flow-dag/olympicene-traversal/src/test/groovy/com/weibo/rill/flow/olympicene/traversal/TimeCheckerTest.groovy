@@ -37,10 +37,11 @@ class TimeCheckerTest extends Specification {
     DefaultTimeChecker timeChecker = new DefaultTimeChecker()
     Olympicene olympicene
     String executionId = 'executionId'
+    SwitcherManager switcherManager = Mock(SwitcherManager.class)
 
     def setup() {
         timeChecker.redisClient = Mock(RedisClient.class)
-        SwitcherManager switcherManager = Mock(SwitcherManager.class)
+        switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT") >> true
         olympicene = OlympiceneFacade.build(dagStorage, dagStorage, callback, dispatcher, dagStorageProcedure, timeChecker, switcherManager)
         timeChecker.timeCheckRunner = olympicene.dagOperations.timeCheckRunner
     }
@@ -311,6 +312,7 @@ class TimeCheckerTest extends Specification {
 
     def "dag timeout config value check"() {
         given:
+        switcherManager.getSwitcherState("ENABLE_SET_INPUT_OUTPUT") >> false
         String text = "version: 0.0.1\n" +
                 "namespace: olympicene\n" +
                 "service: mca\n" +
