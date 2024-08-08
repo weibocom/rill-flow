@@ -39,7 +39,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -144,8 +143,6 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
                     responseEntity = restTemplate.postForEntity(new URI(url), requestEntity, String.class);
                 }
                 return responseEntity.getBody();
-            } catch (RestClientResponseException e) {
-                throw e;
             } catch (Exception e) {
                 cause = e.getMessage();
             } finally {
@@ -161,10 +158,14 @@ public class HttpInvokeHelperImpl implements HttpInvokeHelper {
             int code = responseEntity == null ? 500 : responseEntity.getStatusCode().value();
             // 打印 http_access 日志
             Object requestBody = parseBodyForHttpAccessLog(requestEntity.getBody());
+<<<<<<< HEAD
             String responseBody = responseEntity == null ? "" : responseEntity.getBody();
             if (responseBody == null) {
                 responseBody = "";
             }
+=======
+            String responseBody = (responseEntity == null || responseEntity.getBody() == null) ? "" : responseEntity.getBody();
+>>>>>>> 7906cbd29edf940d8062ae4588283eb29099cc18
             int responseLength = responseBody.length();
             responseBody = StringUtils.substring(responseBody, 0, 1000);
             httpAccessLogger.info("{} {} {} {} {} {} {}", timeout, method, code, responseLength, url, requestBody, responseBody);
