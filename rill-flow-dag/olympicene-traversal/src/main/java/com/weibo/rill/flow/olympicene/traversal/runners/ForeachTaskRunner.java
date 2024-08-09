@@ -115,6 +115,9 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
             Map<String, Object> subContext = Maps.newConcurrentMap();
             subContext.putAll(input);
             subContext.put(iterationMapping.getItem(), item);
+            if (StringUtils.isEmpty(iterationMapping.getIndex())) {
+                subContext.put(iterationMapping.getIndex(), groupIndex);
+            }
             // record whether the subtask is key
             if (existKeyExp(taskInfo)) {
                 for (TaskInfo subTaskInfo : subTaskInfos) {
