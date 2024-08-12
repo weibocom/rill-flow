@@ -94,8 +94,12 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
         }
 
         // 查询数据库，填充列表
-        List<TaskTemplateDO> taskTemplateDOList = getTaskTemplatesFromDB(params, pageSize, preSize);
-        taskTemplateDOList.forEach(taskTemplateDO -> taskTemplateList.add(turnTaskTemplateDOToTemplatePrototype(taskTemplateDO)));
+        try {
+            List<TaskTemplateDO> taskTemplateDOList = getTaskTemplatesFromDB(params, pageSize, preSize);
+            taskTemplateDOList.forEach(taskTemplateDO -> taskTemplateList.add(turnTaskTemplateDOToTemplatePrototype(taskTemplateDO)));
+        } catch (Exception e) {
+            log.warn("getTaskTemplatesFromDB error", e);
+        }
 
         return taskTemplateList;
     }

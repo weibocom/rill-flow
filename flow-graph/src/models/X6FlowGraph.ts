@@ -183,7 +183,7 @@ export class X6FlowGraph implements FlowGraph {
     if (opt !== OptEnum.CREATE) {
       this.initGraphCells();
     }
-    this.graph.resize(document.body.offsetWidth, document.body.offsetHeight);
+    this.graph.resize(document.body.offsetWidth, document.body.offsetHeight * 0.85);
   }
 
   public addEdge(rillEdge: Edge) {
