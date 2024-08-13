@@ -16,7 +16,6 @@
 
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
-import com.google.common.collect.Sets;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
@@ -63,19 +62,16 @@ public class ReturnTaskRunner extends AbstractTaskRunner {
         boolean needReturn = ConditionsUtil.conditionsAllMatch(returnTask.getConditions(), input, "input");
         log.info("needReturn conditions {}", needReturn);
 
-        Set<TaskInfo> taskInfosNeedToUpdate = Sets.newHashSet();
         if (!needReturn) {
             taskInfo.setTaskStatus(TaskStatus.SKIPPED);
         } else {
-            skipFollowingTasks(executionId, taskInfo, taskInfosNeedToUpdate);
-            // 标记所有后继节点为需要跳过，上线后可删除 skipFollowingTasks 方法的调用
+            // 标记所有后继节点为需要跳过
             taskInfo.setSkipNextTaskNames(taskInfo.getNext().stream().map(TaskInfo::getName).collect(Collectors.toSet()));
             taskInfo.setTaskStatus(TaskStatus.SUCCEED);
         }
-        taskInfosNeedToUpdate.add(taskInfo);
         updateTaskInvokeEndTime(taskInfo);
 
-        dagInfoStorage.saveTaskInfos(executionId, taskInfosNeedToUpdate);
+        dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
         log.info("run return task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
 
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
