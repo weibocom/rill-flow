@@ -112,12 +112,7 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
             Map<String, TaskInfo> taskInfoMap = TaskInfoMaker.getMaker().makeTaskInfos(foreachTask.getTasks(), taskInfo, groupIndex);
             Set<TaskInfo> subTaskInfos = new HashSet<>(taskInfoMap.values());
 
-            Map<String, Object> subContext = Maps.newConcurrentMap();
-            subContext.putAll(input);
-            subContext.put(iterationMapping.getItem(), item);
-            if (StringUtils.isNotEmpty(iterationMapping.getIndex())) {
-                subContext.put(iterationMapping.getIndex(), groupIndex);
-            }
+            Map<String, Object> subContext = buildSubContext(input, item, iterationMapping, groupIndex);
             // record whether the subtask is key
             if (existKeyExp(taskInfo)) {
                 for (TaskInfo subTaskInfo : subTaskInfos) {
@@ -147,6 +142,17 @@ public class ForeachTaskRunner extends AbstractTaskRunner {
 
         log.info("run foreach task completed, executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).subTaskInfosAndContext(readyToRun).build();
+    }
+
+    private static Map<String, Object> buildSubContext(Map<String, Object> input, Object item,
+                                                       IterationMapping iterationMapping, int groupIndex) {
+        Map<String, Object> subContext = Maps.newConcurrentMap();
+        subContext.putAll(input);
+        subContext.put(iterationMapping.getItem(), item);
+        if (StringUtils.isNotEmpty(iterationMapping.getIndex())) {
+            subContext.put(iterationMapping.getIndex(), groupIndex);
+        }
+        return subContext;
     }
 
     private boolean isKeySubTask(String executionId, Map<String, Object> subContext, TaskInfo it) {
