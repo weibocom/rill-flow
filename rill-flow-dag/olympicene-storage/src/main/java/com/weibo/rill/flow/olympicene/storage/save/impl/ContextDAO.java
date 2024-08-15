@@ -140,7 +140,7 @@ public class ContextDAO {
 
     protected int contextMaxLength(String executionId) {
         log.debug("contextMaxLength length:10000 executionId:{}", executionId);
-        return 10000;
+        return Integer.MAX_VALUE;
     }
     // 目前只支持修改时间及context长度检查设置
     // ------------------------------------------------------
