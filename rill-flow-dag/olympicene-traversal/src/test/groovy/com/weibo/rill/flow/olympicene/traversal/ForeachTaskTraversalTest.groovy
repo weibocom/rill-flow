@@ -198,6 +198,7 @@ class ForeachTaskTraversalTest extends Specification {
                 "  iterationMapping:\n" +
                 "      collection: \$.input.segments\n" +
                 "      item: segmentUrl\n" +
+                "      index: subIndex\n" +
                 "  outputMappings:\n" +
                 "    - target: \$.context.gopUrls\n" +
                 "      source: \$.output.sub_context.[*].gopUrl\n" +
@@ -210,6 +211,8 @@ class ForeachTaskTraversalTest extends Specification {
                 "       inputMappings:\n" +
                 "          - target: \$.input.segmentUrl\n" +
                 "            source: \$.context.segmentUrl\n" +
+                "          - target: \$.input.subIndex\n" +
+                "            source: \$.context.subIndex\n" +
                 "       outputMappings:\n" +
                 "          - target: \$.context.gopUrl\n" +
                 "            source: \$.output.gopUrl\n" +
@@ -262,8 +265,8 @@ class ForeachTaskTraversalTest extends Specification {
                         ((DAGCallbackInfo) event.data).context == ['url': 'http://test.com/result', 'segments': ['gopUrl1', 'gopUrl2'], 'gopUrls': ['gopResultUrl2', 'gopResultUrl1']]
         })
         1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'A' && it.input == ['url': 'http://test.com/test'] })
-        1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'B_0-B1' && it.input == ['segmentUrl': 'gopUrl1'] })
-        1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'B_1-B1' && it.input == ['segmentUrl': 'gopUrl2'] })
+        1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'B_0-B1' && it.input == ['segmentUrl': 'gopUrl1', 'subIndex': 0] })
+        1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'B_1-B1' && it.input == ['segmentUrl': 'gopUrl2', 'subIndex': 1] })
         1 * dispatcher.dispatch({ it -> it.taskInfo.name == 'C' && it.input == ['gopUrls': ['gopResultUrl2', 'gopResultUrl1']] })
     }
 
