@@ -29,15 +29,18 @@ import lombok.Setter;
 public class IterationMapping {
     private String collection;
     private String item;
+    private String index;
     private String identity;
 
     @JsonCreator
     public IterationMapping(
             @JsonProperty("collection") String collection,
             @JsonProperty("item") String item,
+            @JsonProperty("index") String index,
             @JsonProperty("identity") String identity) {
         this.collection = collection;
         this.item = item;
+        this.index = index;
         this.identity = identity;
     }
 }
