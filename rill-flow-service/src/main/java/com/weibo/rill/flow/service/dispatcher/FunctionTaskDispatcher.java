@@ -46,16 +46,19 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
     private final DescriptorManager descriptorManager;
     private final HttpInvokeHelper httpInvokeHelper;
     public static final Map<String, DispatcherExtension> protocolDispatcherMap = new ConcurrentHashMap<>();
+
     public FunctionTaskDispatcher(@Autowired @Qualifier("functionDispatcher") FunctionProtocolDispatcher functionDispatcher,
                                   @Autowired FlowProtocolDispatcher flowDispatcher,
                                   @Autowired @Qualifier("httpDispatcher") HttpProtocolDispatcher httpDispatcher,
                                   @Autowired @Qualifier("resourceDispatcher") ResourceProtocolDispatcher resourceDispatcher,
                                   @Autowired @Qualifier("resourceRefDispatcher") ResourceRefProtocolDispatcher resourceRefDispatcher,
+                                  @Autowired @Qualifier("sseDispatcher") SseProtocolDispatcher sseDispatcher,
                                   @Autowired DescriptorManager descriptorManager,
                                   @Autowired HttpInvokeHelper httpInvokeHelper) {
         protocolDispatcherMap.put("function", functionDispatcher);
         protocolDispatcherMap.put("http", httpDispatcher);
         protocolDispatcherMap.put("https", httpDispatcher);
+        protocolDispatcherMap.put("sse", sseDispatcher);
         protocolDispatcherMap.put("rillflow", flowDispatcher);
         protocolDispatcherMap.put("resource", resourceDispatcher);
         protocolDispatcherMap.put("resourceRef", resourceRefDispatcher);

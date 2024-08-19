@@ -65,6 +65,7 @@
         <module>rill-flow-trigger</module>
         <module>rill-flow-task-template</module>
         <module>rill-flow-test</module>
+        <module>rill-flow-executors</module>
     </modules>
 
     <properties>
