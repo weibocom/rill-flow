@@ -133,10 +133,9 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      */
     private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
-        DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
-        String rootName = dagWalkHelper.getRootName(taskInfo.getName());
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim).filter(StringUtils::isNotBlank)
-                .map(it -> dagWalkHelper.isAncestorTask(taskInfo.getName())? it: rootName + ReservedConstant.TASK_NAME_CONNECTOR + it)
+                .map(it -> DAGWalkHelper.getInstance().isAncestorTask(taskInfo.getName())
+                        ? it: DAGWalkHelper.getInstance().getRootName(taskInfo.getName()) + ReservedConstant.TASK_NAME_CONNECTOR + it)
                 .collect(Collectors.toSet());
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
