@@ -137,7 +137,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
         Set<String> currentTaskNames = new HashSet<>();
         DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
-        if (dagWalkHelper.isAncestorTask(taskInfo.getName())) {
+        if (!dagWalkHelper.isAncestorTask(taskInfo.getName())) {
             String rootName = dagWalkHelper.getRootName(taskInfo.getName());
             for (String nextTaskName : nextTaskNames) {
                 currentTaskNames.add(rootName + ReservedConstant.TASK_NAME_CONNECTOR + nextTaskName);
