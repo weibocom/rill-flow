@@ -4,6 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
+import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.Switch;
 import com.weibo.rill.flow.olympicene.core.model.task.SwitchTask;
@@ -133,17 +135,22 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        Map<String, TaskInfo> siblingTaskInfos = getSiblingTaskInfoMap(executionId, taskInfo);
-        List<TaskInfo> currentTaskNext = Optional.ofNullable(siblingTaskInfos.get(taskInfo.getName())).map(TaskInfo::getNext).orElse(null);
-        if (currentTaskNext == null) {
-            return false;
+        Set<String> currentTaskNames = new HashSet<>();
+        DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
+        if (dagWalkHelper.isAncestorTask(taskInfo.getName())) {
+            String baseTaskName = dagWalkHelper.getBaseTaskName(taskInfo);
+            for (String nextTaskName : nextTaskNames) {
+                currentTaskNames.add(baseTaskName + ReservedConstant.TASK_NAME_CONNECTOR + nextTaskName);
+            }
+        } else {
+            currentTaskNames.addAll(nextTaskNames);
         }
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
         if (!condition) {
-            skipTaskNames.addAll(nextTaskNames);
+            skipTaskNames.addAll(currentTaskNames);
         } else {
-            runTaskNames.addAll(nextTaskNames);
+            runTaskNames.addAll(currentTaskNames);
         }
         return condition;
     }
