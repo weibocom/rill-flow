@@ -135,13 +135,11 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        Set<String> currentTaskNames;
+        Set<String> currentTaskNames = nextTaskNames;
         DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
         if (!dagWalkHelper.isAncestorTask(taskInfo.getName())) {
             String rootName = dagWalkHelper.getRootName(taskInfo.getName());
             currentTaskNames = nextTaskNames.stream().map(it -> rootName + ReservedConstant.TASK_NAME_CONNECTOR + it).collect(Collectors.toSet());
-        } else {
-            currentTaskNames = nextTaskNames;
         }
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
