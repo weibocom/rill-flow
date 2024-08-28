@@ -69,19 +69,21 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
             try {
                 String source = mapping.getSource();
                 Object sourceValue = null;
-                String[] infos = source.split("\\.");
-                if (source.startsWith("$.tasks.") && infos.length > 3) {
-                    String taskName = infos[2];
-                    String key = infos[3];
-                    if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
-                        sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
-                        String[] queryInfos = source.split("\\?");
-                        if (queryInfos.length > 0) {
-                            sourceValue += '&' + queryInfos[1];
+                if (source != null) {
+                    String[] infos = source.split("\\.");
+                    if (source.startsWith("$.tasks.") && infos.length > 3) {
+                        String taskName = infos[2];
+                        String key = infos[3];
+                        if (key.equals("trigger_url") || key.startsWith("trigger_url?")) {
+                            sourceValue = serverHost + rillFlowFunctionTriggerUri + "?execution_id=" + context.get("flow_execution_id") + "&task_name=" + taskName;
+                            String[] queryInfos = source.split("\\?");
+                            if (queryInfos.length > 0) {
+                                sourceValue += '&' + queryInfos[1];
+                            }
                         }
+                    } else {
+                        sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
                     }
-                } else {
-                    sourceValue = source.startsWith("$") ? getValue(map, source) : parseSource(source);
                 }
 
                 Object transformedValue = transformSourceValue(sourceValue, context, input, output, mapping.getTransform());
