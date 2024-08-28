@@ -61,7 +61,8 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         map.put("output", output);
 
         List<Mapping> mappingRules = rules.stream()
-                .filter(rule -> StringUtils.isNoneBlank(rule.getSource()) && StringUtils.isNoneBlank(rule.getTarget()))
+                .filter(rule -> (StringUtils.isNotBlank(rule.getSource()) || StringUtils.isNotBlank(rule.getTransform()))
+                        && StringUtils.isNotBlank(rule.getTarget()))
                 .toList();
         for (Mapping mapping : mappingRules) {
             boolean intolerance = mapping.getTolerance() != null && !mapping.getTolerance();
