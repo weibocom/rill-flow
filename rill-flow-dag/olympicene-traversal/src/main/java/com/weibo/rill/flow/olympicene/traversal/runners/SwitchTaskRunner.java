@@ -62,7 +62,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
         // 计算 switch 节点的后继节点中，哪些节点应该被跳过
         // 并将可能需要跳过的节点名称记录在 skipNextTaskNames HashSet 中，避免后继节点同时依赖多个 switch 节点或 return 节点的情况
         // 后继节点同时依赖多个 switch 节点或 return 节点的情况在 AbstractTaskRunner 类的 needNormalSkip 方法中进行判断
-        Set<String> skipTaskNames = calculateConditions(taskInfo, input, switches);
+        Set<String> skipTaskNames = calculateConditions(executionId, taskInfo, input, switches);
         taskInfo.getSkipNextTaskNames().addAll(skipTaskNames);
 
         // 更新当前节点状态和完成事件
@@ -82,7 +82,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      * @param switches switch 节点的所有 condition
      * @return 需要跳过的节点名称集合
      */
-    private static Set<String> calculateConditions(TaskInfo taskInfo, Map<String, Object> input, List<Switch> switches) {
+    private Set<String> calculateConditions(String executionId, TaskInfo taskInfo, Map<String, Object> input, List<Switch> switches) {
         Set<String> skipTaskNames = new HashSet<>();
         Set<String> runTaskNames = new HashSet<>();
         DefaultSwitch defaultSwitch = new DefaultSwitch();
@@ -91,7 +91,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             if (DEFAULT_CONDITION.equals(it.getCondition())) {
                 defaultSwitch.getDefaultConditions().add(it);
             } else {
-                boolean condition = calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch);
+                boolean condition = calculateCondition(executionId, taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch);
                 // 只要有一个 condition 命中，则不需要执行 default 节点
                 if (condition) {
                     defaultSwitch.setNeedDefault(false);
@@ -103,7 +103,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
             }
         });
         // 循环处理所有 default condition
-        defaultSwitch.getDefaultConditions().forEach(it -> calculateCondition(taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch));
+        defaultSwitch.getDefaultConditions().forEach(it -> calculateCondition(executionId, taskInfo, input, it, skipTaskNames, runTaskNames, defaultSwitch));
 
         // 如果多个 condition 共用了 next 节点，只要有任何一个 condition 命中，则该 next 节点就应该被执行
         // 因此删除 skipTaskNames 中与 runTaskNames 重合的节点名称
@@ -129,10 +129,15 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      * @param defaultSwitch 默认 condition 信息
      * @return 是否命中规则
      */
-    private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
+    private boolean calculateCondition(String executionId, TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+        Map<String, TaskInfo> siblingTaskInfos = getSiblingTaskInfoMap(executionId, taskInfo);
+        List<TaskInfo> currentTaskNext = Optional.ofNullable(siblingTaskInfos.get(taskInfo.getName())).map(TaskInfo::getNext).orElse(null);
+        if (currentTaskNext == null) {
+            return false;
+        }
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
         if (!condition) {
