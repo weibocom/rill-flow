@@ -372,6 +372,69 @@ class SwitchTaskTraversalTest extends Specification {
         })
     }
 
+    def "test switch with default"() {
+        given:
+        String text = "workspace: default\n" +
+                "dagName: testSwitch5\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "inputSchema: '[{\"required\":true,\"name\":\"input\",\"type\":\"Number\",\"desc\":\"input\"}]'\n" +
+                "tasks:\n" +
+                "  - name: caseA\n" +
+                "    description: ''\n" +
+                "    category: pass\n" +
+                "    title: ''\n" +
+                "  - name: caseB\n" +
+                "    description: ''\n" +
+                "    category: pass\n" +
+                "    title: ''\n" +
+                "  - name: caseC\n" +
+                "    description: ''\n" +
+                "    category: pass\n" +
+                "    title: ''\n" +
+                "  - name: caseD\n" +
+                "    description: ''\n" +
+                "    category: pass\n" +
+                "    title: ''\n" +
+                "  - name: switch\n" +
+                "    switches:\n" +
+                "      - next: caseA\n" +
+                "        condition: \$.input.[?(@.input == 0)]\n" +
+                "        break: true\n" +
+                "      - next: caseB\n" +
+                "        condition: \$.input.[?(@.input <= 5)]\n" +
+                "        break: true\n" +
+                "      - next: caseC\n" +
+                "        condition: \$.input.[?(@.input <= 10)]\n" +
+                "        break: true\n" +
+                "      - next: caseD\n" +
+                "        condition: default\n" +
+                "        break: true\n" +
+                "    description: ''\n" +
+                "    inputMappings:\n" +
+                "      - source: \$.context.input\n" +
+                "        target: \$.input.input\n" +
+                "    category: switch\n" +
+                "    title: ''\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit("executionIdSuccess", dag, ['input':15])
+
+        then:
+        noExceptionThrown()
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.DAG_SUCCEED.getCode() &&
+                        ((DAGCallbackInfo)event.data).dagInfo.dagStatus == DAGStatus.SUCCEED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseA').taskStatus == TaskStatus.SKIPPED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseB').taskStatus == TaskStatus.SKIPPED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseC').taskStatus == TaskStatus.SKIPPED &&
+                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseD').taskStatus == TaskStatus.SUCCEED
+            }
+        })
+    }
+
     def "test switch in sub task"() {
         given:
         String text = "workspace: default\n" +
@@ -447,69 +510,6 @@ class SwitchTaskTraversalTest extends Specification {
                 event.eventCode == DAGEvent.TASK_FINISH.getCode() && event.getData() instanceof DAGCallbackInfo
                         && ((DAGCallbackInfo) event.getData()).getTaskInfo().getName().equals("foreach_1-B")
                         && ((DAGCallbackInfo) event.getData()).getTaskInfo().getTaskStatus() == TaskStatus.SUCCEED
-            }
-        })
-    }
-
-    def "test switch with default"() {
-        given:
-        String text = "workspace: default\n" +
-                "dagName: testSwitch5\n" +
-                "alias: release\n" +
-                "type: flow\n" +
-                "inputSchema: '[{\"required\":true,\"name\":\"input\",\"type\":\"Number\",\"desc\":\"input\"}]'\n" +
-                "tasks:\n" +
-                "  - name: caseA\n" +
-                "    description: ''\n" +
-                "    category: pass\n" +
-                "    title: ''\n" +
-                "  - name: caseB\n" +
-                "    description: ''\n" +
-                "    category: pass\n" +
-                "    title: ''\n" +
-                "  - name: caseC\n" +
-                "    description: ''\n" +
-                "    category: pass\n" +
-                "    title: ''\n" +
-                "  - name: caseD\n" +
-                "    description: ''\n" +
-                "    category: pass\n" +
-                "    title: ''\n" +
-                "  - name: switch\n" +
-                "    switches:\n" +
-                "      - next: caseA\n" +
-                "        condition: \$.input.[?(@.input == 0)]\n" +
-                "        break: true\n" +
-                "      - next: caseB\n" +
-                "        condition: \$.input.[?(@.input <= 5)]\n" +
-                "        break: true\n" +
-                "      - next: caseC\n" +
-                "        condition: \$.input.[?(@.input <= 10)]\n" +
-                "        break: true\n" +
-                "      - next: caseD\n" +
-                "        condition: default\n" +
-                "        break: true\n" +
-                "    description: ''\n" +
-                "    inputMappings:\n" +
-                "      - source: \$.context.input\n" +
-                "        target: \$.input.input\n" +
-                "    category: switch\n" +
-                "    title: ''\n"
-        DAG dag = dagParser.parse(text)
-
-        when:
-        olympicene.submit("executionIdSuccess", dag, ['input':15])
-
-        then:
-        noExceptionThrown()
-        1 * callback.onEvent({
-            Event event -> {
-                event.eventCode == DAGEvent.DAG_SUCCEED.getCode() &&
-                        ((DAGCallbackInfo)event.data).dagInfo.dagStatus == DAGStatus.SUCCEED &&
-                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseA').taskStatus == TaskStatus.SKIPPED &&
-                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseB').taskStatus == TaskStatus.SKIPPED &&
-                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseC').taskStatus == TaskStatus.SKIPPED &&
-                        ((DAGCallbackInfo)event.data).dagInfo.tasks.get('caseD').taskStatus == TaskStatus.SUCCEED
             }
         })
     }
