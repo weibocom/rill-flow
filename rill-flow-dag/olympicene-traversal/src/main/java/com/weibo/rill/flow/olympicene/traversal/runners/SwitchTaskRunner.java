@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
-import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.Switch;
@@ -135,7 +134,7 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim).filter(StringUtils::isNotBlank)
                 .map(it -> DAGWalkHelper.getInstance().isAncestorTask(taskInfo.getName())
-                        ? it: DAGWalkHelper.getInstance().getRootName(taskInfo.getName()) + ReservedConstant.TASK_NAME_CONNECTOR + it)
+                        ? it: DAGWalkHelper.getInstance().buildTaskInfoName(DAGWalkHelper.getInstance().getRootName(taskInfo.getName()), it))
                 .collect(Collectors.toSet());
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
