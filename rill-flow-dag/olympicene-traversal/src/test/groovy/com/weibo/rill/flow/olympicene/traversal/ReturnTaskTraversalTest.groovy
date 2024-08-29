@@ -75,6 +75,92 @@ class ReturnTaskTraversalTest extends Specification {
         })
     }
 
+    def "if return task is in sub task"() {
+        given:
+        String text = "workspace: default\n" +
+                "dagName: switchSubTask\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "inputSchema: '[]'\n" +
+                "tasks:\n" +
+                "  - name: foreach\n" +
+                "    description: ''\n" +
+                "    synchronization:\n" +
+                "      conditions: []\n" +
+                "    iterationMapping:\n" +
+                "      item: info\n" +
+                "      index: index\n" +
+                "      collection: \$.input.infos_array\n" +
+                "    inputMappings:\n" +
+                "      - transform: return seq.list(0, 1, 2);\n" +
+                "        target: \$.input.infos_array\n" +
+                "    category: foreach\n" +
+                "    tasks:\n" +
+                "      - name: A\n" +
+                "        description: ''\n" +
+                "        category: pass\n" +
+                "        title: ''\n" +
+                "      - name: B\n" +
+                "        description: ''\n" +
+                "        category: pass\n" +
+                "        title: ''\n" +
+                "      - name: returnA\n" +
+                "        category: return\n" +
+                "        title: ''\n" +
+                "        description: ''\n" +
+                "        inputMappings:\n" +
+                "          - source: \$.context.index\n" +
+                "            target: \$.input.index\n" +
+                "        conditions:\n" +
+                "          - \$.input.[?(@.index == 1)]\n" +
+                "        next: A\n" +
+                "      - name: returnB\n" +
+                "        category: return\n" +
+                "        title: ''\n" +
+                "        description: ''\n" +
+                "        inputMappings:\n" +
+                "          - source: \$.context.index\n" +
+                "            target: \$.input.index\n" +
+                "        conditions:\n" +
+                "          - \$.input.[?(@.index == 0)]\n" +
+                "        next: B\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit("executionIdSuccess", dag, ['input':15])
+
+        then:
+        noExceptionThrown()
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.TASK_FINISH.getCode() && event.getData() instanceof DAGCallbackInfo
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getName().equals("foreach_0-A")
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getTaskStatus() == TaskStatus.SUCCEED
+            }
+        })
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.TASK_SKIPPED.getCode() && event.getData() instanceof DAGCallbackInfo
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getName().equals("foreach_0-B")
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getTaskStatus() == TaskStatus.SKIPPED
+            }
+        })
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.TASK_SKIPPED.getCode() && event.getData() instanceof DAGCallbackInfo
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getName().equals("foreach_1-A")
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getTaskStatus() == TaskStatus.SKIPPED
+            }
+        })
+        1 * callback.onEvent({
+            Event event -> {
+                event.eventCode == DAGEvent.TASK_FINISH.getCode() && event.getData() instanceof DAGCallbackInfo
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getName().equals("foreach_1-B")
+                        && ((DAGCallbackInfo) event.getData()).getTaskInfo().getTaskStatus() == TaskStatus.SUCCEED
+            }
+        })
+    }
+
     def "if return task status is skip then next tasks status should not be skip"() {
         given:
         String text = "version: 0.0.1\n" +
