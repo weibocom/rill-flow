@@ -20,5 +20,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <import resource="classpath:spring/web-mvc.xml"/>
+    <import resource="classpath:spring/service-httpclient.xml"/>
     <import resource="classpath:spring/service-pool-executor.xml"/>
 </beans>

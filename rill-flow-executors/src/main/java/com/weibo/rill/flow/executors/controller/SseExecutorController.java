@@ -19,7 +19,7 @@ public class SseExecutorController {
     @Resource
     private ThreadPoolExecutor sseThreadPoolExecutor;
     @Resource
-    private RestTemplate restTemplate;
+    private RestTemplate rillFlowSSEHttpTemplate;
 
     @ApiOperation(value = "派发sse任务")
     @PostMapping(value = "dispatch.json")

@@ -20,7 +20,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--rill flow ok http client start-->
-    <bean id="rillFlowSSeHttpTemplate" class="org.springframework.web.client.RestTemplate">
+    <bean id="rillFlowSSEHttpTemplate" class="org.springframework.web.client.RestTemplate">
         <property name="requestFactory" ref="rillFlowHttpRequestFactory"/>
         <constructor-arg index="0">
             <list>
@@ -44,13 +44,13 @@
 
     <bean id="rillFlowHttpRequestFactory"
           class="org.springframework.http.client.OkHttp3ClientHttpRequestFactory">
-        <constructor-arg name="client" ref="rillFlowHttpClient"/>
+        <constructor-arg name="client" ref="rillFlowSSEHttpClient"/>
     </bean>
 
-    <bean id="rillFlowHttpClient" class="com.weibo.rill.flow.executors.factory.OkHttpClientFactoryBean">
+    <bean id="rillFlowSSEHttpClient" class="com.weibo.rill.flow.executors.factory.OkHttpClientFactoryBean">
         <property name="connectTimeOut" value="500"/>
-        <property name="writeTimeOut" value="1500"/>
-        <property name="readTimeOut" value="1500"/>
+        <property name="writeTimeOut" value="3600000"/>
+        <property name="readTimeOut" value="3600000"/>
         <property name="connectionPool">
             <bean class="okhttp3.ConnectionPool">
                 <constructor-arg name="maxIdleConnections" value="10"/>
