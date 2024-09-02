@@ -16,7 +16,6 @@
 
 package com.weibo.rill.flow.executors.factory;
 
-import com.weibo.rill.flow.service.manager.OkHttpFeaturesManager;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.FactoryBean;
@@ -24,7 +23,8 @@ import org.springframework.beans.factory.FactoryBean;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
-import static com.weibo.rill.flow.common.model.HttpFeature.*;
+import static com.weibo.rill.flow.executors.model.HttpFeature.*;
+
 
 public class OkHttpClientFactoryBean implements FactoryBean<OkHttpClient> {
     private long connectTimeOut;
