@@ -14,8 +14,6 @@ import javax.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -42,20 +40,19 @@ public class SseExecutorController {
                                         @ApiParam(value = "任务详细信息") @RequestBody(required = false) SseDispatchParams params) {
         UUID uuid = UUID.randomUUID();
         String uuidStr = uuid.toString();
-        sseThreadPoolExecutor.submit(() -> callSSETask(uuidStr, params));
+        sseThreadPoolExecutor.submit(() -> callSSETask(executionId, taskName, uuidStr, params));
         return Map.of("uuid", uuidStr);
     }
 
-    private void callSSETask(String id, SseDispatchParams params) {
+    private void callSSETask(String executionId, String taskName, String id, SseDispatchParams params) {
         try {
             HttpMethod method = HttpMethod.resolve(params.getRequestType());
             if (method == null) {
                 method = HttpMethod.POST;
             }
-            List<String> res = rillFlowSSEHttpTemplate.execute(params.getUrl(), method, request -> {}, response -> {
+            rillFlowSSEHttpTemplate.execute(params.getUrl(), method, request -> {}, response -> {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getBody()));
                 String data;
-                List<String> lines = new ArrayList<>();
                 try {
                     while ((data = bufferedReader.readLine()) != null) {
                         if (data.startsWith(SSE_MARK)) {
@@ -65,17 +62,16 @@ public class SseExecutorController {
                         }
                         long redisResult = sseExecutorRedisClient.lpush(REDIS_KEY_PREFIX + id, data.substring(SSE_MARK.length()));
                         log.info("got sse data: {}, redis result: {}", data, redisResult);
-                        lines.add(data);
                     }
                 } catch (IOException e) {
-                    log.warn("Error while reading data: ", e);
+                    log.warn("Error while reading, execution_id: {}, task_name: {}, data: ", executionId, taskName, e);
                 }
-                return lines;
+                return null;
             }, params.getInput());
         } catch (Exception e) {
-
+            log.warn("Error while executing sse, execution_id: {}, task_name: {}: ", executionId, taskName, e);
         } finally {
-
+            sseExecutorRedisClient.lpush(REDIS_KEY_PREFIX + id, id + "-completed");
         }
     }
 }
