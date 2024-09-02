@@ -24,8 +24,11 @@ import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
+import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,7 +58,28 @@ public class SwitchTask extends BaseTask {
         super(name, title, description, category, null, false, inputMappings, null, progress,
                 degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.switches = switches;
-        this.setNext(switches.stream().map(Switch::getNext).collect(Collectors.joining(",")));
+        this.setNext(getNext(name, switches));
+    }
+
+    private static String getNext(String taskName, List<Switch> switches) {
+        if (CollectionUtils.isEmpty(switches)) {
+            return "";
+        }
+        DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
+        boolean isAncestorTask = dagWalkHelper.isAncestorTask(taskName);
+        if (isAncestorTask) {
+            return switches.stream().map(Switch::getNext).collect(Collectors.joining(","));
+        }
+        String rootName = dagWalkHelper.getRootName(taskName);
+        Set<String[]> nextArrays = switches.stream().map(it -> it.getNext().split(",")).collect(Collectors.toSet());
+        Set<String> nextTaskNames = new HashSet<>();
+        for (String[] nextArray : nextArrays) {
+            Set<String> nextNames = Arrays.stream(nextArray).map(String::trim).filter(StringUtils::isNotBlank)
+                    .map(it -> dagWalkHelper.buildTaskInfoName(rootName, it))
+                    .collect(Collectors.toSet());
+            nextTaskNames.addAll(nextNames);
+        }
+        return String.join(",", nextTaskNames);
     }
 
     @Override
