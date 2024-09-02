@@ -343,4 +343,9 @@ public class JedisFlowClient implements RedisClient {
     public long lpush(String key, String field) {
         return doExecute(jedis -> jedis.lpush(key, field));
     }
+
+    @Override
+    public List<String> rpop(String key, int count) {
+        return doExecute(jedis -> jedis.rpop(key, count));
+    }
 }

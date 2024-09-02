@@ -121,4 +121,6 @@ public interface RedisClient {
     String hget(String key, String field);
 
     long lpush(String key, String field);
+
+    List<String> rpop(String key, int count);
 }
