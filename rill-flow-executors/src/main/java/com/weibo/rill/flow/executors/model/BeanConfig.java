@@ -22,8 +22,6 @@ import lombok.Data;
 @Data
 public class BeanConfig {
     private Redis redis;
-    private Http http;
-    private Submit submit;
 
     @Data
     public static class Redis {
@@ -31,22 +29,5 @@ public class BeanConfig {
         private String slave;
         private String port;
         private Boolean threadIsolation;
-    }
-
-    @Data
-    public static class Http {
-        private Integer conTimeOutMs;
-        private Integer writeTimeoutMs;
-        private Integer readTimeoutMs;
-        private Integer maxIdleConnections;
-        private Integer keepAliveDurationMs;
-        private Integer retryTimes;
-    }
-
-    @Data
-    public static class Submit {
-        private Double completeRateThreshold;
-        private Double successRateThreshold;
-        private Integer heapThreshold;
     }
 }

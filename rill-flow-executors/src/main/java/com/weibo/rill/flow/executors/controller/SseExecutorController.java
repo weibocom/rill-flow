@@ -40,7 +40,7 @@ public class SseExecutorController {
     @GetMapping(value = "get_result.json", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter getResult(@ApiParam(value = "sse 任务唯一 id") @RequestParam(value = "uuid") String uuid) {
         SseEmitter emitter = new SseEmitter();
-        sseThreadPoolExecutor.execute(() -> sseExecutorService.getSSEData(uuid, emitter));
+        sseThreadPoolExecutor.execute(() -> sseExecutorService.getSseData(uuid, emitter));
         return emitter;
     }
 }

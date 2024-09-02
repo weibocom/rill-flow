@@ -28,15 +28,16 @@ public class SseExecutorService {
     private static final String REDIS_KEY_PREFIX = "sse-executor-";
     private static final String SSE_MARK = "data:";
     private static final int RPOP_COUNT = 50;
+    private static final int SSE_DATA_GET_INTERVAL = 100;
 
-    public void getSSEData(String uuid, SseEmitter emitter) {
+    public void getSseData(String uuid, SseEmitter emitter) {
         try {
             while (true) {
                 boolean isComplete = getDataFromRedis(uuid, emitter);
                 if (isComplete) {
                     break;
                 }
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(SSE_DATA_GET_INTERVAL);
             }
             emitter.complete();
         } catch (Exception e) {
