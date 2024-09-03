@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.Switch;
 import com.weibo.rill.flow.olympicene.core.model.task.SwitchTask;
@@ -131,8 +132,12 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      */
     private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
                                               Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
-        Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
-                .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+        DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
+        boolean isAncestorTask = dagWalkHelper.isAncestorTask(taskInfo.getName());
+        String rootName = isAncestorTask? null: dagWalkHelper.getRootName(taskInfo.getName());
+        Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim).filter(StringUtils::isNotBlank)
+                .map(it -> isAncestorTask ? it: dagWalkHelper.buildTaskInfoName(rootName, it))
+                .collect(Collectors.toSet());
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
         if (!condition) {
