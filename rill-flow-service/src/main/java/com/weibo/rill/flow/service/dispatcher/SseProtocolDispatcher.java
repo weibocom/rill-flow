@@ -44,7 +44,7 @@ import java.util.Map;
 
 @Service("sseDispatcher")
 public class SseProtocolDispatcher implements DispatcherExtension {
-    @Value("${rill.flow.sse.executor.uri}")
+    @Value("${rill.flow.sse.executor.execute.uri}")
     private String sseExecutorUri;
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
