@@ -66,9 +66,11 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         try {
             HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
             Map<String, Object> body = new HashMap<>();
-            body.put("input", requestParams.getBody().get("sse_input"));
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
+            if (requestParams.getBody().get("sse_input") != null) {
+                body.put("input", requestParams.getBody().get("sse_input"));
+            }
             if (requestParams.getBody().get("request_type") != null
                     && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
                 body.put("requestType", requestParams.getBody().get("request_type").toString().toUpperCase());
