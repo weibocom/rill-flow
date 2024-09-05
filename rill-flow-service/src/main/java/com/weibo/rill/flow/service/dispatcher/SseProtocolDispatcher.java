@@ -73,9 +73,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             if (requestParams.getBody().get("sse_input") != null) {
                 body.put("input", requestParams.getBody().get("sse_input"));
             }
-            if (requestParams.getBody().get("request_type") != null
+            if (requestParams.getBody().get("sse_request_type") != null
                     && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
-                body.put("requestType", requestParams.getBody().get("request_type").toString().toUpperCase());
+                body.put("requestType", requestParams.getBody().get("sse_request_type").toString().toUpperCase());
             }
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
