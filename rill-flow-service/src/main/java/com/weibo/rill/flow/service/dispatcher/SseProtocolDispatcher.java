@@ -55,6 +55,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     @Autowired
     private SwitcherManager switcherManagerImpl;
 
+    private final static String SSE_EXECUTOR_REQUEST_PATTERN = "%s%s?execution_id=%s&task_name=%s";
+
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
         Map<String, Object> input = dispatchInfo.getInput();
@@ -78,8 +80,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
             HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
-            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, sseExecutorHost + sseExecutorUri,
-                    requestEntity, HttpMethod.POST, maxInvokeTime);
+            String executionUrl = String.format(SSE_EXECUTOR_REQUEST_PATTERN, sseExecutorHost, sseExecutorUri, executionId, taskInfoName);
+            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, executionUrl, requestEntity, HttpMethod.POST, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
         } catch (RestClientResponseException e) {
