@@ -22,7 +22,6 @@ import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
 import com.weibo.rill.flow.interfaces.model.http.HttpParameter;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
@@ -62,17 +61,17 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         TaskInfo taskInfo = dispatchInfo.getTaskInfo();
         String executionId = dispatchInfo.getExecutionId();
         String taskInfoName = taskInfo.getName();
-        String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
         MultiValueMap<String, String> header = dispatchInfo.getHeaders();
 
         try {
             HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
             Map<String, Object> body = new HashMap<>();
-            body.put("input", requestParams.getBody());
+            body.put("input", requestParams.getBody().get("sse_input"));
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
-            if (StringUtils.isNotEmpty(requestType)) {
-                body.put("requestType", requestType.toUpperCase());
+            if (requestParams.getBody().get("request_type") != null
+                    && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
+                body.put("requestType", requestParams.getBody().get("request_type").toString().toUpperCase());
             }
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
