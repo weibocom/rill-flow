@@ -70,6 +70,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             Map<String, Object> body = new HashMap<>();
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
+            if (requestParams.getBody().get("callback_info") != null) {
+                body.put("callback_info", requestParams.getBody().get("callback_info"));
+            }
             if (requestParams.getBody().get("sse_input") != null) {
                 body.put("input", requestParams.getBody().get("sse_input"));
             }
