@@ -70,18 +70,22 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             Map<String, Object> body = new HashMap<>();
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
-            if (requestParams.getBody().get("callback_info") != null) {
-                body.put("callback_info", requestParams.getBody().get("callback_info"));
-            }
-            if (requestParams.getBody().get("sse_input") != null) {
-                body.put("input", requestParams.getBody().get("sse_input"));
-            }
-            if (requestParams.getBody().get("sse_headers") != null) {
-                body.put("headers", requestParams.getBody().get("sse_headers"));
-            }
-            if (requestParams.getBody().get("sse_request_type") != null
-                    && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
-                body.put("request_type", requestParams.getBody().get("sse_request_type").toString().toUpperCase());
+            Map<String, String> bodyKeyMapping = Map.of(
+                "callback_info", "callback_info",
+                "sse_input", "input",
+                "sse_headers", "headers"
+            );
+
+            bodyKeyMapping.forEach((key, mappedKey) -> {
+                Object value = requestParams.getBody().get(key);
+                if (value != null) {
+                    body.put(mappedKey, value);
+                }
+            });
+
+            Object sseRequestType = requestParams.getBody().get("sse_request_type");
+            if (sseRequestType != null && StringUtils.isNotEmpty(sseRequestType.toString())) {
+                body.put("request_type", sseRequestType.toString().toUpperCase());
             }
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
