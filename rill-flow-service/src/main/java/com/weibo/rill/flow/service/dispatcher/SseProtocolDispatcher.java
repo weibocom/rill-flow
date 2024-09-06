@@ -76,6 +76,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             if (requestParams.getBody().get("sse_input") != null) {
                 body.put("input", requestParams.getBody().get("sse_input"));
             }
+            if (requestParams.getBody().get("sse_headers") != null) {
+                body.put("headers", requestParams.getBody().get("sse_headers"));
+            }
             if (requestParams.getBody().get("sse_request_type") != null
                     && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
                 body.put("request_type", requestParams.getBody().get("sse_request_type").toString().toUpperCase());
