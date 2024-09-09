@@ -22,11 +22,11 @@ import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
 import com.weibo.rill.flow.interfaces.model.http.HttpParameter;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -40,6 +40,7 @@ import org.springframework.web.client.RestClientResponseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service("sseDispatcher")
 public class SseProtocolDispatcher implements DispatcherExtension {
@@ -63,6 +64,7 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         TaskInfo taskInfo = dispatchInfo.getTaskInfo();
         String executionId = dispatchInfo.getExecutionId();
         String taskInfoName = taskInfo.getName();
+        String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
         MultiValueMap<String, String> header = dispatchInfo.getHeaders();
 
         try {
@@ -70,19 +72,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             Map<String, Object> body = new HashMap<>();
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
-            if (requestParams.getBody().get("callback_info") != null) {
-                body.put("callback_info", requestParams.getBody().get("callback_info"));
-            }
-            if (requestParams.getBody().get("sse_input") != null) {
-                body.put("input", requestParams.getBody().get("sse_input"));
-            }
-            if (requestParams.getBody().get("sse_headers") != null) {
-                body.put("headers", requestParams.getBody().get("sse_headers"));
-            }
-            if (requestParams.getBody().get("sse_request_type") != null
-                    && StringUtils.isNotEmpty(requestParams.getBody().get("sse_request_type").toString())) {
-                body.put("request_type", requestParams.getBody().get("sse_request_type").toString().toUpperCase());
-            }
+            body.put("input", requestParams.getBody());
+            body.put("headers", requestParams.getHeader());
+            body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
             HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
