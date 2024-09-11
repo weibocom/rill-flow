@@ -5,12 +5,6 @@
     "required": true,
     "default": ""
   },
-  "expression": {
-    "type": "string",
-    "title": "answer 表达式",
-    "required": true,
-    "default": ""
-  },
   "title": {
     "type": "string",
     "title": "节点名称",
@@ -21,6 +15,12 @@
     "type": "string",
     "title": "节点描述",
     "required": false,
+    "default": ""
+  },
+  "expression": {
+    "type": "string",
+    "title": "answer 表达式",
+    "required": true,
     "default": ""
   },
   "tolerance": {
