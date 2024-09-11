@@ -88,6 +88,7 @@ public class OlympiceneFacade {
         foreachTaskRunner.setStasher(stasher);
         ChoiceTaskRunner choiceTaskRunner = new ChoiceTaskRunner(mapping, dagContextStorage, dagInfoStorage, dagStorageProcedure, switcherManager);
         SwitchTaskRunner switchTaskRunner = new SwitchTaskRunner(mapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
+        AnswerTaskRunner answerTaskRunner = new AnswerTaskRunner(mapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
 
         Map<String, TaskRunner> runners = Maps.newConcurrentMap();
         runners.put(TaskCategory.FUNCTION.getValue(), functionTaskRunner);
@@ -97,6 +98,7 @@ public class OlympiceneFacade {
         runners.put(TaskCategory.PASS.getValue(), passTaskRunner);
         runners.put(TaskCategory.RETURN.getValue(), returnTaskRunner);
         runners.put(TaskCategory.SWITCH.getValue(), switchTaskRunner);
+        runners.put(TaskCategory.ANSWER.getValue(), answerTaskRunner);
         return runners;
     }
 }
