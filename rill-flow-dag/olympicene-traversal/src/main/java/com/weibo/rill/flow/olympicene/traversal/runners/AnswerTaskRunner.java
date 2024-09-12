@@ -1,6 +1,7 @@
 package com.weibo.rill.flow.olympicene.traversal.runners;
 
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
+import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -42,6 +44,7 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
                 .input(input)
                 .executionId(executionId)
                 .build();
+        boolean tolerance = Optional.ofNullable(taskInfo.getTask()).map(BaseTask::isTolerance).orElse(false);
         try {
             AnswerTask answerTask = (AnswerTask) taskInfo.getTask();
             if (answerTask == null || StringUtils.isEmpty(answerTask.getExpression())) {
@@ -64,7 +67,7 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
         } catch (Exception e) {
             log.warn("dispatch answer task failed, execution_id: {}, task_name: {}", executionId, taskInfo.getName(), e);
             updateTaskInvokeEndTime(taskInfo);
-            taskInfo.setTaskStatus(TaskStatus.FAILED);
+            taskInfo.setTaskStatus(tolerance? TaskStatus.SKIPPED: TaskStatus.FAILED);
             dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
             return ExecutionResult.builder().taskStatus(TaskStatus.FAILED).build();
         }
