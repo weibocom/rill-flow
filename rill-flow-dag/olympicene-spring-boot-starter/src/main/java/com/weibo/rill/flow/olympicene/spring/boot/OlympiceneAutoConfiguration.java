@@ -205,8 +205,8 @@ public class OlympiceneAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "sseAnswerTaskRunner")
-    public AnswerTaskRunner sseAnswerTaskRunner(
+    @ConditionalOnMissingBean(name = "answerTaskRunner")
+    public AnswerTaskRunner answerTaskRunner(
             @Autowired @Qualifier("dagContextStorage") DAGContextStorage dagContextStorage,
             @Autowired @Qualifier("dagInfoStorage") DAGInfoStorage dagInfoStorage,
             @Autowired @Qualifier("dagStorageProcedure") DAGStorageProcedure dagStorageProcedure,
