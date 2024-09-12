@@ -211,9 +211,10 @@ public class OlympiceneAutoConfiguration {
             @Autowired @Qualifier("dagInfoStorage") DAGInfoStorage dagInfoStorage,
             @Autowired @Qualifier("dagStorageProcedure") DAGStorageProcedure dagStorageProcedure,
             @Autowired @Qualifier("inputOutputMapping") JSONPathInputOutputMapping inputOutputMapping,
+            @Autowired @Qualifier("answerTaskDispatcher") DAGDispatcher answerTaskDispatcher,
             @Autowired SwitcherManager switcherManager) {
         log.info("begin to init default SseAnswerTaskRunner bean");
-        return new AnswerTaskRunner(inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
+        return new AnswerTaskRunner(answerTaskDispatcher, inputOutputMapping, dagInfoStorage, dagContextStorage, dagStorageProcedure, switcherManager);
     }
 
     @Bean

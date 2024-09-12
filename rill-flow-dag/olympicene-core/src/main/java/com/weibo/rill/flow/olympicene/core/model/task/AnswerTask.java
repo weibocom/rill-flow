@@ -19,7 +19,6 @@ package com.weibo.rill.flow.olympicene.core.model.task;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
 import com.weibo.rill.flow.interfaces.model.strategy.Progress;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
@@ -46,8 +45,6 @@ public class AnswerTask extends BaseTask {
             @JsonProperty("expression") String expression,
             @JsonProperty("category") String category,
             @JsonProperty("next") String next,
-            @JsonProperty("inputMappings") List<Mapping> inputMappings,
-            @JsonProperty("outputMappings") List<Mapping> outputMappings,
             @JsonProperty("progress") Progress progress,
             @JsonProperty("degrade") Degrade degrade,
             @JsonProperty("timeline") Timeline timeline,
@@ -56,7 +53,7 @@ public class AnswerTask extends BaseTask {
             @JsonProperty("tolerance") boolean tolerance,
             @JsonProperty("parameters") Map<String, Object> parameters,
             @JsonProperty("templateId") String templateId) {
-        super(name, title, description, category, next, tolerance, inputMappings, outputMappings, progress,
+        super(name, title, description, category, next, tolerance, new ArrayList<>(), new ArrayList<>(), progress,
                 degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
         this.expression = expression;
     }
