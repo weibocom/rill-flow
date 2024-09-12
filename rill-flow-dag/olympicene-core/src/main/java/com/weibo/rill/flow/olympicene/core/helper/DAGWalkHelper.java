@@ -68,13 +68,17 @@ public class DAGWalkHelper {
             readyToRunTasks.addAll(keyCallbackTasks);
         }
 
+        readyToRunTasks.addAll(findAnswerTasksCanRun(readyToRunTasks));
+        return readyToRunTasks;
+    }
+
+    private Collection<TaskInfo> findAnswerTasksCanRun(Set<TaskInfo> readyToRunTasks) {
         Map<String, TaskInfo> answerTaskInfoMap = new HashMap<>();
         Set<String> skipTaskNames = Sets.newHashSet();
         for (TaskInfo taskInfo : readyToRunTasks) {
             findNextAnswerTask(taskInfo, answerTaskInfoMap, skipTaskNames);
         }
-        readyToRunTasks.addAll(answerTaskInfoMap.values());
-        return readyToRunTasks;
+        return answerTaskInfoMap.values();
     }
 
     private void findNextAnswerTask(TaskInfo taskInfo, Map<String, TaskInfo> answerTaskInfoMap, Set<String> skipTaskNames) {
@@ -88,17 +92,17 @@ public class DAGWalkHelper {
             return;
         }
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
-            String nextTaskName = nextTaskInfo.getTask().getName();
+            String nextTaskName = nextTaskInfo.getName();
             String nextCategory = nextTaskInfo.getTask().getCategory();
             if (skipTaskNames.contains(nextTaskName) || stopTaskCategories.contains(nextCategory)) {
                 // 如果已经处理过该任务，或者该任务是分支任务，则不继续处理
                 continue;
             }
-            skipTaskNames.add(nextTaskInfo.getTask().getName());
+            skipTaskNames.add(nextTaskName);
             if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)) {
-                if (!isDependOnUnfinishedAnswer(nextTaskInfo, Set.of(nextTaskName))) {
+                if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
                     // 如果是 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
-                    answerTaskInfoMap.put(nextTaskInfo.getTask().getName(), nextTaskInfo);
+                    answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
                 }
                 continue;
             }
@@ -112,9 +116,9 @@ public class DAGWalkHelper {
             return false;
         }
         return taskInfo.getDependencies().stream()
-            .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getTask().getName()))
+            .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
             .anyMatch(dependencyTask -> {
-                skipTaskNames.add(dependencyTask.getTask().getName());
+                skipTaskNames.add(dependencyTask.getName());
                 return (TaskCategory.ANSWER.getValue().equals(dependencyTask.getTask().getCategory())
                         && !dependencyTask.getTaskStatus().isSuccessOrSkip())
                     || isDependOnUnfinishedAnswer(dependencyTask, skipTaskNames);
