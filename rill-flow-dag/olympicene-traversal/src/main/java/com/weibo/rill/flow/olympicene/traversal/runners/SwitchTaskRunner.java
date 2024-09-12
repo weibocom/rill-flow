@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
-import com.weibo.rill.flow.olympicene.core.constant.ReservedConstant;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.Switch;
@@ -131,26 +130,20 @@ public class SwitchTaskRunner extends AbstractTaskRunner {
      * @param defaultSwitch 默认 condition 信息
      * @return 是否命中规则
      */
-    private boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
-                                       Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
-        Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim)
-                .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        Set<String> currentTaskNames = new HashSet<>();
+    private static boolean calculateCondition(TaskInfo taskInfo, Map<String, Object> input, Switch switchObj,
+                                              Set<String> skipTaskNames, Set<String> runTaskNames, DefaultSwitch defaultSwitch) {
         DAGWalkHelper dagWalkHelper = DAGWalkHelper.getInstance();
-        if (!dagWalkHelper.isAncestorTask(taskInfo.getName())) {
-            String rootName = dagWalkHelper.getRootName(taskInfo.getName());
-            for (String nextTaskName : nextTaskNames) {
-                currentTaskNames.add(rootName + ReservedConstant.TASK_NAME_CONNECTOR + nextTaskName);
-            }
-        } else {
-            currentTaskNames.addAll(nextTaskNames);
-        }
+        boolean isAncestorTask = dagWalkHelper.isAncestorTask(taskInfo.getName());
+        String rootName = isAncestorTask? null: dagWalkHelper.getRootName(taskInfo.getName());
+        Set<String> nextTaskNames = Arrays.stream(switchObj.getNext().split(",")).map(String::trim).filter(StringUtils::isNotBlank)
+                .map(it -> isAncestorTask ? it: dagWalkHelper.buildTaskInfoName(rootName, it))
+                .collect(Collectors.toSet());
         boolean condition = judgeCondition(taskInfo, input, switchObj, defaultSwitch);
 
         if (!condition) {
-            skipTaskNames.addAll(currentTaskNames);
+            skipTaskNames.addAll(nextTaskNames);
         } else {
-            runTaskNames.addAll(currentTaskNames);
+            runTaskNames.addAll(nextTaskNames);
         }
         return condition;
     }

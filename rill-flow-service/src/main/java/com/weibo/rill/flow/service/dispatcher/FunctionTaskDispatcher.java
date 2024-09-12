@@ -51,6 +51,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
                                   @Autowired @Qualifier("httpDispatcher") HttpProtocolDispatcher httpDispatcher,
                                   @Autowired @Qualifier("resourceDispatcher") ResourceProtocolDispatcher resourceDispatcher,
                                   @Autowired @Qualifier("resourceRefDispatcher") ResourceRefProtocolDispatcher resourceRefDispatcher,
+                                  @Autowired @Qualifier("sseDispatcher") SseProtocolDispatcher sseProtocolDispatcher,
                                   @Autowired DescriptorManager descriptorManager,
                                   @Autowired HttpInvokeHelper httpInvokeHelper) {
         protocolDispatcherMap.put("function", functionDispatcher);
@@ -59,6 +60,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
         protocolDispatcherMap.put("rillflow", flowDispatcher);
         protocolDispatcherMap.put("resource", resourceDispatcher);
         protocolDispatcherMap.put("resourceRef", resourceRefDispatcher);
+        protocolDispatcherMap.put("sse", sseProtocolDispatcher);
         this.descriptorManager = descriptorManager;
         this.httpInvokeHelper = httpInvokeHelper;
     }

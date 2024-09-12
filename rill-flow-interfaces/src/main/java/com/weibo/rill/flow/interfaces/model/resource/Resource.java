@@ -47,8 +47,7 @@ public class Resource {
     }
 
     public boolean isHttpResource() {
-        return "http".equals(schemeProtocol) ||
-                "https".equals(schemeProtocol);
+        return "http".equals(schemeProtocol) || "https".equals(schemeProtocol) || "sse".equals(schemeProtocol);
     }
 
     public boolean isAbResource() {

@@ -48,7 +48,8 @@ public class ObjectMapperFactory {
                 new NamedType(PassTask.class, "pass"),
                 new NamedType(SuspenseTask.class, "suspense"),
                 new NamedType(ReturnTask.class, "return"),
-                new NamedType(SwitchTask.class, "switch")
+                new NamedType(SwitchTask.class, "switch"),
+                new NamedType(AnswerTask.class, "answer")
         );
     }
 
@@ -71,7 +72,8 @@ public class ObjectMapperFactory {
                 new NamedType(PassTask.class, "pass"),
                 new NamedType(SuspenseTask.class, "suspense"),
                 new NamedType(ReturnTask.class, "return"),
-                new NamedType(SwitchTask.class, "switch")
+                new NamedType(SwitchTask.class, "switch"),
+                new NamedType(AnswerTask.class, "answer")
         );
     }
 
