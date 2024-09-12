@@ -59,6 +59,8 @@ public class DAGWalkHelper {
                 .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip()))
                 .collect(Collectors.toSet());
 
+        // TODO: 分析后继，如果待执行节点后继路径上有 Answer 节点，并且它们之间没有 switch 节点、return 节点，则 Answer 节点可执行
+
         if (isKeyMode(taskInfos)) {
             Set<TaskInfo> keyCallbackTasks = taskInfos.stream()
                     .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
