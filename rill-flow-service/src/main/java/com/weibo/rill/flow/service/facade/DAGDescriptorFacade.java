@@ -30,8 +30,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
-import com.weibo.rill.flow.common.model.Node;
-import com.weibo.rill.flow.common.model.NodeType;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
@@ -48,7 +46,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -241,7 +242,7 @@ public class DAGDescriptorFacade {
      */
     private void generateResourceProtocol(JSONObject task) {
         try {
-            if (task == null || StringUtils.isNotEmpty(task.getString(task.getString("resourceProtocol")))) {
+            if (task == null || StringUtils.isNotEmpty(task.getString("resourceProtocol"))) {
                 return;
             }
             String resourceName = task.getString("resourceName");
