@@ -56,21 +56,78 @@ public class DAGWalkHelper {
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> !taskInfo.getTask().isKeyCallback())
-                .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip()))
+                .filter(this::isDependenciesAllSuccessOrSkip)
                 .collect(Collectors.toSet());
-
-        // TODO: 分析后继，如果待执行节点后继路径上有 Answer 节点，并且它们之间没有 switch 节点、return 节点，则 Answer 节点可执行
 
         if (isKeyMode(taskInfos)) {
             Set<TaskInfo> keyCallbackTasks = taskInfos.stream()
                     .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                     .filter(taskInfo -> taskInfo.getTask().isKeyCallback()) // 此类型任务只需前置依赖节点关键路径完成即可执行
-                    .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrKeySuccessOrSkip()))
+                    .filter(this::isDependenciesAllSuccessOrSkip)
                     .collect(Collectors.toSet());
             readyToRunTasks.addAll(keyCallbackTasks);
         }
 
+        Map<String, TaskInfo> answerTaskInfoMap = new HashMap<>();
+        Set<String> skipTaskNames = Sets.newHashSet();
+        for (TaskInfo taskInfo : readyToRunTasks) {
+            findNextAnswerTask(taskInfo, answerTaskInfoMap, skipTaskNames);
+        }
+        readyToRunTasks.addAll(answerTaskInfoMap.values());
         return readyToRunTasks;
+    }
+
+    private void findNextAnswerTask(TaskInfo taskInfo, Map<String, TaskInfo> answerTaskInfoMap, Set<String> skipTaskNames) {
+        Set<String> stopTaskCategories = Set.of(TaskCategory.SWITCH.getValue(), TaskCategory.RETURN.getValue(),
+                TaskCategory.FOREACH.getValue(), TaskCategory.CHOICE.getValue());
+        List<TaskInfo> nextTaskInfos = taskInfo.getNext();
+        String category = taskInfo.getTask().getCategory();
+        if (CollectionUtils.isEmpty(nextTaskInfos) || stopTaskCategories.contains(category)
+                || TaskCategory.ANSWER.getValue().equalsIgnoreCase(category)) {
+            // 如果当前节点是分支任务，则不需要继续处理
+            return;
+        }
+        for (TaskInfo nextTaskInfo : nextTaskInfos) {
+            String nextTaskName = nextTaskInfo.getTask().getName();
+            String nextCategory = nextTaskInfo.getTask().getCategory();
+            if (skipTaskNames.contains(nextTaskName) || stopTaskCategories.contains(nextCategory)) {
+                // 如果已经处理过该任务，或者该任务是分支任务，则不继续处理
+                continue;
+            }
+            skipTaskNames.add(nextTaskInfo.getTask().getName());
+            if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)) {
+                if (!isDependOnUnfinishedAnswer(nextTaskInfo, Set.of(nextTaskName))) {
+                    // 如果是 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
+                    answerTaskInfoMap.put(nextTaskInfo.getTask().getName(), nextTaskInfo);
+                }
+                continue;
+            }
+            skipTaskNames.add(nextTaskName);
+            findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
+        }
+    }
+
+    private boolean isDependOnUnfinishedAnswer(TaskInfo taskInfo, Set<String> skipTaskNames) {
+        if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
+            return false;
+        }
+        return taskInfo.getDependencies().stream()
+            .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getTask().getName()))
+            .anyMatch(dependencyTask -> {
+                skipTaskNames.add(dependencyTask.getTask().getName());
+                return (TaskCategory.ANSWER.getValue().equals(dependencyTask.getTask().getCategory())
+                        && !dependencyTask.getTaskStatus().isSuccessOrSkip())
+                    || isDependOnUnfinishedAnswer(dependencyTask, skipTaskNames);
+            });
+    }
+    
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo) {
+        return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
+               taskInfo.getDependencies().stream().allMatch(dependency ->
+                   (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
+                    && isDependenciesAllSuccessOrSkip(dependency))
+                   || dependency.getTaskStatus().isSuccessOrSkip()
+               );
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {
