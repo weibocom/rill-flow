@@ -69,4 +69,9 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
             return ExecutionResult.builder().taskStatus(TaskStatus.FAILED).build();
         }
     }
+
+    @Override
+    public String getIcon() {
+        return "ant-design:audio-outlined";
+    }
 }
