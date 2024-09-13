@@ -26,7 +26,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,22 +52,29 @@ public class DAGWalkHelper {
     }
 
     public Set<TaskInfo> getReadyToRunTasks(Collection<TaskInfo> taskInfos) {
+        boolean hasAnswerTask = taskInfos.stream()
+                .filter(taskInfo -> taskInfo.getTask() != null && taskInfo.getTask().getCategory() != null)
+                .anyMatch(taskInfo -> TaskCategory.ANSWER.getValue().equalsIgnoreCase(taskInfo.getTask().getCategory()));
+
+        // 筛选出准备运行的任务:
+        // 1. 任务不为空且状态为未开始
+        // 2. 所有依赖任务都已成功或跳过
+        // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> !taskInfo.getTask().isKeyCallback())
-                .filter(this::isDependenciesAllSuccessOrSkip)
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask))
+                .filter(taskInfo -> {
+                    if (!taskInfo.getTask().isKeyCallback()) {
+                        return true;
+                    }
+                    return isKeyMode(taskInfos);
+                })
                 .collect(Collectors.toSet());
 
-        if (isKeyMode(taskInfos)) {
-            Set<TaskInfo> keyCallbackTasks = taskInfos.stream()
-                    .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                    .filter(taskInfo -> taskInfo.getTask().isKeyCallback()) // 此类型任务只需前置依赖节点关键路径完成即可执行
-                    .filter(this::isDependenciesAllSuccessOrSkip)
-                    .collect(Collectors.toSet());
-            readyToRunTasks.addAll(keyCallbackTasks);
+        // 如果存在 answer 任务，则找到所有可以运行的 answer 任务
+        if (hasAnswerTask) {
+            readyToRunTasks.addAll(findAnswerTasksCanRun(readyToRunTasks));
         }
-
-        readyToRunTasks.addAll(findAnswerTasksCanRun(readyToRunTasks));
         return readyToRunTasks;
     }
 
@@ -156,11 +162,15 @@ public class DAGWalkHelper {
      * @param taskInfo 任务信息
      * @return boolean 类型结果
      */
-    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo) {
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask) {
+        if (!hasAnswerTask) {
+            return CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip());
+        }
+
         return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
                taskInfo.getDependencies().stream().allMatch(dependency ->
                    (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                    && isDependenciesAllSuccessOrSkip(dependency))
+                    && isDependenciesAllSuccessOrSkip(dependency, hasAnswerTask))
                    || !TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
                            && dependency.getTaskStatus().isSuccessOrSkip()
                );
