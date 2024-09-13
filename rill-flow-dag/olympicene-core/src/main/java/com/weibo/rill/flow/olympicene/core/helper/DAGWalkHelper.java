@@ -26,7 +26,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,24 +52,128 @@ public class DAGWalkHelper {
     }
 
     public Set<TaskInfo> getReadyToRunTasks(Collection<TaskInfo> taskInfos) {
+        boolean hasAnswerTask = taskInfos.stream()
+                .filter(taskInfo -> taskInfo.getTask() != null && taskInfo.getTask().getCategory() != null)
+                .anyMatch(taskInfo -> TaskCategory.ANSWER.getValue().equalsIgnoreCase(taskInfo.getTask().getCategory()));
+
+        // 筛选出准备运行的任务:
+        // 1. 任务不为空且状态为未开始
+        // 2. 所有依赖任务都已成功或跳过
+        // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> !taskInfo.getTask().isKeyCallback())
-                .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip()))
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask))
+                .filter(taskInfo -> {
+                    if (!taskInfo.getTask().isKeyCallback()) {
+                        return true;
+                    }
+                    return isKeyMode(taskInfos);
+                })
                 .collect(Collectors.toSet());
 
-        // TODO: 分析后继，如果待执行节点后继路径上有 Answer 节点，并且它们之间没有 switch 节点、return 节点，则 Answer 节点可执行
+        // 如果存在 answer 任务，则找到所有可以运行的 answer 任务
+        if (hasAnswerTask) {
+            readyToRunTasks.addAll(findAnswerTasksCanRun(readyToRunTasks));
+        }
+        return readyToRunTasks;
+    }
 
-        if (isKeyMode(taskInfos)) {
-            Set<TaskInfo> keyCallbackTasks = taskInfos.stream()
-                    .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                    .filter(taskInfo -> taskInfo.getTask().isKeyCallback()) // 此类型任务只需前置依赖节点关键路径完成即可执行
-                    .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrKeySuccessOrSkip()))
-                    .collect(Collectors.toSet());
-            readyToRunTasks.addAll(keyCallbackTasks);
+    private Collection<TaskInfo> findAnswerTasksCanRun(Set<TaskInfo> readyToRunTasks) {
+        Map<String, TaskInfo> answerTaskInfoMap = new HashMap<>();
+        Set<String> skipTaskNames = Sets.newHashSet();
+        for (TaskInfo taskInfo : readyToRunTasks) {
+            findNextAnswerTask(taskInfo, answerTaskInfoMap, skipTaskNames);
+        }
+        return answerTaskInfoMap.values();
+    }
+
+    /**
+     * 找到当前节点路径上的下一个可以被执行的 answer 节点
+     * @param taskInfo 当前节点
+     * @param answerTaskInfoMap 作为返回的直结果参数
+     * @param skipTaskNames 已经处理过的任务名称，用于去重，避免重复处理
+     */
+    private void findNextAnswerTask(TaskInfo taskInfo, Map<String, TaskInfo> answerTaskInfoMap, Set<String> skipTaskNames) {
+        Set<String> stopTaskCategories = Set.of(TaskCategory.SWITCH.getValue(), TaskCategory.RETURN.getValue(),
+                TaskCategory.FOREACH.getValue(), TaskCategory.CHOICE.getValue());
+        List<TaskInfo> nextTaskInfos = taskInfo.getNext();
+        String category = taskInfo.getTask().getCategory();
+        // 如果当前节点没有后继节点，或者当前节点是分支任务节点，或者当前节点是未执行的 answer 节点，则不需要继续处理
+        // 如果当前节点是未执行的 answer 节点，那么一定被处理过，要么是待执行的节点，要么是不能执行的节点，不需要再判断一次
+        if (CollectionUtils.isEmpty(nextTaskInfos) || stopTaskCategories.contains(category)
+                || TaskCategory.ANSWER.getValue().equalsIgnoreCase(category)
+                && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+            return;
+        }
+        for (TaskInfo nextTaskInfo : nextTaskInfos) {
+            String nextTaskName = nextTaskInfo.getName();
+            String nextCategory = nextTaskInfo.getTask().getCategory();
+
+            // 如果已经处理过该任务，或者该任务是分支任务，则不继续处理
+            if (skipTaskNames.contains(nextTaskName) || stopTaskCategories.contains(nextCategory)) {
+                continue;
+            }
+
+            skipTaskNames.add(nextTaskName);
+            if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)
+                    && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+                if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
+                    // 如果是待处理的 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
+                    answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
+                }
+                continue;
+            }
+            // 递归调用该后继节点的后继节点
+            findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
+        }
+    }
+
+    /**
+     * 判断是否依赖于尚未执行完成的 ANSWER 节点
+     * @param taskInfo 任务信息
+     * @param skipTaskNames 跳过的任务名称，用于去重避免重复处理
+     * @return boolean 类型结果
+     */
+    private boolean isDependOnUnfinishedAnswer(TaskInfo taskInfo, Set<String> skipTaskNames) {
+        // 如果节点不依赖任何节点，返回 false
+        if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
+            return false;
+        }
+        // 如果节点依赖的任务已经被处理过，则直接跳过
+        // 如果有任何一个依赖的任务是没有处理完成的 Answer 节点，则返回 false
+        // 如果是非 answer 节点，则递归调用
+        return taskInfo.getDependencies().stream()
+            .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
+            .anyMatch(dependencyTask -> {
+                skipTaskNames.add(dependencyTask.getName());
+                return (TaskCategory.ANSWER.getValue().equals(dependencyTask.getTask().getCategory())
+                        && !dependencyTask.getTaskStatus().isSuccessOrSkip())
+                    || (!TaskCategory.ANSWER.getValue().equals(dependencyTask.getTask().getCategory())
+                        && isDependOnUnfinishedAnswer(dependencyTask, skipTaskNames));
+            });
+    }
+
+    /**
+     * 判断依赖的所有任务是否都已完成
+     * 1. 如果没有依赖，说明依赖的所有任务都已完成
+     * 2. 如果依赖的是 ANSWER 类型的节点，那么忽略该 ANSWER 节点，检查 ANSWER 节点的所有依赖是否都已完成
+     * 3. 如果依赖的是非 ANSWER 类型的节点，那么检查该非 ANSWER 节点是否已完成
+     *
+     * @param taskInfo 任务信息
+     * @return boolean 类型结果
+     */
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask) {
+        if (!hasAnswerTask) {
+            return CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip());
         }
 
-        return readyToRunTasks;
+        return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
+               taskInfo.getDependencies().stream().allMatch(dependency ->
+                   (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
+                    && isDependenciesAllSuccessOrSkip(dependency, hasAnswerTask))
+                   || !TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
+                           && dependency.getTaskStatus().isSuccessOrSkip()
+               );
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {

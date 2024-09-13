@@ -1,12 +1,12 @@
 package com.weibo.rill.flow.olympicene.core.helper
 
-
-import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
-import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
+import com.weibo.rill.flow.interfaces.model.task.BaseTask
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus
+import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
+import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import spock.lang.Specification
 
 class DAGWalkHelperTest extends Specification {
@@ -83,5 +83,250 @@ class DAGWalkHelperTest extends Specification {
         ['a': skippedTask, 'b': failedTask]        || DAGStatus.FAILED
 
         [:]                                        || DAGStatus.SUCCEED
+    }
+
+    def "test getReadyToRunTasks answer after func"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoB])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoC)
+        !ret.contains(taskInfoB)
+        !ret.contains(taskInfoD)
+    }
+
+    def "test getReadyToRunTasks return before answer"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.RETURN.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        !ret.contains(taskInfoC)
+        !ret.contains(taskInfoB)
+    }
+
+    def "test getReadyToRunTasks answer depends on return and function"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.RETURN.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoC])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoA, taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoC)
+        ret.contains(taskInfoB)
+    }
+
+    def "test getReadyToRunTasks answer depends on return"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.RETURN.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.RETURN.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoB.setDependencies([taskInfoA, taskInfoC])
+        taskInfoC.setNext([taskInfoB])
+        taskInfoD.setDependencies([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        ret.contains(taskInfoA)
+        !ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+        !ret.contains(taskInfoD)
+    }
+
+    def "test getReadyToRunTasks answer after answer"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+    }
+
+    def "test getReadyToRunTasks answer after success answer"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.SUCCEED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoB])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        !ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+        ret.contains(taskInfoD)
+    }
+
+    def "test getReadyToRunTasks answer depends on answer"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.RETURN.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.SUCCEED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA, taskInfoC, taskInfoD])
+        taskInfoC.setNext([taskInfoB])
+        taskInfoD.setNext([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        ret.contains(taskInfoA)
+        !ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+        ret.contains(taskInfoD)
+    }
+
+    def "test getReadyToRunTasks answer depends on success answer"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.SUCCEED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.RETURN.getValue()
+        taskC.getName() >> "C"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.SUCCEED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA, taskInfoC, taskInfoD])
+        taskInfoC.setNext([taskInfoB])
+        taskInfoD.setNext([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        !ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+        ret.contains(taskInfoD)
     }
 }
