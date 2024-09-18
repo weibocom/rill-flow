@@ -27,6 +27,7 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -48,6 +49,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private String sseExecutorUri;
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
+    @Value("${rill.flow.server.host}")
+    private String rillFlowServerHost;
 
     @Autowired
     private HttpInvokeHelper httpInvokeHelper;
@@ -80,6 +83,10 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
             HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
             String executionUrl = String.format(SSE_EXECUTOR_REQUEST_PATTERN, sseExecutorHost, sseExecutorUri, executionId, taskInfoName);
+            URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
+            uriBuilder.addParameter("execution_id", executionId);
+            uriBuilder.addParameter("task_name", taskInfoName);
+            uriBuilder.addParameter("rill_flow_host", rillFlowServerHost);
             String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, executionUrl, requestEntity, HttpMethod.POST, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
@@ -87,7 +94,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             String responseBody = e.getResponseBodyAsString();
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), responseBody);
             throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
-                    String.format("dispatchTask http fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
+                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
+        } catch (Exception e) {
+            throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
         }
     }
 
