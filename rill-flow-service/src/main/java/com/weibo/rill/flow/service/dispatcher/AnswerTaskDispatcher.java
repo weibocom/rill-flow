@@ -46,8 +46,6 @@ public class AnswerTaskDispatcher implements DAGDispatcher {
     private String answerTaskExecuteUri;
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
-    @Value("${rill.flow.server.host}")
-    private String rillFlowServerHost;
 
     @Autowired
     private HttpInvokeHelper httpInvokeHelper;
@@ -68,7 +66,6 @@ public class AnswerTaskDispatcher implements DAGDispatcher {
             URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + answerTaskExecuteUri);
             uriBuilder.addParameter("task_name", taskName);
             uriBuilder.addParameter("execution_id", executionId);
-            uriBuilder.addParameter("rill_flow_host", rillFlowServerHost);
 
             Map<String, Object> body = Map.of("expression", expression);
             MultiValueMap<String, String> header = dispatchInfo.getHeaders();

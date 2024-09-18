@@ -49,8 +49,6 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private String sseExecutorUri;
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
-    @Value("${rill.flow.server.host}")
-    private String rillFlowServerHost;
 
     @Autowired
     private HttpInvokeHelper httpInvokeHelper;
@@ -86,7 +84,6 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
             uriBuilder.addParameter("execution_id", executionId);
             uriBuilder.addParameter("task_name", taskInfoName);
-            uriBuilder.addParameter("rill_flow_host", rillFlowServerHost);
             String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, executionUrl, requestEntity, HttpMethod.POST, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
