@@ -109,7 +109,7 @@ public class DAGRuntimeFacade {
 
         if (status.isCompleted()) {
             DAGInvokeMsg dagInvokeMsg = dagInfo.getDagInvokeMsg();
-            if (CollectionUtils.isNotEmpty(dagInvokeMsg.getInvokeTimeInfos())) {
+            if (dagInvokeMsg != null && CollectionUtils.isNotEmpty(dagInvokeMsg.getInvokeTimeInfos())) {
                 List<InvokeTimeInfo> invokeTimeInfos = dagInvokeMsg.getInvokeTimeInfos();
                 invokeTimeInfos.get(invokeTimeInfos.size() - 1).setEndTimeInMillisecond(System.currentTimeMillis());
                 dagInvokeMsg.setInvokeTimeInfos(invokeTimeInfos);
