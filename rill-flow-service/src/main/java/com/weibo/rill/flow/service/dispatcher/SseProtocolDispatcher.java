@@ -72,7 +72,11 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
             body.put("url", url);
             body.put("body", requestParams.getBody());
-            body.put("callback_info", requestParams.getBody().get("callback_info"));
+            if (requestParams.getBody().get("callback_info") != null) {
+                body.put("callback_info", requestParams.getBody().get("callback_info"));
+            } else if (header.get("X-Callback-Url") != null) {
+                body.put("callback_info", Map.of("trigger_url", header.get("X-Callback-Url")));
+            }
             body.put("headers", requestParams.getHeader());
             body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
