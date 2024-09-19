@@ -52,7 +52,7 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
                 TaskInvokeMsg taskInvokeMsg = TaskInvokeMsg.builder().msg("answer task expression empty").build();
                 taskInfo.updateInvokeMsg(taskInvokeMsg);
                 retStatus = TaskStatus.SKIPPED;
-                return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
+                return ExecutionResult.builder().taskStatus(retStatus).build();
             }
             updateTaskInvokeStartTime(taskInfo);
             taskInfo.setTaskStatus(TaskStatus.RUNNING);
@@ -60,7 +60,7 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
             String dispatchResult = answerTaskDispatcher.dispatch(dispatchInfo);
             log.info("dispatch answer task succeed, execution_id: {}, task_name: {}, result: {}", executionId, taskInfo.getName(), dispatchResult);
             retStatus = TaskStatus.SUCCEED;
-            return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
+            return ExecutionResult.builder().taskStatus(retStatus).build();
         } catch (Exception e) {
             log.warn("dispatch answer task failed, execution_id: {}, task_name: {}", executionId, taskInfo.getName(), e);
             retStatus = tolerance? TaskStatus.SKIPPED: TaskStatus.FAILED;
