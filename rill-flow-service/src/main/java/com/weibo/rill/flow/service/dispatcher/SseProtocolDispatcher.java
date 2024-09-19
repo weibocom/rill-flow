@@ -28,6 +28,7 @@ import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.apache.http.client.utils.URIBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,26 +69,10 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         MultiValueMap<String, String> header = dispatchInfo.getHeaders();
 
         try {
-            HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
-            Map<String, Object> body = new HashMap<>();
-            String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
-            body.put("url", url);
-            body.put("body", requestParams.getBody());
-            if (requestParams.getBody().get("callback_info") != null) {
-                body.put("callback_info", requestParams.getBody().get("callback_info"));
-            } else if (header.get("X-Callback-Url") != null) {
-                body.put("callback_info", Map.of("trigger_url", header.get("X-Callback-Url")));
-            }
-            body.put("headers", requestParams.getHeader());
-            body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
+            HttpEntity<?> requestEntity = buildHttpEntity(executionId, taskInfoName, resource, header, requestType, input);
+            String url = buildUrl(executionId, taskInfoName);
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
-            header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
-            HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
-
-            URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
-            uriBuilder.addParameter("execution_id", executionId);
-            uriBuilder.addParameter("task_name", taskInfoName);
-            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, uriBuilder.toString(), requestEntity, HttpMethod.POST, maxInvokeTime);
+            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, maxInvokeTime);
             dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
             return ret;
         } catch (RestClientResponseException e) {
@@ -97,6 +83,33 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         } catch (Exception e) {
             throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
         }
+    }
+
+    @NotNull
+    private String buildUrl(String executionId, String taskInfoName) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
+        uriBuilder.addParameter("execution_id", executionId);
+        uriBuilder.addParameter("task_name", taskInfoName);
+        return uriBuilder.toString();
+    }
+
+    @NotNull
+    private HttpEntity<?> buildHttpEntity(String executionId, String taskInfoName, Resource resource,
+                                          MultiValueMap<String, String> header, String requestType, Map<String, Object> input) {
+        HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
+        Map<String, Object> body = new HashMap<>();
+        String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
+        body.put("url", url);
+        body.put("body", requestParams.getBody());
+        if (requestParams.getBody().get("callback_info") != null) {
+            body.put("callback_info", requestParams.getBody().get("callback_info"));
+        } else if (header.get("X-Callback-Url") != null) {
+            body.put("callback_info", Map.of("trigger_url", header.get("X-Callback-Url")));
+        }
+        body.put("headers", requestParams.getHeader());
+        body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
+        header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        return new HttpEntity<>(body, header);
     }
 
     @Override
