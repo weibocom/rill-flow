@@ -45,14 +45,13 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
                 .executionId(executionId)
                 .build();
         boolean tolerance = Optional.ofNullable(taskInfo.getTask()).map(BaseTask::isTolerance).orElse(false);
+        TaskStatus retStatus = null;
         try {
             AnswerTask answerTask = (AnswerTask) taskInfo.getTask();
             if (answerTask == null || StringUtils.isEmpty(answerTask.getExpression())) {
                 TaskInvokeMsg taskInvokeMsg = TaskInvokeMsg.builder().msg("answer task expression empty").build();
                 taskInfo.updateInvokeMsg(taskInvokeMsg);
-                updateTaskInvokeEndTime(taskInfo);
-                taskInfo.setTaskStatus(TaskStatus.SKIPPED);
-                dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
+                retStatus = TaskStatus.SKIPPED;
                 return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
             }
             updateTaskInvokeStartTime(taskInfo);
@@ -60,16 +59,16 @@ public class AnswerTaskRunner extends AbstractTaskRunner {
             dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
             String dispatchResult = answerTaskDispatcher.dispatch(dispatchInfo);
             log.info("dispatch answer task succeed, execution_id: {}, task_name: {}, result: {}", executionId, taskInfo.getName(), dispatchResult);
-            updateTaskInvokeEndTime(taskInfo);
-            taskInfo.setTaskStatus(TaskStatus.SUCCEED);
-            dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
-            return ExecutionResult.builder().taskStatus(TaskStatus.SUCCEED).build();
+            retStatus = TaskStatus.SUCCEED;
+            return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
         } catch (Exception e) {
             log.warn("dispatch answer task failed, execution_id: {}, task_name: {}", executionId, taskInfo.getName(), e);
+            retStatus = tolerance? TaskStatus.SKIPPED: TaskStatus.FAILED;
+            return ExecutionResult.builder().taskStatus(retStatus).build();
+        } finally {
             updateTaskInvokeEndTime(taskInfo);
-            taskInfo.setTaskStatus(tolerance? TaskStatus.SKIPPED: TaskStatus.FAILED);
+            taskInfo.setTaskStatus(retStatus);
             dagInfoStorage.saveTaskInfos(executionId, Set.of(taskInfo));
-            return ExecutionResult.builder().taskStatus(TaskStatus.FAILED).build();
         }
     }
 
