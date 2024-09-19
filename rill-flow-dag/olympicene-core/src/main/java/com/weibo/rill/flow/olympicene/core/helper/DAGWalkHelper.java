@@ -58,6 +58,7 @@ public class DAGWalkHelper {
         boolean hasAnswerTask = taskInfos.stream()
                 .filter(taskInfo -> taskInfo.getTask() != null && taskInfo.getTask().getCategory() != null)
                 .anyMatch(taskInfo -> TaskCategory.ANSWER.getValue().equalsIgnoreCase(taskInfo.getTask().getCategory()));
+        boolean isKeyModel = isKeyMode(taskInfos);
 
         // 筛选出准备运行的任务:
         // 1. 任务不为空且状态为未开始
@@ -65,13 +66,8 @@ public class DAGWalkHelper {
         // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask))
-                .filter(taskInfo -> {
-                    if (!taskInfo.getTask().isKeyCallback()) {
-                        return true;
-                    }
-                    return isKeyMode(taskInfos);
-                })
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask)
+                        || isKeyModel && taskInfo.getTask().isKeyCallback())
                 .collect(Collectors.toSet());
 
         // 如果存在 answer 任务，则找到所有可以运行的 answer 任务

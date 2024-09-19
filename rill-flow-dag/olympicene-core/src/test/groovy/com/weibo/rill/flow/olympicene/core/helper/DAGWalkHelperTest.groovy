@@ -85,6 +85,41 @@ class DAGWalkHelperTest extends Specification {
         [:]                                        || DAGStatus.SUCCEED
     }
 
+    def "test getReadyToRunTasks is key mode"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.KEY_SUCCEED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoB])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoC)
+        !ret.contains(taskInfoB)
+        !ret.contains(taskInfoD)
+    }
+
     def "test getReadyToRunTasks without answer"() {
         given:
         BaseTask taskA = Mock(BaseTask)
@@ -111,7 +146,7 @@ class DAGWalkHelperTest extends Specification {
         taskInfoD.setDependencies([taskInfoC])
 
         when:
-        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
         then:
         ret.contains(taskInfoA)
         !ret.contains(taskInfoC)
@@ -145,7 +180,7 @@ class DAGWalkHelperTest extends Specification {
         taskInfoD.setDependencies([taskInfoC])
 
         when:
-        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
         then:
         ret.contains(taskInfoA)
         ret.contains(taskInfoC)
@@ -292,7 +327,7 @@ class DAGWalkHelperTest extends Specification {
         taskInfoD.setDependencies([taskInfoC])
 
         when:
-        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
         then:
         ret.contains(taskInfoA)
         !ret.contains(taskInfoB)
