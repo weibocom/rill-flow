@@ -80,6 +80,22 @@ class SseProtocolDispatcherTest extends Specification {
         httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx", "X-Callback-Url": "http://callback-server"]
     }
 
+    def "test buildHttpEntity without callback info"() {
+        given:
+        HttpParameter requestParams = HttpParameter.builder()
+                .queryParams([:])
+                .body(["hello": "world"])
+                .callback([:])
+                .header(["Content-Type":"application/json"]).build()
+        httpInvokeHelper.functionRequestParams(*_) >> requestParams
+        MultiValueMap<String, String> headerParam = new LinkedMultiValueMap<>()
+        headerParam.put("authHeader", ["xxx"])
+        when:
+        dispatcher.buildHttpEntity("123", "task1", resource, headerParam, null, new HashMap<String, Object>())
+        then:
+        thrown TaskException
+    }
+
     def "test handle"() {
         given:
         HttpParameter requestParams = HttpParameter.builder()
