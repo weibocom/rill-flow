@@ -137,7 +137,7 @@ public class DAGWalkHelper {
         }
         // 如果节点依赖的任务已经被处理过，则直接跳过
         // 如果有任何一个依赖的任务是没有处理完成的 Answer 节点，则返回 false
-        // 如果是非 answer 节点，则递归调用
+        // 如果是非 answer 节点，则递归调用，直到找到没有处理完成的 Answer 节点，或者全部节点都已被处理过
         return taskInfo.getDependencies().stream()
             .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
             .anyMatch(dependencyTask -> {
@@ -160,8 +160,11 @@ public class DAGWalkHelper {
      * 2. 如果依赖的是 ANSWER 类型的节点，那么忽略该 ANSWER 节点，检查 ANSWER 节点的所有依赖是否都已完成
      * 3. 如果依赖的是非 ANSWER 类型的节点，那么检查该非 ANSWER 节点是否已完成
      *
-     * @param taskInfo 任务信息
-     * @return boolean 类型结果
+     * @param taskInfo 待处理的任务信息
+     * @param hasAnswerTask 当前所有待处理任务中是否存在 Answer 节点
+     * @param isKeyMode 当前是否处于关键路径模式
+     * @param isKeyCallback 待处理的任务是否是关键路径回调任务
+     * @return 返回待处理的任务是否可以被执行
      */
     private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask, boolean isKeyMode, boolean isKeyCallback) {
         if (!hasAnswerTask) {
