@@ -66,8 +66,7 @@ public class DAGWalkHelper {
         // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask)
-                        || isKeyMode && taskInfo.getTask().isKeyCallback() && isDependenciesAllKeySuccessOrSkip(taskInfo, hasAnswerTask))
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask, isKeyMode))
                 .collect(Collectors.toSet());
 
         // 如果存在 answer 任务，则找到所有可以运行的 answer 任务
@@ -159,43 +158,23 @@ public class DAGWalkHelper {
      * @param taskInfo 任务信息
      * @return boolean 类型结果
      */
-    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask) {
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask, boolean isKeyMode) {
+        boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
         if (!hasAnswerTask) {
             return CollectionUtils.isEmpty(taskInfo.getDependencies())
-                    || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip());
+                    || taskInfo.getDependencies().stream().allMatch(
+                            i -> (i.getTaskStatus().isSuccessOrSkip())
+                                    || isKeyMode && isKeyCallback && i.getTaskStatus().isSuccessOrKeySuccessOrSkip());
         }
 
         return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
                taskInfo.getDependencies().stream().allMatch(dependency ->
                    (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                    && isDependenciesAllSuccessOrSkip(dependency, true))
+                    && isDependenciesAllSuccessOrSkip(dependency, true, isKeyMode))
                    || !TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                           && dependency.getTaskStatus().isSuccessOrSkip()
+                           && (dependency.getTaskStatus().isSuccessOrSkip()
+                           || isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip())
                );
-    }
-
-    /**
-     * 判断依赖的所有任务是否都已完成
-     * 1. 如果没有依赖，说明依赖的所有任务都已完成
-     * 2. 如果依赖的是 ANSWER 类型的节点，那么忽略该 ANSWER 节点，检查 ANSWER 节点的所有依赖是否都已完成
-     * 3. 如果依赖的是非 ANSWER 类型的节点，那么检查该非 ANSWER 节点是否已完成
-     *
-     * @param taskInfo 任务信息
-     * @return boolean 类型结果
-     */
-    private boolean isDependenciesAllKeySuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask) {
-        if (!hasAnswerTask) {
-            return CollectionUtils.isEmpty(taskInfo.getDependencies())
-                    || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrKeySuccessOrSkip());
-        }
-
-        return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
-                taskInfo.getDependencies().stream().allMatch(dependency ->
-                        (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                                && isDependenciesAllKeySuccessOrSkip(dependency, true))
-                                || !TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                                && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip()
-                );
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {
