@@ -353,20 +353,27 @@ class DAGWalkHelperTest extends Specification {
         taskB.getName() >> "B"
         TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
         BaseTask taskC = Mock(BaseTask)
-        taskC.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
         taskC.getName() >> "C"
         TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.ANSWER.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
         taskInfoA.setNext([taskInfoB])
         taskInfoB.setDependencies([taskInfoA])
         taskInfoB.setNext([taskInfoC])
         taskInfoC.setDependencies([taskInfoB])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoC])
 
         when:
-        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
         then:
         ret.contains(taskInfoA)
         ret.contains(taskInfoB)
         !ret.contains(taskInfoC)
+        !ret.contains(taskInfoD)
     }
 
     def "test getReadyToRunTasks answer after success answer"() {
