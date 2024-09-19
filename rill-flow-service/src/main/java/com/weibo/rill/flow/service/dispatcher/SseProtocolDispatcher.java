@@ -67,22 +67,23 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         String taskInfoName = taskInfo.getName();
         String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
         MultiValueMap<String, String> header = dispatchInfo.getHeaders();
+        String result = null;
 
         try {
             HttpEntity<?> requestEntity = buildHttpEntity(executionId, taskInfoName, resource, header, requestType, input);
             String url = buildUrl(executionId, taskInfoName);
-            int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
-            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, maxInvokeTime);
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
-            return ret;
+            result = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, 1);
         } catch (RestClientResponseException e) {
-            String responseBody = e.getResponseBodyAsString();
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), responseBody);
+            result = e.getResponseBodyAsString();
             throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
-                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
+                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), result));
         } catch (Exception e) {
+            result = e.getMessage();
             throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
+        } finally {
+            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), result);
         }
+        return result;
     }
 
     @NotNull
