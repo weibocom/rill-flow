@@ -24,7 +24,6 @@ import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
-import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.apache.http.client.utils.URIBuilder;
@@ -56,8 +55,6 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private HttpInvokeHelper httpInvokeHelper;
     @Autowired
     private DAGResourceStatistic dagResourceStatistic;
-    @Autowired
-    private SwitcherManager switcherManagerImpl;
 
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
@@ -104,8 +101,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         body.put("body", requestParams.getBody());
         if (requestParams.getBody().get("callback_info") != null) {
             body.put("callback_info", requestParams.getBody().get("callback_info"));
-        } else if (header.get("X-Callback-Url") != null) {
-            body.put("callback_info", Map.of("trigger_url", header.get("X-Callback-Url")));
+        } else if (header.getFirst("X-Callback-Url") != null) {
+            body.put("callback_info", Map.of("trigger_url", header.getFirst("X-Callback-Url")));
         }
         body.put("headers", requestParams.getHeader());
         body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
