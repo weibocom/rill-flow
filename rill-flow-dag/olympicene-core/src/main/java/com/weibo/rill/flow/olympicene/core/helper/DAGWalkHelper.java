@@ -149,6 +149,11 @@ public class DAGWalkHelper {
             });
     }
 
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask, boolean isKeyMode) {
+        boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
+        return isDependenciesAllSuccessOrSkip(taskInfo, hasAnswerTask, isKeyMode, isKeyCallback);
+    }
+
     /**
      * 判断依赖的所有任务是否都已完成
      * 1. 如果没有依赖，说明依赖的所有任务都已完成
@@ -158,8 +163,7 @@ public class DAGWalkHelper {
      * @param taskInfo 任务信息
      * @return boolean 类型结果
      */
-    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask, boolean isKeyMode) {
-        boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasAnswerTask, boolean isKeyMode, boolean isKeyCallback) {
         if (!hasAnswerTask) {
             return CollectionUtils.isEmpty(taskInfo.getDependencies())
                     || taskInfo.getDependencies().stream().allMatch(
@@ -170,7 +174,7 @@ public class DAGWalkHelper {
         return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
                taskInfo.getDependencies().stream().allMatch(dependency ->
                    (TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
-                    && isDependenciesAllSuccessOrSkip(dependency, true, isKeyMode))
+                    && isDependenciesAllSuccessOrSkip(dependency, true, isKeyMode, isKeyCallback))
                    || !TaskCategory.ANSWER.getValue().equals(dependency.getTask().getCategory())
                            && (dependency.getTaskStatus().isSuccessOrSkip()
                            || isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip())
