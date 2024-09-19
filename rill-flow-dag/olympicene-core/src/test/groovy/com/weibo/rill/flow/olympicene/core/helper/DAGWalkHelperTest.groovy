@@ -90,7 +90,7 @@ class DAGWalkHelperTest extends Specification {
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
         taskA.getName() >> "A"
-        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.SUCCEED, task: taskA)
         BaseTask taskB = Mock(BaseTask)
         taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
         taskB.getName() >> "B"
@@ -104,19 +104,18 @@ class DAGWalkHelperTest extends Specification {
         taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
         taskD.getName() >> "D"
         TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
-        taskInfoA.setNext([taskInfoB])
-        taskInfoB.setDependencies([taskInfoA])
+        taskInfoA.setNext([taskInfoC])
         taskInfoB.setNext([taskInfoC])
-        taskInfoC.setDependencies([taskInfoB])
+        taskInfoC.setDependencies([taskInfoA, taskInfoB])
         taskInfoC.setNext([taskInfoD])
         taskInfoD.setDependencies([taskInfoC])
 
         when:
         Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
         then:
-        ret.contains(taskInfoA)
-        ret.contains(taskInfoC)
+        !ret.contains(taskInfoA)
         !ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
         !ret.contains(taskInfoD)
     }
 
