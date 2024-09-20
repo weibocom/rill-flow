@@ -94,32 +94,38 @@ public class DAGWalkHelper {
     private void findNextAnswerTask(TaskInfo taskInfo, Map<String, TaskInfo> answerTaskInfoMap, Set<String> skipTaskNames) {
         List<TaskInfo> nextTaskInfos = taskInfo.getNext();
         String category = taskInfo.getTask().getCategory();
-        // 如果当前节点没有后继节点，或者当前节点是分支任务节点，或者当前节点是未执行的 answer 节点，则不需要继续处理
-        // 如果当前节点是未执行的 answer 节点，那么一定被处理过，要么是待执行的节点，要么是不能执行的节点，不需要再判断一次
-        if (CollectionUtils.isEmpty(nextTaskInfos) || FORK_TASK_CATEGORIES.contains(category)
-                || TaskCategory.ANSWER.getValue().equalsIgnoreCase(category)
-                && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+        
+        if (shouldSkipTask(taskInfo, nextTaskInfos, category)) {
             return;
         }
+        
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
-            String nextTaskName = nextTaskInfo.getName();
-            String nextCategory = nextTaskInfo.getTask().getCategory();
-
-            // 如果已经处理过该任务，或者该任务是分支任务，则不继续处理
-            if (!skipTaskNames.contains(nextTaskName) && !FORK_TASK_CATEGORIES.contains(nextCategory)) {
-                skipTaskNames.add(nextTaskName);
-                if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)
-                        && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
-                    if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
-                        // 如果是待处理的 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
-                        answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
-                    }
-                } else {
-                    // 递归调用该后继节点的后继节点
-                    findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
-                }
-            }
+            processNextTaskInfo(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
         }
+    }
+
+    private boolean shouldSkipTask(TaskInfo taskInfo, List<TaskInfo> nextTaskInfos, String category) {
+        return CollectionUtils.isEmpty(nextTaskInfos) || FORK_TASK_CATEGORIES.contains(category)
+                || (TaskCategory.ANSWER.getValue().equalsIgnoreCase(category)
+                && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED);
+    }
+
+    private void processNextTaskInfo(TaskInfo nextTaskInfo, Map<String, TaskInfo> answerTaskInfoMap, Set<String> skipTaskNames) {
+        String nextTaskName = nextTaskInfo.getName();
+        String nextCategory = nextTaskInfo.getTask().getCategory();
+
+        if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
+            return;
+        }
+        skipTaskNames.add(nextTaskName);
+        if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)
+                && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+            if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
+                answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
+            }
+            return;
+        }
+        findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
     }
 
     /**

@@ -67,6 +67,7 @@ public class DAGDescriptorFacade {
     private static final String VERSIONS = "versions";
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
+    private static final String RESOURCE_PROTOCOL = "resourceProtocol";
     @Autowired
     ProtocolPluginService protocolPluginService;
     @Autowired
@@ -242,12 +243,12 @@ public class DAGDescriptorFacade {
      */
     private void generateResourceProtocol(JSONObject task) {
         try {
-            if (task == null || StringUtils.isNotEmpty(task.getString("resourceProtocol"))) {
+            if (task == null || StringUtils.isNotEmpty(task.getString(RESOURCE_PROTOCOL))) {
                 return;
             }
             String resourceName = task.getString("resourceName");
             Resource resource = new Resource(resourceName);
-            task.put("resourceProtocol", resource.getSchemeProtocol());
+            task.put(RESOURCE_PROTOCOL, resource.getSchemeProtocol());
         } catch (Exception e) {
             log.warn("generateResourceProtocol error", e);
         }
@@ -307,7 +308,7 @@ public class DAGDescriptorFacade {
                 task.set("pattern", node.path("nodeDetails").path("pattern"));
                 task.set("inputMappings", node.path("nodeDetails").path("input_mappings"));
                 task.set("outputMappings", node.path("nodeDetails").path("output_mappings"));
-                task.set("resourceProtocol", node.path("nodeDetails").path("resource_protocol"));
+                task.set(RESOURCE_PROTOCOL, node.path("nodeDetails").path("resource_protocol"));
                 task.set("parameters", node.path("nodeDetails").path("parameters"));
                 task.set("next", node.get("next"));
                 tasks.add(task);

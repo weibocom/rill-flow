@@ -28,7 +28,6 @@ import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.apache.http.client.utils.URIBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +54,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private HttpInvokeHelper httpInvokeHelper;
     @javax.annotation.Resource
     private DAGResourceStatistic dagResourceStatistic;
+
+    private static final String CALLBACK_INFO = "callback_info";
 
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
@@ -99,10 +100,10 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
         body.put("url", url);
         body.put("body", requestParams.getBody());
-        if (requestParams.getBody().get("callback_info") != null) {
-            body.put("callback_info", requestParams.getBody().get("callback_info"));
+        if (requestParams.getBody().get(CALLBACK_INFO) != null) {
+            body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
         } else if (header.getFirst("X-Callback-Url") != null) {
-            body.put("callback_info", Map.of("trigger_url", header.getFirst("X-Callback-Url")));
+            body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst("X-Callback-Url")));
         } else {
             throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
         }
