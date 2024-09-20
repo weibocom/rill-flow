@@ -106,21 +106,19 @@ public class DAGWalkHelper {
             String nextCategory = nextTaskInfo.getTask().getCategory();
 
             // 如果已经处理过该任务，或者该任务是分支任务，则不继续处理
-            if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
-                continue;
-            }
-
-            skipTaskNames.add(nextTaskName);
-            if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)
-                    && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
-                if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
-                    // 如果是待处理的 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
-                    answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
+            if (!skipTaskNames.contains(nextTaskName) && !FORK_TASK_CATEGORIES.contains(nextCategory)) {
+                skipTaskNames.add(nextTaskName);
+                if (TaskCategory.ANSWER.getValue().equalsIgnoreCase(nextCategory)
+                        && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+                    if (!isDependOnUnfinishedAnswer(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
+                        // 如果是待处理的 ANSWER 节点，并且它不依赖于尚未执行完的 ANSWER 节点，则加入到待处理列表
+                        answerTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
+                    }
+                } else {
+                    // 递归调用该后继节点的后继节点
+                    findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
                 }
-                continue;
             }
-            // 递归调用该后继节点的后继节点
-            findNextAnswerTask(nextTaskInfo, answerTaskInfoMap, skipTaskNames);
         }
     }
 

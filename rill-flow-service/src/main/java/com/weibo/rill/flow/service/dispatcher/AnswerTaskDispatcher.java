@@ -39,6 +39,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 @Service
 @Slf4j
 public class AnswerTaskDispatcher implements DAGDispatcher {
@@ -47,9 +49,9 @@ public class AnswerTaskDispatcher implements DAGDispatcher {
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
 
-    @Autowired
+    @Resource
     private HttpInvokeHelper httpInvokeHelper;
-    @Autowired
+    @Resource
     private SwitcherManager switcherManagerImpl;
 
     @Override

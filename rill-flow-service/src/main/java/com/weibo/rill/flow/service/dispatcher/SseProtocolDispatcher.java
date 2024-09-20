@@ -51,9 +51,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
 
-    @Autowired
+    @javax.annotation.Resource
     private HttpInvokeHelper httpInvokeHelper;
-    @Autowired
+    @javax.annotation.Resource
     private DAGResourceStatistic dagResourceStatistic;
 
     @Override
