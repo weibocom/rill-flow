@@ -141,6 +141,7 @@ class TaskParseTest extends Specification {
         ret.category == 'answer'
         ret.title == '测试 answer 任务'
         ret.tolerance
+        ret.subTasks() == []
     }
 
 
