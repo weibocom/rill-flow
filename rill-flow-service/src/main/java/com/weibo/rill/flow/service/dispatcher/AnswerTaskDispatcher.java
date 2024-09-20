@@ -25,7 +25,7 @@ import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,11 +35,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import javax.annotation.Resource;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Resource;
 
 @Service
 @Slf4j
@@ -65,23 +64,32 @@ public class AnswerTaskDispatcher implements DAGDispatcher {
         String expression = answerTask.getExpression();
 
         try {
-            URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + answerTaskExecuteUri);
-            uriBuilder.addParameter("task_name", taskName);
-            uriBuilder.addParameter("execution_id", executionId);
+            String url = buildUrl(executionId, taskName);
 
-            Map<String, Object> body = Map.of("expression", expression);
-            MultiValueMap<String, String> header = dispatchInfo.getHeaders();
-            if (header == null) {
-                header = new LinkedMultiValueMap<>();
-            }
-            header.put(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
-            HttpMethod method = HttpMethod.POST;
-            HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
+            HttpEntity<?> requestEntity = buildHttpEntity(dispatchInfo, expression);
             int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
-            return httpInvokeHelper.invokeRequest(executionId, taskName, uriBuilder.toString(), requestEntity, method, maxInvokeTime);
+            return httpInvokeHelper.invokeRequest(executionId, taskName, url, requestEntity, HttpMethod.POST, maxInvokeTime);
         } catch (URISyntaxException e) {
             log.warn("dispatch answer task error, execution_id: {}, task_name: {}, expression: {}", executionId, taskName, expression, e);
             return new JSONObject(Map.of("data", "failed", "message", e.getMessage())).toJSONString();
         }
+    }
+
+    @NotNull
+    private String buildUrl(String executionId, String taskName) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + answerTaskExecuteUri);
+        uriBuilder.addParameter("execution_id", executionId);
+        uriBuilder.addParameter("task_name", taskName);
+        return uriBuilder.toString();
+    }
+
+    private static HttpEntity<?> buildHttpEntity(DispatchInfo dispatchInfo, String expression) {
+        Map<String, Object> body = Map.of("expression", expression);
+        MultiValueMap<String, String> header = dispatchInfo.getHeaders();
+        if (header == null) {
+            header = new LinkedMultiValueMap<>();
+        }
+        header.put(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        return new HttpEntity<>(body, header);
     }
 }
