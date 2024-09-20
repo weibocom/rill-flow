@@ -5,6 +5,7 @@ import com.weibo.rill.flow.interfaces.model.task.InvokeTimeInfo
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus
+import com.weibo.rill.flow.olympicene.core.model.task.AnswerTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher
@@ -42,6 +43,58 @@ class AnswerTaskRunnerTest extends Specification {
         InvokeTimeInfo invokeTimeInfo = new InvokeTimeInfo()
         taskInvokeMsg.getInvokeTimeInfos() >> [invokeTimeInfo]
         taskInfo.getTaskInvokeMsg() >> taskInvokeMsg
+        when:
+        def result = runner.doRun("test-execution-id", taskInfo, [:])
+        then:
+        result.taskStatus == TaskStatus.SKIPPED
+    }
+
+    def "test doRun"() {
+        given:
+        TaskInfo taskInfo = new TaskInfo()
+        AnswerTask answerTask = Mock(AnswerTask)
+        answerTask.getExpression() >> "Hello World"
+        taskInfo.setTask(answerTask)
+        TaskInvokeMsg taskInvokeMsg = Mock(TaskInvokeMsg)
+        InvokeTimeInfo invokeTimeInfo = new InvokeTimeInfo()
+        taskInvokeMsg.getInvokeTimeInfos() >> [invokeTimeInfo]
+        taskInfo.getTaskInvokeMsg() >> taskInvokeMsg
+        answerTaskDispatcher.dispatch(*_) >> "SUCCESS"
+        when:
+        def result = runner.doRun("test-execution-id", taskInfo, [:])
+        then:
+        result.taskStatus == TaskStatus.SUCCEED
+    }
+
+    def "test doRun when dispatch error"() {
+        given:
+        TaskInfo taskInfo = new TaskInfo()
+        AnswerTask answerTask = Mock(AnswerTask)
+        answerTask.getExpression() >> "Hello World"
+        taskInfo.setTask(answerTask)
+        TaskInvokeMsg taskInvokeMsg = Mock(TaskInvokeMsg)
+        InvokeTimeInfo invokeTimeInfo = new InvokeTimeInfo()
+        taskInvokeMsg.getInvokeTimeInfos() >> [invokeTimeInfo]
+        taskInfo.getTaskInvokeMsg() >> taskInvokeMsg
+        answerTaskDispatcher.dispatch(*_) >> { throw new RuntimeException("test error") }
+        when:
+        def result = runner.doRun("test-execution-id", taskInfo, [:])
+        then:
+        result.taskStatus == TaskStatus.FAILED
+    }
+
+    def "test doRun when dispatch error and tolerance"() {
+        given:
+        TaskInfo taskInfo = new TaskInfo()
+        AnswerTask answerTask = Mock(AnswerTask)
+        answerTask.getExpression() >> "Hello World"
+        answerTask.isTolerance() >> true
+        taskInfo.setTask(answerTask)
+        TaskInvokeMsg taskInvokeMsg = Mock(TaskInvokeMsg)
+        InvokeTimeInfo invokeTimeInfo = new InvokeTimeInfo()
+        taskInvokeMsg.getInvokeTimeInfos() >> [invokeTimeInfo]
+        taskInfo.getTaskInvokeMsg() >> taskInvokeMsg
+        answerTaskDispatcher.dispatch(*_) >> { throw new RuntimeException("test error") }
         when:
         def result = runner.doRun("test-execution-id", taskInfo, [:])
         then:
