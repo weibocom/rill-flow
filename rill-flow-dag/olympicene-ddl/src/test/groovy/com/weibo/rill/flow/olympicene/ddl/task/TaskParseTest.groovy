@@ -2,6 +2,7 @@ package com.weibo.rill.flow.olympicene.ddl.task
 
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask
+import com.weibo.rill.flow.olympicene.core.model.task.AnswerTask
 import com.weibo.rill.flow.olympicene.core.model.task.ChoiceTask
 import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
@@ -120,6 +121,26 @@ class TaskParseTest extends Specification {
         ret.tasks.size() == 1
         ret.tasks.get(0).category == TaskCategory.FUNCTION.getValue()
         ret.category == TaskCategory.FOREACH.getValue()
+    }
+
+    def "test answer task mapper"() {
+        given:
+        String text = "expression: Hello world\\n{{#sseTask#}}\\n{{#pass\$.context.last_words#}}\n" +
+                "name: answer\n" +
+                "description: ''\n" +
+                "category: answer\n" +
+                "title: '测试 answer 任务'\n" +
+                "tolerance: true"
+        when:
+        AnswerTask ret = YAMLMapper.parseObject(text, AnswerTask.class)
+
+        then:
+        ret instanceof AnswerTask
+        ret.expression == "Hello world\\n{{#sseTask#}}\\n{{#pass\$.context.last_words#}}"
+        ret.name == 'answer'
+        ret.category == 'answer'
+        ret.title == '测试 answer 任务'
+        ret.tolerance
     }
 
 
