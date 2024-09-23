@@ -110,6 +110,7 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         body.put("headers", requestParams.getHeader());
         body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
         header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        header.put("X-Mode", List.of("sync"));
         return new HttpEntity<>(body, header);
     }
 

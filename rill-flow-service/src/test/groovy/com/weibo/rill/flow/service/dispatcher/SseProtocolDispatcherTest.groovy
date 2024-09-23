@@ -54,7 +54,7 @@ class SseProtocolDispatcherTest extends Specification {
                                  "headers": ["Content-Type":"application/json"],
                                  "request_type": "GET"
         ]
-        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx"]
+        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx", "X-Mode": "sync"]
     }
 
     def "test buildHttpEntity extract callback_info from header"() {
@@ -77,7 +77,7 @@ class SseProtocolDispatcherTest extends Specification {
                                  "headers": ["Content-Type":"application/json"],
                                  "request_type": "GET"
         ]
-        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx", "X-Callback-Url": "http://callback-server"]
+        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx", "X-Callback-Url": "http://callback-server", "X-Mode": "sync"]
     }
 
     def "test buildHttpEntity without callback info"() {

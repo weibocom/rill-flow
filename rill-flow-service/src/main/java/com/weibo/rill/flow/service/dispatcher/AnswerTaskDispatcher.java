@@ -90,6 +90,7 @@ public class AnswerTaskDispatcher implements DAGDispatcher {
             header = new LinkedMultiValueMap<>();
         }
         header.put(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        header.put("X-Mode", List.of("sync"));
         return new HttpEntity<>(body, header);
     }
 }
