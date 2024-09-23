@@ -104,13 +104,13 @@ public class SseProtocolDispatcher implements DispatcherExtension {
             body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
         } else if (header.getFirst("X-Callback-Url") != null) {
             body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst("X-Callback-Url")));
+            header.remove("X-Callback-Url");
         } else {
             throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
         }
         body.put("headers", requestParams.getHeader());
         body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
         header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
-        header.put("X-Mode", List.of("sync"));
         return new HttpEntity<>(body, header);
     }
 

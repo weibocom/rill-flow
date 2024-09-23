@@ -35,6 +35,6 @@ class AnswerTaskDispatcherTest extends Specification {
         HttpEntity<?> httpEntity = dispatcher.buildHttpEntity(dispatchInfo, "Hello World")
         then:
         httpEntity.getBody() == ["expression": "Hello World"]
-        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx", "X-Mode": "sync"]
+        httpEntity.getHeaders().toSingleValueMap() == ["Content-Type": "application/json", "authHeader": "xxx"]
     }
 }
