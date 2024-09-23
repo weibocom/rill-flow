@@ -1,6 +1,5 @@
 package com.weibo.rill.flow.service.dispatcher
 
-
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper
