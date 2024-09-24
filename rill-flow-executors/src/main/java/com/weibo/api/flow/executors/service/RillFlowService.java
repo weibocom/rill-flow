@@ -113,16 +113,22 @@ public class RillFlowService {
     }
 
     public String submitFlow(String rillFlowHost, String descriptorId, JSONObject context) {
-        String submitUrl = rillFlowHost + rillFlowSubmitUri + "?descriptor_id=" + descriptorId;
         MultiValueMap<String, String> header = new LinkedMultiValueMap<>();
         header.put(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
         // Adding a CSRF token to the header to prevent CSRF attacks
         String csrfToken = generateCsrfToken();
         header.put("X-CSRF-Token", List.of(csrfToken));
         HttpEntity<Object> requestEntity = new HttpEntity<>(context, header);
-        ResponseEntity<String> response = rillFlowHttpTemplate.exchange(submitUrl, HttpMethod.POST, requestEntity, String.class);
-        JSONObject responseObj = JSON.parseObject(response.getBody());
-        return responseObj.getString("execution_id");
+        try {
+            URIBuilder uriBuilder = new URIBuilder(rillFlowHost + rillFlowSubmitUri);
+            uriBuilder.addParameter("descriptor_id", descriptorId);
+            ResponseEntity<String> response = rillFlowHttpTemplate.exchange(uriBuilder.build().toString(), HttpMethod.POST, requestEntity, String.class);
+            JSONObject responseObj = JSON.parseObject(response.getBody());
+            return responseObj.getString("execution_id");
+        } catch (Exception e) {
+            // Handle the exception, e.g., log it or rethrow as a runtime exception
+            throw new RuntimeException("Invalid URI syntax", e);
+        }
     }
 
     private String generateCsrfToken() {
