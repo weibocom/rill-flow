@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright 2021-2023 Weibo, Inc.
+  ~
+  ~    Licensed under the Apache License, Version 2.0 (the "License");
+  ~    you may not use this file except in compliance with the License.
+  ~    You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~    Unless required by applicable law or agreed to in writing, software
+  ~    distributed under the License is distributed on an "AS IS" BASIS,
+  ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~    See the License for the specific language governing permissions and
+  ~    limitations under the License.
+  -->
+
+<Configuration status="warn" name="rill-flow" packages="com.weibo.rill.flow.service.plugin">
+    <Properties>
+        <Property name="log-path">logs</Property>
+        <Property name="log-file-sizelimit">1GB</Property>
+        <Property name="spring.log.level">WARN</Property>
+    </Properties>
+
+    <DynamicThresholdFilter key="debug_id" defaultThreshold="INFO" onMatch="ACCEPT" onMismatch="ACCEPT"/>
+
+    <CustomizedExceptionFilter/>
+
+    <Appenders>
+        <Console name="console-log" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %p [%t] %C{2} (%F:%L) - %m %X{request_id}%n"/>
+        </Console>
+
+        <RollingFile name="debug-log" fileName="${log-path}/debug.log"
+                     filePattern="${log-path}/debug.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} %M - %msg %X{request_id}%n%ex{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="info-log" fileName="${log-path}/info.log" filePattern="${log-path}/info.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} %M - %msg %X{request_id}%n%ex{16}{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="access-log" fileName="${log-path}/access.log"
+                     filePattern="${log-path}/access.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} - %msg %X{request_id}%n%ex{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="warn-log" fileName="${log-path}/warn.log" filePattern="${log-path}/warn.log.%d{yyyyMMdd}">
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} %M - %msg %X{request_id}%n%ex{16}{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="api-log" fileName="${log-path}/api.log" filePattern="${log-path}/api.log.%d{yyyyMMdd-HH}">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} - %msg %X{request_id}%n%ex{16}{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="profile-log" fileName="${log-path}/profile.log"
+                     filePattern="${log-path}/profile.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %msg%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="rpc-log" fileName="${log-path}/rpc.log" filePattern="${log-path}/rpc.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} - %.-2000msg %X{request_id}%n%ex{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="http-access" fileName="${log-path}/http_access.log"
+                     filePattern="${log-path}/http_access.log.%d{yyyyMMdd-HH}">
+            <PatternLayout>
+                <Pattern>[%level] %d{yyyyMMdd HH:mm:ss.SSS} [%t] %c{1} - %.-2000msg %X{request_id}%n%ex{suffix(%X{request_id})}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.weibo.rill.flow" level="info" additivity="false">
+            <appender-ref ref="info-log"/>
+            <appender-ref ref="warn-log"/>
+        </Logger>
+
+        <Logger name="com.rill" level="info" additivity="false">
+            <appender-ref ref="info-log"/>
+            <appender-ref ref="warn-log"/>
+        </Logger>
+
+        <Logger name="serviceStatsLog" level="info" additivity="false">
+            <appender-ref ref="rpc-log" level="info"/>
+        </Logger>
+        <Logger name="httpclientaccess" level="info" additivity="false">
+            <appender-ref ref="http-access" level="info"/>
+        </Logger>
+        <Logger name="info" level="info" additivity="false">
+            <appender-ref ref="api-log" level="info"/>
+        </Logger>
+        <Logger name="access" level="info" additivity="false">
+            <appender-ref ref="access-log" level="info"/>
+        </Logger>
+        <Logger name="accessLog" level="info" additivity="false">
+            <appender-ref ref="rpc-log" level="info"/>
+        </Logger>
+        <Logger name="profile" level="info" additivity="false">
+            <appender-ref ref="profile-log" level="info"/>
+        </Logger>
+        <Logger name="warn" level="warn" additivity="false">
+            <appender-ref ref="api-log" level="warn"/>
+            <appender-ref ref="warn-log" level="warn"/>
+        </Logger>
+        <Logger name="error" level="error" additivity="false">
+            <appender-ref ref="api-log" level="error"/>
+            <appender-ref ref="warn-log" level="error"/>
+        </Logger>
+
+        <Root level="warn">
+            <AppenderRef ref="warn-log"/>
+        </Root>
+    </Loggers>
+</Configuration>
