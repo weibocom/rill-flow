@@ -34,6 +34,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -115,10 +116,18 @@ public class RillFlowService {
         String submitUrl = rillFlowHost + rillFlowSubmitUri + "?descriptor_id=" + descriptorId;
         MultiValueMap<String, String> header = new LinkedMultiValueMap<>();
         header.put(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        // Adding a CSRF token to the header to prevent CSRF attacks
+        String csrfToken = generateCsrfToken();
+        header.put("X-CSRF-Token", List.of(csrfToken));
         HttpEntity<Object> requestEntity = new HttpEntity<>(context, header);
-        ResponseEntity<String> response = rillFlowHttpTemplate.exchange(submitUrl, HttpMethod.GET, requestEntity, String.class);
+        ResponseEntity<String> response = rillFlowHttpTemplate.exchange(submitUrl, HttpMethod.POST, requestEntity, String.class);
         JSONObject responseObj = JSON.parseObject(response.getBody());
         return responseObj.getString("execution_id");
+    }
+
+    private String generateCsrfToken() {
+        // Implement a method to generate a CSRF token
+        return UUID.randomUUID().toString();
     }
 
     public boolean isTaskRunning(String rillFlowHost, String executionId, String taskName) {
