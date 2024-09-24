@@ -126,8 +126,8 @@ public class RillFlowService {
             JSONObject responseObj = JSON.parseObject(response.getBody());
             return responseObj.getString("execution_id");
         } catch (Exception e) {
-            // Handle the exception, e.g., log it or rethrow as a runtime exception
-            throw new RuntimeException("Invalid URI syntax", e);
+            log.error("submitFlow error, descriptor_id: {}, error: ", descriptorId, e);
+            return null;
         }
     }
 
