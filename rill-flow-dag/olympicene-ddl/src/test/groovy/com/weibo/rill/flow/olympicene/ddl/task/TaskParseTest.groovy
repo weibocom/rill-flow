@@ -2,7 +2,7 @@ package com.weibo.rill.flow.olympicene.ddl.task
 
 import com.weibo.rill.flow.interfaces.model.task.FunctionPattern
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask
-import com.weibo.rill.flow.olympicene.core.model.task.AnswerTask
+
 import com.weibo.rill.flow.olympicene.core.model.task.ChoiceTask
 import com.weibo.rill.flow.olympicene.core.model.task.ForeachTask
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory
@@ -18,6 +18,7 @@ class TaskParseTest extends Specification {
                 "resourceName: testBusinessId::testFeatureName::testResource::prod \n" +
                 "group: split\n" +
                 "pattern: task_scheduler\n" +
+                "inputType: stream\n" +
                 "inputMappings:\n" +
                 "   - target: url\n" +
                 "     source: url\n" +
@@ -37,6 +38,7 @@ class TaskParseTest extends Specification {
         ret.resourceName == 'testBusinessId::testFeatureName::testResource::prod'
         ret.inputMappings.size() == 2
         ret.outputMappings.size() == 1
+        ret.inputType == 'stream'
         ret.next == 'segmentForeach'
         ret.category == TaskCategory.FUNCTION.getValue()
     }
@@ -121,27 +123,6 @@ class TaskParseTest extends Specification {
         ret.tasks.size() == 1
         ret.tasks.get(0).category == TaskCategory.FUNCTION.getValue()
         ret.category == TaskCategory.FOREACH.getValue()
-    }
-
-    def "test answer task mapper"() {
-        given:
-        String text = "expression: Hello world\\n{{#sseTask#}}\\n{{#pass\$.context.last_words#}}\n" +
-                "name: answer\n" +
-                "description: ''\n" +
-                "category: answer\n" +
-                "title: '测试 answer 任务'\n" +
-                "tolerance: true"
-        when:
-        AnswerTask ret = YAMLMapper.parseObject(text, AnswerTask.class)
-
-        then:
-        ret instanceof AnswerTask
-        ret.expression == "Hello world\\n{{#sseTask#}}\\n{{#pass\$.context.last_words#}}"
-        ret.name == 'answer'
-        ret.category == 'answer'
-        ret.title == '测试 answer 任务'
-        ret.tolerance
-        ret.subTasks() == []
     }
 
 
