@@ -114,7 +114,7 @@ public class DAGWalkHelper {
     private void processNextTaskInfo(TaskInfo nextTaskInfo, Map<String, TaskInfo> streamInputTaskInfoMap, Set<String> skipTaskNames) {
         String nextTaskName = nextTaskInfo.getName();
         String nextCategory = nextTaskInfo.getTask().getCategory();
-        TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getCategory());
+        TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
 
         if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
             return;
@@ -181,7 +181,7 @@ public class DAGWalkHelper {
         return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
                taskInfo.getDependencies().stream().allMatch(dependency -> {
                    TaskInputType inputType = TaskInputType.getInputTypeByValue(dependency.getTask().getInputType());
-                   return inputType == TaskInputType.STREAM && isDependenciesAllSuccessOrSkip(dependency, hasStreamInputTask, isKeyMode)
+                   return inputType == TaskInputType.STREAM && isDependenciesAllSuccessOrSkip(dependency, true, isKeyMode, isKeyCallback)
                            || inputType != TaskInputType.STREAM && dependency.getTaskStatus().isSuccessOrSkip()
                            || isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip();
                });
