@@ -56,6 +56,7 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private DAGResourceStatistic dagResourceStatistic;
 
     private static final String CALLBACK_INFO = "callback_info";
+    private static final String X_CALLBACK_URL = "X-Callback-Url";
 
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
@@ -102,9 +103,9 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         body.put("body", requestParams.getBody());
         if (requestParams.getBody().get(CALLBACK_INFO) != null) {
             body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
-        } else if (header.getFirst("X-Callback-Url") != null) {
-            body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst("X-Callback-Url")));
-            header.remove("X-Callback-Url");
+        } else if (header.getFirst(X_CALLBACK_URL) != null) {
+            body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst(X_CALLBACK_URL)));
+            header.remove(X_CALLBACK_URL);
         } else {
             throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
         }
