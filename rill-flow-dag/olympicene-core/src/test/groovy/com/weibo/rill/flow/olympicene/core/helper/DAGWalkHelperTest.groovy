@@ -190,7 +190,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks without answer"() {
+    def "test getReadyToRunTasks without stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -259,7 +259,7 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks return before answer"() {
+    def "test getReadyToRunTasks return before stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -348,7 +348,7 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks stream input after answer"() {
+    def "test getReadyToRunTasks stream input after stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -384,7 +384,7 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks stream input after success answer"() {
+    def "test getReadyToRunTasks stream input after success stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -420,7 +420,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks stream input depends on answer"() {
+    def "test getReadyToRunTasks stream input depends on stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getInputType() >> "stream"
@@ -454,7 +454,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoD)
     }
 
-    def "test getReadyToRunTasks stream input depends on success answer"() {
+    def "test getReadyToRunTasks stream input depends on success stream input task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getInputType() >> "stream"
