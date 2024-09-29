@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class NotSupportedTaskValidator implements TaskValidator<BaseTask> {
     private final List<Class<?>> supportedTasks = List.of(FunctionTask.class, SuspenseTask.class, PassTask.class,
-            ReturnTask.class, ForeachTask.class, ChoiceTask.class, SwitchTask.class, AnswerTask.class);
+            ReturnTask.class, ForeachTask.class, ChoiceTask.class, SwitchTask.class);
 
     @Override
     public void validate(BaseTask task, Map<String, BaseResource> resourceMap) {

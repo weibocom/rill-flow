@@ -43,9 +43,6 @@ public enum TaskCategory {
 
     // 执行分支语句
     SWITCH("switch", 2),
-
-    // 执行 sse answer
-    ANSWER("answer", 2),
     ;
 
     private final String value;
@@ -70,7 +67,6 @@ public enum TaskCategory {
             case "pass" -> PASS;
             case "return" -> RETURN;
             case "switch" -> SWITCH;
-            case "answer" -> ANSWER;
             default -> null;
         };
     }

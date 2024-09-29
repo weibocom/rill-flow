@@ -1,5 +1,6 @@
 package com.weibo.rill.flow.service.facade
 
+import com.alibaba.fastjson.JSONObject
 import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException
@@ -39,5 +40,25 @@ class DAGDescriptorFacadeTest extends Specification {
         facade.addDescriptor(null, "testBusiness", "testFeatureName", "release", "hello world")
         then:
         thrown TaskException
+    }
+
+    def "test generateResourceProtocol"() {
+        given:
+        JSONObject task = new JSONObject(["resourceProtocol": "sse", "resourceName": "http://rill-flow-server"])
+        when:
+        facade.generateResourceProtocol(task)
+        then:
+        task != null
+        task.getString("resourceProtocol") == "sse"
+    }
+
+    def "test generateResourceProtocol without protocol"() {
+        given:
+        JSONObject task = new JSONObject(["resourceName": "http://rill-flow-server"])
+        when:
+        facade.generateResourceProtocol(task)
+        then:
+        task != null
+        task.getString("resourceProtocol") == "http"
     }
 }

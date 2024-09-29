@@ -88,6 +88,7 @@ class TaskCategoryTest extends Specification {
         "pass"      | TaskCategory.PASS
         "suspense"  | TaskCategory.SUSPENSE
         "return"    | TaskCategory.RETURN
+        "switch"    | TaskCategory.SWITCH
         "break"     | null
     }
 

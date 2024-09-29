@@ -24,11 +24,10 @@ import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
-import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import org.apache.http.client.utils.URIBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +50,12 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
 
-    @Autowired
+    @javax.annotation.Resource
     private HttpInvokeHelper httpInvokeHelper;
-    @Autowired
+    @javax.annotation.Resource
     private DAGResourceStatistic dagResourceStatistic;
-    @Autowired
-    private SwitcherManager switcherManagerImpl;
+
+    private static final String CALLBACK_INFO = "callback_info";
 
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
@@ -65,34 +65,53 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         String taskInfoName = taskInfo.getName();
         String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
         MultiValueMap<String, String> header = dispatchInfo.getHeaders();
+        String result = null;
 
         try {
-            HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
-            Map<String, Object> body = new HashMap<>();
-            String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
-            body.put("url", url);
-            body.put("body", requestParams.getBody());
-            body.put("callback_info", requestParams.getBody().get("callback_info"));
-            body.put("headers", requestParams.getHeader());
-            body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
-            int maxInvokeTime = switcherManagerImpl.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") ? 2 : 1;
-            header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
-            HttpEntity<?> requestEntity = new HttpEntity<>(body, header);
-
-            URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
-            uriBuilder.addParameter("execution_id", executionId);
-            uriBuilder.addParameter("task_name", taskInfoName);
-            String ret = httpInvokeHelper.invokeRequest(executionId, taskInfoName, uriBuilder.toString(), requestEntity, HttpMethod.POST, maxInvokeTime);
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), ret);
-            return ret;
+            HttpEntity<?> requestEntity = buildHttpEntity(executionId, taskInfoName, resource, header, requestType, input);
+            String url = buildUrl(executionId, taskInfoName);
+            result = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, 1);
         } catch (RestClientResponseException e) {
-            String responseBody = e.getResponseBodyAsString();
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), responseBody);
+            result = e.getResponseBodyAsString();
             throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
-                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), responseBody));
+                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), result));
         } catch (Exception e) {
+            result = e.getMessage();
             throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
+        } finally {
+            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), result);
         }
+        return result;
+    }
+
+    @NotNull
+    private String buildUrl(String executionId, String taskInfoName) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
+        uriBuilder.addParameter("execution_id", executionId);
+        uriBuilder.addParameter("task_name", taskInfoName);
+        return uriBuilder.toString();
+    }
+
+    @NotNull
+    private HttpEntity<?> buildHttpEntity(String executionId, String taskInfoName, Resource resource,
+                                          MultiValueMap<String, String> header, String requestType, Map<String, Object> input) {
+        HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
+        Map<String, Object> body = new HashMap<>();
+        String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
+        body.put("url", url);
+        body.put("body", requestParams.getBody());
+        if (requestParams.getBody().get(CALLBACK_INFO) != null) {
+            body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
+        } else if (header.getFirst("X-Callback-Url") != null) {
+            body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst("X-Callback-Url")));
+            header.remove("X-Callback-Url");
+        } else {
+            throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
+        }
+        body.put("headers", requestParams.getHeader());
+        body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
+        header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+        return new HttpEntity<>(body, header);
     }
 
     @Override
