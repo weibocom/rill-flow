@@ -49,6 +49,8 @@ public class SseProtocolDispatcher implements DispatcherExtension {
     private String sseExecutorUri;
     @Value("${rill.flow.sse.executor.host}")
     private String sseExecutorHost;
+    @Value("${rill.flow.server.host}")
+    private String flowServerHost;
 
     @javax.annotation.Resource
     private HttpInvokeHelper httpInvokeHelper;
@@ -90,6 +92,7 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
         uriBuilder.addParameter("execution_id", executionId);
         uriBuilder.addParameter("task_name", taskInfoName);
+        uriBuilder.addParameter("rill_flow_host", flowServerHost);
         return uriBuilder.toString();
     }
 
