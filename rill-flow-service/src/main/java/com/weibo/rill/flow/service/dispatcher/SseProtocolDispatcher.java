@@ -101,10 +101,11 @@ public class SseProtocolDispatcher implements DispatcherExtension {
         String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
         body.put("url", url);
         body.put("body", requestParams.getBody());
+        String xCallbackUrl = header.getFirst(X_CALLBACK_URL);
         if (requestParams.getBody().get(CALLBACK_INFO) != null) {
             body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
-        } else if (header.getFirst(X_CALLBACK_URL) != null) {
-            body.put(CALLBACK_INFO, Map.of("trigger_url", header.getFirst(X_CALLBACK_URL)));
+        } else if (xCallbackUrl != null) {
+            body.put(CALLBACK_INFO, Map.of("trigger_url", xCallbackUrl));
             header.remove(X_CALLBACK_URL);
         } else {
             throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
