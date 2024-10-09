@@ -43,78 +43,80 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Service("sseDispatcher")
+// TODO: remove this class
+//@Service("sseDispatcher")
 public class SseProtocolDispatcher implements DispatcherExtension {
-    @Value("${rill.flow.sse.executor.execute.uri}")
-    private String sseExecutorUri;
-    @Value("${rill.flow.sse.executor.host}")
-    private String sseExecutorHost;
-
-    @javax.annotation.Resource
-    private HttpInvokeHelper httpInvokeHelper;
-    @javax.annotation.Resource
-    private DAGResourceStatistic dagResourceStatistic;
-
-    private static final String CALLBACK_INFO = "callback_info";
-    private static final String X_CALLBACK_URL = "X-Callback-Url";
+//    @Value("${rill.flow.sse.executor.execute.uri}")
+//    private String sseExecutorUri;
+//    @Value("${rill.flow.sse.executor.host}")
+//    private String sseExecutorHost;
+//
+//    @javax.annotation.Resource
+//    private HttpInvokeHelper httpInvokeHelper;
+//    @javax.annotation.Resource
+//    private DAGResourceStatistic dagResourceStatistic;
+//
+//    private static final String CALLBACK_INFO = "callback_info";
+//    private static final String X_CALLBACK_URL = "X-Callback-Url";
 
     @Override
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
-        Map<String, Object> input = dispatchInfo.getInput();
-        TaskInfo taskInfo = dispatchInfo.getTaskInfo();
-        String executionId = dispatchInfo.getExecutionId();
-        String taskInfoName = taskInfo.getName();
-        String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
-        MultiValueMap<String, String> header = dispatchInfo.getHeaders();
-        String result = null;
-
-        try {
-            HttpEntity<?> requestEntity = buildHttpEntity(executionId, taskInfoName, resource, header, requestType, input);
-            String url = buildUrl(executionId, taskInfoName);
-            result = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, 1);
-        } catch (RestClientResponseException e) {
-            result = e.getResponseBodyAsString();
-            throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
-                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), result));
-        } catch (Exception e) {
-            result = e.getMessage();
-            throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
-        } finally {
-            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), result);
-        }
-        return result;
+        return null;
+//        Map<String, Object> input = dispatchInfo.getInput();
+//        TaskInfo taskInfo = dispatchInfo.getTaskInfo();
+//        String executionId = dispatchInfo.getExecutionId();
+//        String taskInfoName = taskInfo.getName();
+//        String requestType = ((FunctionTask) taskInfo.getTask()).getRequestType();
+//        MultiValueMap<String, String> header = dispatchInfo.getHeaders();
+//        String result = null;
+//
+//        try {
+//            HttpEntity<?> requestEntity = buildHttpEntity(executionId, taskInfoName, resource, header, requestType, input);
+//            String url = buildUrl(executionId, taskInfoName);
+//            result = httpInvokeHelper.invokeRequest(executionId, taskInfoName, url, requestEntity, HttpMethod.POST, 1);
+//        } catch (RestClientResponseException e) {
+//            result = e.getResponseBodyAsString();
+//            throw new TaskException(BizError.ERROR_INVOKE_URI.getCode(),
+//                    String.format("dispatchTask sse fails status code: %s text: %s", e.getRawStatusCode(), result));
+//        } catch (Exception e) {
+//            result = e.getMessage();
+//            throw new TaskException(BizError.ERROR_INTERNAL.getCode(), "dispatchTask sse fails: " + e.getMessage());
+//        } finally {
+//            dagResourceStatistic.updateUrlTypeResourceStatus(executionId, taskInfoName, resource.getResourceName(), result);
+//        }
+//        return result;
     }
 
-    @NotNull
-    private String buildUrl(String executionId, String taskInfoName) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
-        uriBuilder.addParameter("execution_id", executionId);
-        uriBuilder.addParameter("task_name", taskInfoName);
-        return uriBuilder.toString();
-    }
-
-    @NotNull
-    private HttpEntity<?> buildHttpEntity(String executionId, String taskInfoName, Resource resource,
-                                          MultiValueMap<String, String> header, String requestType, Map<String, Object> input) {
-        HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
-        Map<String, Object> body = new HashMap<>();
-        String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
-        body.put("url", url);
-        body.put("body", requestParams.getBody());
-        String xCallbackUrl = header.getFirst(X_CALLBACK_URL);
-        if (requestParams.getBody().get(CALLBACK_INFO) != null) {
-            body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
-        } else if (xCallbackUrl != null) {
-            body.put(CALLBACK_INFO, Map.of("trigger_url", xCallbackUrl));
-            header.remove(X_CALLBACK_URL);
-        } else {
-            throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
-        }
-        body.put("headers", requestParams.getHeader());
-        body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
-        header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
-        return new HttpEntity<>(body, header);
-    }
+//    @NotNull
+//    private String buildUrl(String executionId, String taskInfoName) throws URISyntaxException {
+//        URIBuilder uriBuilder = new URIBuilder(sseExecutorHost + sseExecutorUri);
+//        uriBuilder.addParameter("execution_id", executionId);
+//        uriBuilder.addParameter("task_name", taskInfoName);
+//        return uriBuilder.toString();
+//    }
+//
+//    @NotNull
+//    private HttpEntity<?> buildHttpEntity(String executionId, String taskInfoName, Resource resource,
+//                                          MultiValueMap<String, String> header, String requestType, Map<String, Object> input) {
+//        HttpParameter requestParams = httpInvokeHelper.functionRequestParams(executionId, taskInfoName, resource, input);
+//        Map<String, Object> body = new HashMap<>();
+//        String url = httpInvokeHelper.buildUrl(resource, requestParams.getQueryParams());
+//        body.put("url", url);
+//        body.put("body", requestParams.getBody());
+//        String xCallbackUrl = header.getFirst(X_CALLBACK_URL);
+//        if (requestParams.getBody().get(CALLBACK_INFO) != null) {
+//            body.put(CALLBACK_INFO, requestParams.getBody().get(CALLBACK_INFO));
+//        } else if (xCallbackUrl != null) {
+//            body.put(CALLBACK_INFO, Map.of("trigger_url", xCallbackUrl));
+//            header.remove(X_CALLBACK_URL);
+//        } else {
+//            throw new TaskException(BizError.ERROR_INTERNAL, "cannot find callback url");
+//        }
+//        body.put("headers", requestParams.getHeader());
+//        body.put("request_type", Optional.ofNullable(requestType).map(String::toUpperCase).orElse("GET"));
+//        header.putIfAbsent(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE));
+//        return new HttpEntity<>(body, header);
+//    }
 
     @Override
     public String getName() {
