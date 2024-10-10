@@ -60,7 +60,6 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
         protocolDispatcherMap.put("rillflow", flowDispatcher);
         protocolDispatcherMap.put("resource", resourceDispatcher);
         protocolDispatcherMap.put("resourceRef", resourceRefDispatcher);
-//        protocolDispatcherMap.put("sse", sseProtocolDispatcher);
         this.descriptorManager = descriptorManager;
         this.httpInvokeHelper = httpInvokeHelper;
     }
