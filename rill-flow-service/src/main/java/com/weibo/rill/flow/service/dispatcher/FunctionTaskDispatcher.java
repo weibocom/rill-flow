@@ -51,7 +51,6 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
                                   @Autowired @Qualifier("httpDispatcher") HttpProtocolDispatcher httpDispatcher,
                                   @Autowired @Qualifier("resourceDispatcher") ResourceProtocolDispatcher resourceDispatcher,
                                   @Autowired @Qualifier("resourceRefDispatcher") ResourceRefProtocolDispatcher resourceRefDispatcher,
-//                                  @Autowired @Qualifier("sseDispatcher") SseProtocolDispatcher sseProtocolDispatcher, // TODO: remove this bean
                                   @Autowired DescriptorManager descriptorManager,
                                   @Autowired HttpInvokeHelper httpInvokeHelper) {
         protocolDispatcherMap.put("function", functionDispatcher);
