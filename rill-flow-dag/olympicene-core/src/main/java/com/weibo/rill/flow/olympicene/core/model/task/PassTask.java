@@ -52,9 +52,10 @@ public class PassTask extends BaseTask {
                     @JsonProperty("keyExp") String keyExp,
                     @JsonProperty("parameters") Map<String, Object> parameters,
                     @JsonProperty("templateId") String templateId,
-                    @JsonProperty("inputType") String inputType) {
+                    @JsonProperty("inputType") String inputType,
+                    @JsonProperty("outputType") String outputType) {
         super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade, timeline,
-                isKeyCallback, keyExp, parameters, templateId, inputType);
+                isKeyCallback, keyExp, parameters, templateId, inputType, outputType);
         Optional.ofNullable(timeline).ifPresent(it -> it.setTimeoutInSeconds(null));
     }
 
