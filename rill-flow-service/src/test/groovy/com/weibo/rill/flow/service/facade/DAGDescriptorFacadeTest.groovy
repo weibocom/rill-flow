@@ -44,12 +44,12 @@ class DAGDescriptorFacadeTest extends Specification {
 
     def "test generateResourceProtocol"() {
         given:
-        JSONObject task = new JSONObject(["resourceProtocol": "sse", "resourceName": "http://rill-flow-server"])
+        JSONObject task = new JSONObject(["resourceProtocol": "testProtocol", "resourceName": "http://rill-flow-server"])
         when:
         facade.generateResourceProtocol(task)
         then:
         task != null
-        task.getString("resourceProtocol") == "sse"
+        task.getString("resourceProtocol") == "testProtocol"
     }
 
     def "test generateResourceProtocol without protocol"() {
