@@ -130,4 +130,35 @@ class InvokeMsgTest extends Specification {
                     ((DAGCallbackInfo) event.getData()).getDagInfo().getTask("A").getTaskInvokeMsg().getOutput() == ['flow_root_execution_id':'bigFlow', 'segments':['gopUrl']]
         })
     }
+
+    def "test submit for debug"() {
+        given:
+        String flowYaml = "workspace: default\n" +
+                "dagName: testSubmit\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "inputSchema: '[]'\n" +
+                "tasks:\n" +
+                "  - next: pass1\n" +
+                "    name: pass0\n" +
+                "    category: pass\n" +
+                "  - next: pass2\n" +
+                "    name: pass1\n" +
+                "    category: pass\n" +
+                "  - name: pass2\n" +
+                "    category: pass\n"
+        DAG testFlow = dagParser.parse(flowYaml)
+        dispatcher.dispatch(*_) >> '{"execution_id":"testFlow"}'
+
+        when:
+        olympicene.submit("testFlow", "pass1", testFlow, [:], DAGSettings.DEFAULT, null)
+
+        then:
+        1 * callback.onEvent({Event event ->
+            event.eventCode == DAGEvent.DAG_SUCCEED.getCode() &&
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getTasks().get("pass0").getTaskStatus() == TaskStatus.SKIPPED &&
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getTasks().get("pass1").getTaskStatus() == TaskStatus.SUCCEED &&
+                    ((DAGCallbackInfo) event.getData()).getDagInfo().getTasks().get("pass2").getTaskStatus() == TaskStatus.SKIPPED
+        })
+    }
 }
