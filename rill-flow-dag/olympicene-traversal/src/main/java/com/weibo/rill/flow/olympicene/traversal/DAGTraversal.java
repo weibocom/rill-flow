@@ -34,6 +34,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.traversal.helper.PluginHelper;
 import com.weibo.rill.flow.olympicene.traversal.helper.Stasher;
+import com.weibo.rill.flow.olympicene.traversal.utils.OperationUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -80,7 +81,7 @@ public class DAGTraversal {
                 Runnable basicActions = () -> dagStorageProcedure.lockAndRun(
                         LockerKey.buildDagInfoLockName(executionId), () -> doTraversal(executionId, completedTaskName));
                 Runnable runnable = PluginHelper.pluginInvokeChain(basicActions, params, SystemConfig.TRAVERSAL_CUSTOMIZED_PLUGINS);
-                DAGOperations.OPERATE_WITH_RETRY.accept(runnable, SystemConfig.getTraversalRetryTimes());
+                OperationUtil.OPERATE_WITH_RETRY.accept(runnable, SystemConfig.getTraversalRetryTimes());
             } catch (Exception e) {
                 log.error("executionId:{} traversal exception with completedTaskName:{}. ", executionId, completedTaskName, e);
             }
@@ -99,7 +100,7 @@ public class DAGTraversal {
                         runTasks(executionId, taskToContexts);
                     }
                 });
-                DAGOperations.OPERATE_WITH_RETRY.accept(runnable, SystemConfig.getTraversalRetryTimes());
+                OperationUtil.OPERATE_WITH_RETRY.accept(runnable, SystemConfig.getTraversalRetryTimes());
             } catch (Exception e) {
                 log.error("dag {} traversal exception with tasks {}. ", executionId, Joiner.on(",").join(taskInfos.stream().map(TaskInfo::getName).collect(Collectors.toList())), e);
             }

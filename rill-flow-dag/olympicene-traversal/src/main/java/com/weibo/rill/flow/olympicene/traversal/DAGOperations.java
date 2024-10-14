@@ -47,7 +47,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -62,20 +61,6 @@ public class DAGOperations implements DAGOperationsInterface {
     private final Callback<DAGCallbackInfo> callback;
     private final DAGResultHandler dagResultHandler;
 
-
-    public static final BiConsumer<Runnable, Integer> OPERATE_WITH_RETRY = (operation, retryTimes) -> {
-        int exceptionCatchTimes = retryTimes;
-        for (int i = 1; i <= exceptionCatchTimes; i++) {
-            try {
-                operation.run();
-                return;
-            } catch (Exception e) {
-                log.warn("operateWithRetry fails, invokeTimes:{}", i, e);
-            }
-        }
-
-        operation.run();
-    };
 
     public DAGOperations(ExecutorService runnerExecutor, Map<String, TaskRunner> taskRunners, DAGRunner dagRunner,
                          TimeCheckRunner timeCheckRunner, DAGTraversal dagTraversal, Callback<DAGCallbackInfo> callback,
