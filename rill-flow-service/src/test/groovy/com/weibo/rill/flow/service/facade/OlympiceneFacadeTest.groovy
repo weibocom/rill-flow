@@ -74,7 +74,7 @@ class OlympiceneFacadeTest extends Specification {
         user.getUid() >> 1L
         expect:
         facade.submit(1L, "testBusiness:testFeatureName", new JSONObject(["resourceName": "testCallbackUrl"]).toJSONString(), null, new JSONObject(["a": 1]), null)
-        facade.submit(1L, "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
+        facade.submit(1L, "testBusiness:testFeatureName", null, ["resourceName": "testCallbackUrl"], null, null)
         facade.submit(user, "testBusiness:testFeatureName", ["resourceName": "testCallbackUrl"], null, null)
     }
 

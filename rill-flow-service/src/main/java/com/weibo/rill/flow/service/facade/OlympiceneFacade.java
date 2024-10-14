@@ -107,7 +107,7 @@ public class OlympiceneFacade {
             String businessId = DescriptorIdUtil.changeDescriptorIdToBusinessId(descriptorId);
             Map<String, Object> context = dagContextInitializer.newSubmitContextBuilder(businessId).withData(data).withIdentity(descriptorId).build();
 
-            return submit(uid, descriptorId, context, callback, resourceCheckConfig);
+            return submit(uid, descriptorId, null, context, callback, resourceCheckConfig);
         };
 
         return profileRecordService.runNotifyAndRecordProfile(url, descriptorId, submitActions);
@@ -115,10 +115,15 @@ public class OlympiceneFacade {
 
 
     public Map<String, Object> submit(User flowUser, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
-        return submit(Optional.ofNullable(flowUser).map(User::getUid).orElse(0L), descriptorId, context, callback, resourceCheckConfig);
+        return submit(Optional.ofNullable(flowUser).map(User::getUid).orElse(0L), descriptorId, null, context, callback, resourceCheckConfig);
     }
 
-    public Map<String, Object> submit(Long uid, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
+
+    public Map<String, Object> submit(User flowUser, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig, String taskName) {
+        return submit(Optional.ofNullable(flowUser).map(User::getUid).orElse(0L), descriptorId, taskName, context, callback, resourceCheckConfig);
+    }
+
+    public Map<String, Object> submit(Long uid, String descriptorId, String taskName, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
         String dagDescriptor = descriptorManager.getDagDescriptor(uid, context, descriptorId);
         DAG dag = dagStringParser.parse(dagDescriptor);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
@@ -132,7 +137,7 @@ public class OlympiceneFacade {
                     .build();
         }
         context.put("flow_execution_id", executionId);
-        olympicene.submit(executionId, dag, context, DAGSettings.DEFAULT, notifyInfo);
+        olympicene.submit(executionId, taskName, dag, context, DAGSettings.DEFAULT, notifyInfo);
         Map<String, Object> ret = Maps.newHashMap();
         ret.put("execution_id", executionId);
         return ret;

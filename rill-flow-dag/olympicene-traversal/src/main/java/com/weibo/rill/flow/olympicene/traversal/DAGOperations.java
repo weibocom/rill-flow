@@ -231,9 +231,9 @@ public class DAGOperations {
         dagTraversal.submitTraversal(executionId, null);
     }
 
-    public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
+    public void submitDAG(String executionId, String taskName, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
-        ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
+        ExecutionResult executionResult = dagRunner.submitDAG(executionId, taskName, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                 .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));
         dagTraversal.submitTraversal(executionId, null);

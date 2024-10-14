@@ -83,7 +83,7 @@ class InvokeMsgTest extends Specification {
                 .parentDAGTaskInfoName("A")
                 .parentDAGTaskExecutionType(FunctionPattern.FLOW_SYNC)
                 .build()
-        olympicene.submit("smallFlow", smallFlow, [:], DAGSettings.DEFAULT, smallFlowSubmit)
+        olympicene.submit("smallFlow", null, smallFlow, [:], DAGSettings.DEFAULT, smallFlowSubmit)
 
         NotifyInfo smallFlowNotify = NotifyInfo.builder()
                 .taskInfoName("B_0-C")
