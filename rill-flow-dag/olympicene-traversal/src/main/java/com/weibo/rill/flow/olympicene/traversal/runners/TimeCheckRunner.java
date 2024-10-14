@@ -32,6 +32,7 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.traversal.DAGOperations;
+import com.weibo.rill.flow.olympicene.traversal.DAGOperationsInterface;
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeCheckMember;
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeChecker;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
@@ -54,7 +55,7 @@ public class TimeCheckRunner {
     private final DAGInfoStorage dagInfoStorage;
     private final DAGContextStorage dagContextStorage;
     @Setter
-    private DAGOperations dagOperations;
+    private DAGOperationsInterface dagOperations;
 
     public TimeCheckRunner(TimeChecker timeChecker, DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage,
                            DAGStorageProcedure dagStorageProcedure) {
