@@ -56,7 +56,7 @@ public class DAGTraversal {
     private final DAGStorageProcedure dagStorageProcedure;
     private final ExecutorService traversalExecutor;
     @Setter
-    private DAGOperations dagOperations;
+    private DAGOperationsInterface dagOperations;
     @Setter
     private Stasher stasher;
 

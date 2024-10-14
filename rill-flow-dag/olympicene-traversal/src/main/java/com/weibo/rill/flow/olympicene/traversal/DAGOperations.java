@@ -51,7 +51,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 @Slf4j
-public class DAGOperations {
+public class DAGOperations implements DAGOperationsInterface {
     private static final String EXECUTION_ID = "executionId";
 
     private final ExecutorService runnerExecutor;
