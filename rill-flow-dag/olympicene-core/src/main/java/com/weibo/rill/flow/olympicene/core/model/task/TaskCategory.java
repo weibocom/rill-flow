@@ -29,9 +29,6 @@ public enum TaskCategory {
     // 流程控制Task，执行分支语句
     CHOICE("choice", 1),
 
-    // 流程控制Task，执行分支语句
-    SWITCH("switch", 1),
-
     // 流程控制Task，执行循环语句
     FOREACH("foreach", 1),
 
@@ -43,6 +40,9 @@ public enum TaskCategory {
 
     // return task
     RETURN("return", 2),
+
+    // 执行分支语句
+    SWITCH("switch", 2),
     ;
 
     private final String value;
@@ -66,6 +66,7 @@ public enum TaskCategory {
             case "suspense" -> SUSPENSE;
             case "pass" -> PASS;
             case "return" -> RETURN;
+            case "switch" -> SWITCH;
             default -> null;
         };
     }

@@ -69,8 +69,11 @@ public class FunctionTask extends BaseTask {
                         @JsonProperty("isKeyCallback") boolean isKeyCallback,
                         @JsonProperty("keyExp") String keyExp,
                         @JsonProperty("parameters") Map<String, Object> parameters,
-                        @JsonProperty("templateId") String templateId) {
-        super(name, title, description, category, next, tolerance, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+                        @JsonProperty("templateId") String templateId,
+                        @JsonProperty("inputType") String inputType,
+                        @JsonProperty("outputType") String outputType) {
+        super(name, title, description, category, next, tolerance, inputMappings, outputMappings, progress, degrade,
+                timeline, isKeyCallback, keyExp, parameters, templateId, inputType, outputType);
         this.resourceProtocol = resourceProtocol;
         this.resourceName = resourceName;
         this.resource = resource;

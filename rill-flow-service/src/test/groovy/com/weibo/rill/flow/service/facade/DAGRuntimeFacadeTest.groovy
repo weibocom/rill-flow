@@ -1,6 +1,8 @@
 package com.weibo.rill.flow.service.facade
 
+import com.weibo.rill.flow.interfaces.model.task.InvokeTimeInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus
 import com.weibo.rill.flow.service.storage.RuntimeStorage
 import spock.lang.Specification
@@ -45,6 +47,19 @@ class DAGRuntimeFacadeTest extends Specification {
         expect:
         dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.KEY_SUCCEED) == true
         dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.FAILED) == true
+    }
+
+    def "test updateDagStatus update invoke time info"() {
+        given:
+        DAGInfo dagInfo = new DAGInfo()
+        dagInfo.setDagStatus(DAGStatus.RUNNING)
+        dagInfo.setDagInvokeMsg(DAGInvokeMsg.builder().invokeTimeInfos([InvokeTimeInfo.builder().build()]).build())
+        runtimeStorage.getBasicDAGInfo(*_) >> dagInfo
+        runtimeStorage.saveDAGInfo(*_) >> null
+        dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.SUCCEED)
+        expect:
+        dagInfo.getDagInvokeMsg().getInvokeTimeInfos().size() == 1
+        dagInfo.getDagInvokeMsg().getInvokeTimeInfos().get(0).getEndTimeInMillisecond() > 0
     }
 
     def "test updateDagStatus throw exception"() {

@@ -59,6 +59,21 @@
       }
     ]
   },
+  "inputType": {
+    "type": "string",
+    "title": "输入类型",
+    "required": true,
+    "oneOf": [
+      {
+        "title": "阻塞式",
+        "const": "block"
+      },
+      {
+        "title": "流式",
+        "const": "stream"
+      }
+    ]
+  },
   "inputMappings": {
     "type": "array",
     "title": "输入映射",

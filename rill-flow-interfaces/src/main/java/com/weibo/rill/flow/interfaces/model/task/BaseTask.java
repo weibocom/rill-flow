@@ -51,6 +51,8 @@ public abstract class BaseTask {
     private String keyExp;
     private Map<String,Object> parameters;
     private String templateId;
+    private String inputType;
+    private String outputType;
 
     public abstract List<BaseTask> subTasks();
 }

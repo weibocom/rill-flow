@@ -33,8 +33,8 @@ class FunctionTaskRunnerTest extends Specification {
         when:
         JSONObject fields = runner.getFields()
         then:
-        fields.size() == 13
-        fields.getJSONObject("next").getString("name") == "下一节点"
+        fields.size() == 14
+        fields.getJSONObject("next").getString("title") == "下一节点"
         fields.getJSONObject("next").getString("type") == "string"
         fields.getJSONObject("next").getBoolean("required") == false
     }
