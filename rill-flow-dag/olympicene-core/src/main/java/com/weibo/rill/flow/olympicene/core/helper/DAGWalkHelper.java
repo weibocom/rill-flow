@@ -97,12 +97,12 @@ public class DAGWalkHelper {
         List<TaskInfo> nextTaskInfos = taskInfo.getNext();
         String category = taskInfo.getTask().getCategory();
         TaskInputType inputType = TaskInputType.getInputTypeByValue(taskInfo.getTask().getInputType());
-        
+
         // 判断是否需要跳过当前任务
         if (shouldSkipTask(taskInfo, nextTaskInfos, category, inputType)) {
             return;
         }
-        
+
         // 处理下一个任务
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
             String nextTaskName = nextTaskInfo.getName();
@@ -110,7 +110,8 @@ public class DAGWalkHelper {
             TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
 
             // 如果已经处理过该任务名称或者该任务是分支任务（SWITCH、CHOICE、FOREACH、RETURN），则跳过该任务
-            if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
+            boolean shouldSkip = skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory);
+            if (shouldSkip) {
                 continue;
             }
             // 将该任务名称加入已处理集合
@@ -120,10 +121,10 @@ public class DAGWalkHelper {
                 if (!isDependOnUnfinishedStreamInputTask(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
                     streamInputTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
                 }
-                continue;
+            } else {
+                // 递归处理下一个任务
+                findNextStreamInputTask(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
             }
-            // 递归处理下一个任务
-            findNextStreamInputTask(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
         }
     }
 
