@@ -146,13 +146,13 @@ public class DAGWalkHelper {
     }
 
     /**
-     * 判断是否依赖于尚未执行完成的 Stream 输入节点
+     * 判断节点是否依赖于尚未执行完成的 Stream 输入节点
      * @param taskInfo 任务信息
      * @param skipTaskNames 跳过的任务名称，用于去重避免重复处理
      * @return boolean 类型结果
      */
     private boolean isDependOnUnfinishedStreamInputTask(TaskInfo taskInfo, Set<String> skipTaskNames) {
-        // 如果节点不依赖任何节点，返回 false
+        // 如果当前节点不依赖任何节点，返回 false
         if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
             return false;
         }
