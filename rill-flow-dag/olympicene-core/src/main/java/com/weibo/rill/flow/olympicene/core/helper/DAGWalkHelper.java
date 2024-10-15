@@ -103,7 +103,7 @@ public class DAGWalkHelper {
             return;
         }
 
-        // 处理下一个任务
+        // 处理后继任务节点
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
             String nextTaskName = nextTaskInfo.getName();
             String nextCategory = nextTaskInfo.getTask().getCategory();
