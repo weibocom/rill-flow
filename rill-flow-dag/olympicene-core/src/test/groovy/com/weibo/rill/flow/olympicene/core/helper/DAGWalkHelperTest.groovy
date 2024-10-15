@@ -487,4 +487,33 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoC)
         ret.contains(taskInfoD)
     }
+
+    def "test getReadyToRunTasks stream input depends on stream tasks"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getInputType() >> "stream"
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getInputType() >> "stream"
+        taskB.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.getInputType() >> "stream"
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoC])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoA, taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+    }
 }
