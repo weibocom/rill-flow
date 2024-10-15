@@ -140,14 +140,16 @@ public class DAGWalkHelper {
         if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
             return false;
         }
-        // 如果节点依赖的任务已经被处理过，则直接跳过
-        // 如果有任何一个依赖的任务是没有处理完成的 Stream 输入节点，则返回 false
-        // 如果是非 Stream 输入节点，则递归调用，直到找到没有处理完成的 Stream 输入节点，或者全部节点都已被处理过
+
+        // 判断任务是否依赖于尚未执行完成的 Stream 输入节点
+        // 1. 如果依赖的任务中有一个未完成的 Stream 输入节点，则返回 true
+        // 2. 如果依赖的任务中没有未完成的 Stream 输入节点，则返回 false
         return taskInfo.getDependencies().stream()
             .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
             .anyMatch(dependencyTask -> {
                 skipTaskNames.add(dependencyTask.getName());
                 TaskInputType inputType = TaskInputType.getInputTypeByValue(dependencyTask.getTask().getInputType());
+                // 如果依赖的任务是 Stream 输入类型且未完成，则返回 true，如果依赖的任务不是 Stream 输入类型，则递归检查其依赖的任务是否有未完成的 Stream 输入节点
                 return (inputType == TaskInputType.STREAM && !dependencyTask.getTaskStatus().isSuccessOrSkip())
                     || (inputType != TaskInputType.STREAM && isDependOnUnfinishedStreamInputTask(dependencyTask, skipTaskNames));
             });
