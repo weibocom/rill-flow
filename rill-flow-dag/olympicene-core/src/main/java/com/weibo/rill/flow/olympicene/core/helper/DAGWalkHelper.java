@@ -64,7 +64,7 @@ public class DAGWalkHelper {
         // 筛选出准备运行的任务:
         // 1. 任务不为空且状态为未开始
         // 2. 所有依赖任务都已成功或跳过
-        // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
+        // 3. 如果是关键路径回调任务，并且在关键路径模式下，则只要关键路径完成执行就可以运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasStreamInputTask, isKeyMode))
