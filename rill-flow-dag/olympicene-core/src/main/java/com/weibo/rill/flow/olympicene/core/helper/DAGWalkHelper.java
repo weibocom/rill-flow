@@ -161,7 +161,7 @@ public class DAGWalkHelper {
     /**
      * 判断依赖的所有任务是否都已完成
      * 1. 如果没有依赖，说明依赖的所有任务都已完成
-     * 2. 如果依赖的是 Stream 输入类型的节点，那么忽略该 Stream 输入节点，检查 Stream 输入节点的所有依赖是否都已完成
+     * 2. 如果依赖的是 Stream 输入类型的节点，那么忽略该 Stream 输入节点，递归检查 Stream 输入节点的所有依赖是否都已完成
      * 3. 如果依赖的是非 Stream 输入类型的节点，那么检查该非 Stream 输入节点是否已完成
      *
      * @param taskInfo 待处理的任务信息
