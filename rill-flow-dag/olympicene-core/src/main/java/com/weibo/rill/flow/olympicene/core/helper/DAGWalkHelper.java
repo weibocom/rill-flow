@@ -87,7 +87,8 @@ public class DAGWalkHelper {
     }
 
     /**
-     * 找到当前节点路径上的下一个可以被执行的 stream 输入节点
+     * 找到当前节点路径上的后续可以被执行的 stream 输入节点，并将其加入到 streamInputTaskInfoMap 中
+     * 
      * @param taskInfo 当前节点
      * @param streamInputTaskInfoMap 作为返回的直结果参数
      * @param skipTaskNames 已经处理过的任务名称，用于去重，避免重复处理
@@ -97,36 +98,51 @@ public class DAGWalkHelper {
         String category = taskInfo.getTask().getCategory();
         TaskInputType inputType = TaskInputType.getInputTypeByValue(taskInfo.getTask().getInputType());
         
+        // 判断是否需要跳过当前任务
         if (shouldSkipTask(taskInfo, nextTaskInfos, category, inputType)) {
             return;
         }
         
+        // 处理下一个任务
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
-            processNextTaskInfo(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
+            String nextTaskName = nextTaskInfo.getName();
+            String nextCategory = nextTaskInfo.getTask().getCategory();
+            TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
+
+            // 如果已经处理过该任务名称或者该任务是分支任务（SWITCH、CHOICE、FOREACH、RETURN），则跳过该任务
+            if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
+                continue;
+            }
+            // 将该任务名称加入已处理集合
+            skipTaskNames.add(nextTaskName);
+            // 如果下一个任务是未开始的stream输入任务，且不依赖于尚未执行完成的stream输入任务，则将其加入 streamInputTaskInfoMap
+            if (nextInputType == TaskInputType.STREAM && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+                if (!isDependOnUnfinishedStreamInputTask(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
+                    streamInputTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
+                }
+                continue;
+            }
+            // 递归处理下一个任务
+            findNextStreamInputTask(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
         }
     }
 
+    /**
+     * 判断是否需要跳过当前任务：
+     * 1. 如果下一个任务列表为空
+     * 2. 或者当前任务类别属于分支任务（SWITCH、CHOICE、FOREACH、RETURN）
+     * 3. 或者当前任务是未开stream输入任务
+     * 则跳过当前任务，因为这些任务后面的 stream 输入任务不能被执行
+     * 
+     * @param taskInfo 当前任务信息
+     * @param nextTaskInfos 下一个任务列表
+     * @param category 当前任务类别
+     * @param inputType 当前任务输入类型
+     * @return 是否需要跳过当前任务
+     */
     private boolean shouldSkipTask(TaskInfo taskInfo, List<TaskInfo> nextTaskInfos, String category, TaskInputType inputType) {
         return CollectionUtils.isEmpty(nextTaskInfos) || FORK_TASK_CATEGORIES.contains(category)
                 || (inputType == TaskInputType.STREAM && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED);
-    }
-
-    private void processNextTaskInfo(TaskInfo nextTaskInfo, Map<String, TaskInfo> streamInputTaskInfoMap, Set<String> skipTaskNames) {
-        String nextTaskName = nextTaskInfo.getName();
-        String nextCategory = nextTaskInfo.getTask().getCategory();
-        TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
-
-        if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
-            return;
-        }
-        skipTaskNames.add(nextTaskName);
-        if (nextInputType == TaskInputType.STREAM && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
-            if (!isDependOnUnfinishedStreamInputTask(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
-                streamInputTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
-            }
-            return;
-        }
-        findNextStreamInputTask(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
     }
 
     /**
