@@ -32,10 +32,12 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.traversal.DAGOperations;
+import com.weibo.rill.flow.olympicene.traversal.DAGOperationsInterface;
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeCheckMember;
 import com.weibo.rill.flow.olympicene.traversal.checker.TimeChecker;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
+import com.weibo.rill.flow.olympicene.traversal.utils.OperationUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +56,7 @@ public class TimeCheckRunner {
     private final DAGInfoStorage dagInfoStorage;
     private final DAGContextStorage dagContextStorage;
     @Setter
-    private DAGOperations dagOperations;
+    private DAGOperationsInterface dagOperations;
 
     public TimeCheckRunner(TimeChecker timeChecker, DAGInfoStorage dagInfoStorage, DAGContextStorage dagContextStorage,
                            DAGStorageProcedure dagStorageProcedure) {
@@ -94,7 +96,7 @@ public class TimeCheckRunner {
                         Map<String, Object> context = ContextHelper.getInstance().getContext(dagContextStorage, executionId, taskInfo);
                         dagOperations.runTasks(executionId, Lists.newArrayList(Pair.of(taskInfo, context)));
                     };
-                    DAGOperations.OPERATE_WITH_RETRY.accept(operations, SystemConfig.getTimerRetryTimes());
+                    OperationUtil.OPERATE_WITH_RETRY.accept(operations, SystemConfig.getTimerRetryTimes());
                     break;
                 default:
                     log.warn("handleTimeCheck time check type nonsupport, type:{}", type);

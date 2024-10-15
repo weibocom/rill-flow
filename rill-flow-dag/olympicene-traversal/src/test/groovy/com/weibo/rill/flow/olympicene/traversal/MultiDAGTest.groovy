@@ -66,7 +66,7 @@ class MultiDAGTest extends Specification {
         NotifyInfo notifyInfo = NotifyInfo.builder()
                 .parentDAGExecutionId("level1")
                 .parentDAGTaskInfoName("A").build()
-        olympicene.submit("level2", dag, [:], DAGSettings.DEFAULT, notifyInfo)
+        olympicene.submit("level2", null, dag, [:], DAGSettings.DEFAULT, notifyInfo)
         TaskInfo level1TaskA = dagStorage.getDAGInfo("level1").getTask("A")
         DAGInfo level2 = dagStorage.getDAGInfo("level2")
 
@@ -87,12 +87,12 @@ class MultiDAGTest extends Specification {
         NotifyInfo notifyInfoLevel2 = NotifyInfo.builder()
                 .parentDAGExecutionId("level1")
                 .parentDAGTaskInfoName("A").build()
-        olympicene.submit("level2", dag, [:], dagSettings, notifyInfoLevel2)
+        olympicene.submit("level2", null, dag, [:], dagSettings, notifyInfoLevel2)
 
         NotifyInfo notifyInfoLevel3 = NotifyInfo.builder()
                 .parentDAGExecutionId("level2")
                 .parentDAGTaskInfoName("A").build()
-        olympicene.submit("level3", dag, [:], dagSettings, notifyInfoLevel3)
+        olympicene.submit("level3", null, dag, [:], dagSettings, notifyInfoLevel3)
 
         then:
         def e = thrown(DAGTraversalException)
