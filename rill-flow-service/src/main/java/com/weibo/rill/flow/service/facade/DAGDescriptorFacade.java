@@ -191,7 +191,7 @@ public class DAGDescriptorFacade {
                     .alias(alias)
                     .attachments(attachments)
                     .type(DAGDescriptorEvent.Type.addDescriptor)
-                    .build();
+                    .add(false).build();
             applicationEventPublisher.publishEvent(new DAGDescriptorEvent(operation));
 
             return ImmutableMap.of(RET, descriptorId != null, DESCRIPTOR_ID, Optional.ofNullable(descriptorId).orElse(""));

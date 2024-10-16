@@ -482,6 +482,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
+        // TODO: generate output mappings
 
         createAlias(businessId, featureName, alias);
 
@@ -494,7 +495,7 @@ public class DescriptorManager {
         argv.add(String.valueOf(versionMaxCount));
         argv.add(String.valueOf(System.currentTimeMillis()));
         argv.add(md5);
-        argv.add(descriptor);
+        argv.add(dagParser.serialize(dag));
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
