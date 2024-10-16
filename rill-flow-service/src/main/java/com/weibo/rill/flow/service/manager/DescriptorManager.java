@@ -19,6 +19,7 @@ package com.weibo.rill.flow.service.manager;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.aviator.Expression;
@@ -50,7 +51,6 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -487,7 +487,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
-        // TODO: generate output mappings
+        generateOutputMappings(dag);
 
         createAlias(businessId, featureName, alias);
 
@@ -504,43 +504,6 @@ public class DescriptorManager {
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
-    }
-
-    /**
-     * 为 DAG 对象生成 outputMappings
-     * 1. 如果 dag 的 version 不是 v2.0 或者 dag 的 tasks 为空，那么直接返回
-     * 2. 遍历 dag 中所有的 tasks 的 inputMappings 的 source，将它们中 $.context 开头的转换为标准的 jsonPath，对于竖线分隔的，则分隔后转换为 jsonPath
-     * 3. 分析 $.context.task_name 中的全部 task_name，通过 task_name 为 key 建立 LinkedHashMultimap，将所有 jsonPath 放入到 LinkedHashMultimap 中
-     * 4. 找到 task_name 对应的每个 path 的最大公共部分
-     * @param dag
-     */
-    private void generateOutputMappings(DAG dag) {
-        if (dag.getVersion() == null || !dag.getVersion().equals("v2.0") || CollectionUtils.isEmpty(dag.getTasks())) {
-            return;
-        }
-        for (BaseTask task : dag.getTasks()) {
-            List<Mapping> inputMappings = task.getInputMappings();
-            for (Mapping mapping : inputMappings) {
-                if (!mapping.getSource().startsWith("$.context.")) {
-                    continue;
-                }
-                String source = mapping.getSource();
-                String[] jsonPaths = source.split("\\|");
-                for (String jsonPath : jsonPaths) {
-                    String path = JsonPath.compile(jsonPath).getPath();
-                    List<String> jsonPathParts = new ArrayList<>();
-                    Matcher matcher = JSONPATH_PATTERN.matcher(path);
-                    while (matcher.find()) {
-                        if (matcher.group(1) != null) {
-                            jsonPathParts.add(matcher.group(1));
-                        } else if (matcher.group(2) != null) {
-                            jsonPathParts.add(matcher.group(2));
-                        }
-                    }
-                    System.out.println(jsonPathParts);
-                }
-            }
-        }
     }
 
     private boolean containsEmpty(String... member) {
@@ -583,5 +546,134 @@ public class DescriptorManager {
         List<String> ids = Lists.newArrayList(businessId, featureName);
         Optional.ofNullable(thirdPart).ifPresent(ids::add);
         return StringUtils.join(ids, ReservedConstant.COLON);
+    }
+
+    /**
+     * 为 DAG 对象生成 outputMappings
+     * 1. 如果 dag 的 version 不是 v2.0 或者 dag 的 tasks 为空，那么直接返回
+     * 2. 遍历 dag 中所有的 tasks 的 inputMappings 的 source，将它们中 $.context 开头的转换为标准的 jsonPath，对于竖线分隔的，则分隔后转换为 jsonPath
+     * 3. 分析 $.context.task_name 中的全部 task_name，通过 task_name 为 key 建立 LinkedHashMultimap，将所有 jsonPath 放入到 LinkedHashMultimap 中
+     * 4. 找到 task_name 对应的每个 path 的最大公共部分
+     * @param dag
+     */
+    private void generateOutputMappings(DAG dag) {
+        if (dag.getVersion() == null || !dag.getVersion().equals("v2.0") || CollectionUtils.isEmpty(dag.getTasks())) {
+            return;
+        }
+        List<String> paths = new ArrayList<>();
+        Map<String, BaseTask> taskMap = new HashMap<>();
+        for (BaseTask task : dag.getTasks()) {
+            taskMap.put(task.getName(), task);
+            List<Mapping> inputMappings = task.getInputMappings();
+            for (Mapping mapping : inputMappings) {
+                if (!mapping.getSource().startsWith("$.context.")) {
+                    continue;
+                }
+                String source = mapping.getSource();
+                String[] jsonPaths = source.split("\\|");
+                Arrays.stream(jsonPaths).forEach(it -> paths.add(JsonPath.compile(it).getPath()));
+            }
+        }
+        LinkedHashMultimap<String, String> mappingsMultimap = processPaths(paths);
+        for (Map.Entry<String, String> mappingsEntry: mappingsMultimap.entries()) {
+            String taskName = mappingsEntry.getKey();
+            String path = mappingsEntry.getValue();
+            BaseTask task = taskMap.get(taskName);
+            if (task == null) {
+                throw new TaskException(BizError.ERROR_DATA_FORMAT, "task that be depended on is not exists");
+            }
+            List<Mapping> outputMappings = task.getOutputMappings();
+            if (outputMappings == null) {
+                outputMappings = new ArrayList<>();
+            }
+            outputMappings.add(new Mapping("$.output" + path, "$.context" + path));
+            task.setOutputMappings(outputMappings);
+        }
+    }
+
+    private LinkedHashMultimap<String, String> processPaths(List<String> paths) {
+        LinkedHashMultimap<String, String> result = LinkedHashMultimap.create();
+        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
+
+        for (String path : paths) {
+            String normalizedPath = path.replace("\"", "'");
+            String[] elements = Arrays.stream(normalizedPath.split("\\['|']"))
+                                      .filter(e -> !e.isEmpty())
+                                      .toArray(String[]::new);
+            if (elements.length < 3) {
+                continue;
+            }
+            String taskName = elements[2];
+            taskPathsMap.putIfAbsent(taskName, new ArrayList<>());
+            List<List<String>> elementsList = taskPathsMap.get(taskName);
+            elementsList.add(Arrays.asList(elements).subList(3, elements.length));
+            taskPathsMap.put(taskName, elementsList);
+        }
+
+        Map<String, List<List<String>>> commonPrefixes = getLongestCommonPrefixes(taskPathsMap);
+        for (Map.Entry<String, List<List<String>>> commonPrefixesEntry: commonPrefixes.entrySet()) {
+            String taskName = commonPrefixesEntry.getKey();
+            List<List<String>> elementsList = commonPrefixesEntry.getValue();
+            for (List<String> elements: elementsList) {
+                StringBuilder mappingSb = new StringBuilder();
+                for (String element : elements) {
+                    if (element.contains(".")) {
+                        mappingSb.append("['").append(element).append("']");
+                    } else {
+                        mappingSb.append(".").append(element);
+                    }
+                }
+                result.put(taskName, mappingSb.toString());
+            }
+        }
+        return result;
+    }
+
+
+    private Map<String, List<List<String>>> getLongestCommonPrefixes(Map<String, List<List<String>>> taskPathsMap) {
+        Map<String, List<List<String>>> result = new HashMap<>();
+        for (Map.Entry<String, List<List<String>>> entry : taskPathsMap.entrySet()) {
+            String taskName = entry.getKey();
+            Map<String, List<List<String>>> pathGroups = new HashMap<>();
+            List<List<String>> elementsList = entry.getValue();
+            for (List<String> elements : elementsList) {
+                pathGroups.putIfAbsent(elements.get(0), new ArrayList<>());
+                List<List<String>> groupPaths = pathGroups.get(elements.get(0));
+                groupPaths.add(elements);
+                pathGroups.put(elements.get(0), groupPaths);
+            }
+            List<List<String>> commonPrefixPaths = new ArrayList<>();
+            for (List<List<String>> paths : pathGroups.values()) {
+                List<String> elements = getLongestCommonPrefixElements(paths);
+                commonPrefixPaths.add(elements);
+            }
+            result.put(taskName, commonPrefixPaths);
+        }
+        return result;
+    }
+
+    private List<String> getLongestCommonPrefixElements(List<List<String>> paths) {
+        if (paths == null || paths.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<String> result = new ArrayList<>(paths.get(0));
+
+        for (List<String> currentPath : paths) {
+            int j = 0;
+            while (j < result.size() && j < currentPath.size()) {
+                String element = currentPath.get(j);
+                if (element.equals("*") || element.matches("\\d+") || !element.equals(result.get(j))) {
+                    break;
+                }
+                j++;
+            }
+            result = result.subList(0, j);
+            if (result.isEmpty()) {
+                break;
+            }
+        }
+
+        return result;
     }
 }
