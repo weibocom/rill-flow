@@ -63,6 +63,7 @@ public class ObjectMapperFactory {
         YAML_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         YAML_MAPPER.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+        YAML_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         YAML_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         YAML_MAPPER.registerSubtypes(
                 new NamedType(FunctionTask.class, "function"),

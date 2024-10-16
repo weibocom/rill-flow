@@ -116,6 +116,7 @@ public class DescriptorManager {
     private static final String MD5_PREFIX = "md5_";
     private static final String RELEASE = "release";
     private static final String DEFAULT = "default";
+    private static final String NEW_VERSION_MARK = "v2.0";
 
     private static final String VERSION_ADD = """
             local maxVersionCount = ARGV[1];
@@ -209,29 +210,32 @@ public class DescriptorManager {
             if (StringUtils.isEmpty(descriptor)) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
-
-            DAG dag = dagParser.parse(descriptor);
-            if (!"v2.0".equalsIgnoreCase(dag.getVersion())) {
-                return descriptor;
-            }
-            List<BaseTask> tasks = dag.getTasks();
-            for (BaseTask task : tasks) {
-                List<Mapping> outputMappings = task.getOutputMappings();
-                List<Mapping> newOutputMappings = Lists.newArrayList();
-                for (Mapping mapping : outputMappings) {
-                    if (!mapping.getTarget().startsWith("$.context." + task.getName())) {
-                        newOutputMappings.add(mapping);
-                    }
-                }
-                task.setOutputMappings(newOutputMappings);
-            }
-            return descriptor;
+            return removeRedundantOutputMappings(descriptor);
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
             log.warn("getDagDescriptor fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
+    }
+
+    private String removeRedundantOutputMappings(String descriptor) {
+        DAG dag = dagParser.parse(descriptor);
+        if (!NEW_VERSION_MARK.equalsIgnoreCase(dag.getVersion())) {
+            return descriptor;
+        }
+        List<BaseTask> tasks = dag.getTasks();
+        for (BaseTask task : tasks) {
+            List<Mapping> outputMappings = task.getOutputMappings();
+            if (CollectionUtils.isEmpty(outputMappings)) {
+                continue;
+            }
+            List<Mapping> newOutputMappings = outputMappings.stream()
+                    .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
+                    .collect(Collectors.toList());
+            task.setOutputMappings(newOutputMappings);
+        }
+        return dagParser.serialize(dag);
     }
 
     public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
@@ -572,10 +576,10 @@ public class DescriptorManager {
      * @param dag
      */
     private void generateOutputMappings(DAG dag) {
-        if (dag.getVersion() == null || !dag.getVersion().equals("v2.0") || CollectionUtils.isEmpty(dag.getTasks())) {
+        if (dag.getVersion() == null || !dag.getVersion().equalsIgnoreCase(NEW_VERSION_MARK) || CollectionUtils.isEmpty(dag.getTasks())) {
             return;
         }
-        List<String> paths = new ArrayList<>();
+        Set<String> paths = new HashSet<>();
         Map<String, BaseTask> taskMap = new HashMap<>();
         for (BaseTask task : dag.getTasks()) {
             taskMap.put(task.getName(), task);
@@ -585,8 +589,7 @@ public class DescriptorManager {
                     continue;
                 }
                 String source = mapping.getSource();
-                String[] jsonPaths = source.split("\\|");
-                Arrays.stream(jsonPaths).forEach(it -> paths.add(JsonPath.compile(it).getPath()));
+                paths.add(JsonPath.compile(source).getPath());
             }
         }
         LinkedHashMultimap<String, String> mappingsMultimap = processPaths(paths);
@@ -595,7 +598,7 @@ public class DescriptorManager {
             String path = mappingsEntry.getValue();
             BaseTask task = taskMap.get(taskName);
             if (task == null) {
-                throw new TaskException(BizError.ERROR_DATA_FORMAT, "task that be depended on is not exists");
+                continue;
             }
             List<Mapping> outputMappings = task.getOutputMappings();
             if (outputMappings == null) {
@@ -606,7 +609,7 @@ public class DescriptorManager {
         }
     }
 
-    private LinkedHashMultimap<String, String> processPaths(List<String> paths) {
+    private LinkedHashMultimap<String, String> processPaths(Set<String> paths) {
         LinkedHashMultimap<String, String> result = LinkedHashMultimap.create();
         Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
 
