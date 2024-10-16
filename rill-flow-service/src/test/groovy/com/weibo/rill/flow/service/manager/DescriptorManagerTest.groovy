@@ -37,15 +37,15 @@ class DescriptorManagerTest extends Specification {
                 "    resourceName: http://test.url\n" +
                 "    requestType: POST\n" +
                 "    inputMappings:\n" +
-                "      - source: \$.context.functionA.datax.y\n" +
+                "      - source: \$.functionA.datax.y\n" +
                 "        target: \$.input.body.datax.y\n" +
-                "      - source: \$.context.functionA.dataz[\"a.b\"]\n" +
+                "      - source: \$.functionA.dataz[\"a.b\"]\n" +
                 "        target: \$.input.body.dataz\n" +
-                "      - source: \$.context.functionA.datax.a\n" +
+                "      - source: \$.functionA.datax.a\n" +
                 "        target: \$.input.body.datax.a\n" +
-                "      - source: \$.context.functionA.datay.hello\n" +
+                "      - source: \$.functionA.datay.hello\n" +
                 "        target: \$.input.body.datay.hello\n" +
-                "      - source: \$.context.functionA.objs.0.id\n" +
+                "      - source: \$.functionA.objs.0.id\n" +
                 "        target: \$.input.body.id\n" +
                 "      - source: \$.context.hello.objs.0.id\n" +
                 "        target: \$.input.body.hello.id\n" +

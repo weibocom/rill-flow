@@ -232,7 +232,7 @@ public class DescriptorManager {
             }
             List<Mapping> newOutputMappings = outputMappings.stream()
                     .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
-                    .collect(Collectors.toList());
+                    .toList();
             task.setOutputMappings(newOutputMappings);
         }
         return dagParser.serialize(dag);
@@ -585,7 +585,7 @@ public class DescriptorManager {
             taskMap.put(task.getName(), task);
             List<Mapping> inputMappings = task.getInputMappings();
             for (Mapping mapping : inputMappings) {
-                if (!mapping.getSource().startsWith("$.context.")) {
+                if (!mapping.getSource().startsWith("$.")) {
                     continue;
                 }
                 String source = mapping.getSource();
@@ -618,13 +618,13 @@ public class DescriptorManager {
             String[] elements = Arrays.stream(normalizedPath.split("\\['|']"))
                                       .filter(e -> !e.isEmpty())
                                       .toArray(String[]::new);
-            if (elements.length < 3) {
+            if (elements.length < 2) {
                 continue;
             }
-            String taskName = elements[2];
+            String taskName = elements[1];
             taskPathsMap.putIfAbsent(taskName, new ArrayList<>());
             List<List<String>> elementsList = taskPathsMap.get(taskName);
-            elementsList.add(Arrays.asList(elements).subList(3, elements.length));
+            elementsList.add(Arrays.asList(elements).subList(2, elements.length));
             taskPathsMap.put(taskName, elementsList);
         }
 
