@@ -659,15 +659,14 @@ public class DescriptorManager {
         List<String> result = new ArrayList<>(paths.get(0));
 
         for (List<String> currentPath : paths) {
-            int j = 0;
-            while (j < result.size() && j < currentPath.size()) {
-                String element = currentPath.get(j);
-                if (element.equals("*") || element.matches("\\d+") || !element.equals(result.get(j))) {
+            int i = 0;
+            for (; i < result.size() && i < currentPath.size(); i++) {
+                String element = currentPath.get(i);
+                if (element.equals("*") || element.matches("\\d+") || !element.equals(result.get(i))) {
                     break;
                 }
-                j++;
             }
-            result = result.subList(0, j);
+            result = result.subList(0, i);
             if (result.isEmpty()) {
                 break;
             }
