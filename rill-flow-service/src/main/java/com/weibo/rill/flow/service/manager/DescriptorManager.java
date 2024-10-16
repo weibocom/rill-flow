@@ -104,7 +104,6 @@ import java.util.stream.Collectors;
 @Service
 public class DescriptorManager {
     private final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+$");
-    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[\"(.*?)\"]|\\['(.*?)']");
 
     private static final String BUSINESS_ID = "business_id";
     private static final String FEATURE_KEY_RULE = "feature_%s";
