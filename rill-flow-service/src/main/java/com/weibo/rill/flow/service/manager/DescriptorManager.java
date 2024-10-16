@@ -22,10 +22,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.aviator.Expression;
+import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.common.constant.ReservedConstant;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
+import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
+import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
@@ -47,6 +50,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -100,6 +104,7 @@ import java.util.stream.Collectors;
 @Service
 public class DescriptorManager {
     private final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+$");
+    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[\"(.*?)\"]|\\['(.*?)']");
 
     private static final String BUSINESS_ID = "business_id";
     private static final String FEATURE_KEY_RULE = "feature_%s";
@@ -499,6 +504,43 @@ public class DescriptorManager {
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
+    }
+
+    /**
+     * 为 DAG 对象生成 outputMappings
+     * 1. 如果 dag 的 version 不是 v2.0 或者 dag 的 tasks 为空，那么直接返回
+     * 2. 遍历 dag 中所有的 tasks 的 inputMappings 的 source，将它们中 $.context 开头的转换为标准的 jsonPath，对于竖线分隔的，则分隔后转换为 jsonPath
+     * 3. 分析 $.context.task_name 中的全部 task_name，通过 task_name 为 key 建立 LinkedHashMultimap，将所有 jsonPath 放入到 LinkedHashMultimap 中
+     * 4. 找到 task_name 对应的每个 path 的最大公共部分
+     * @param dag
+     */
+    private void generateOutputMappings(DAG dag) {
+        if (dag.getVersion() == null || !dag.getVersion().equals("v2.0") || CollectionUtils.isEmpty(dag.getTasks())) {
+            return;
+        }
+        for (BaseTask task : dag.getTasks()) {
+            List<Mapping> inputMappings = task.getInputMappings();
+            for (Mapping mapping : inputMappings) {
+                if (!mapping.getSource().startsWith("$.context.")) {
+                    continue;
+                }
+                String source = mapping.getSource();
+                String[] jsonPaths = source.split("\\|");
+                for (String jsonPath : jsonPaths) {
+                    String path = JsonPath.compile(jsonPath).getPath();
+                    List<String> jsonPathParts = new ArrayList<>();
+                    Matcher matcher = JSONPATH_PATTERN.matcher(path);
+                    while (matcher.find()) {
+                        if (matcher.group(1) != null) {
+                            jsonPathParts.add(matcher.group(1));
+                        } else if (matcher.group(2) != null) {
+                            jsonPathParts.add(matcher.group(2));
+                        }
+                    }
+                    System.out.println(jsonPathParts);
+                }
+            }
+        }
     }
 
     private boolean containsEmpty(String... member) {
