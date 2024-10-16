@@ -39,6 +39,8 @@ class DescriptorManagerTest extends Specification {
                 "    inputMappings:\n" +
                 "      - source: \$.context.functionA.datax.y\n" +
                 "        target: \$.input.body.datax.y\n" +
+                "      - source: \$.context.functionA.dataz[\"a.b\"]\n" +
+                "        target: \$.input.body.dataz\n" +
                 "      - source: \$.context.functionA.datax.a\n" +
                 "        target: \$.input.body.datax.a\n" +
                 "      - source: \$.context.functionA.datay.hello\n" +
@@ -55,10 +57,11 @@ class DescriptorManagerTest extends Specification {
         for (BaseTask task : dag.getTasks()) {
             if (task.getName() == "functionA") {
                 Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
-                outputMappings.size() == 3
-                outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
-                outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
-                outputMappings.contains(new Mapping("\$.output.datay.objs", "\$.context.functionA.datay.objs"))
+                assert outputMappings.size() == 4
+                assert outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
+                assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
+                assert outputMappings.contains(new Mapping("\$.output.objs", "\$.context.functionA.objs"))
+                assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
             }
         }
     }
