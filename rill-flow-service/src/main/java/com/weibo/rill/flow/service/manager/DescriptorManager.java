@@ -587,7 +587,7 @@ public class DescriptorManager {
         if (MapUtils.isEmpty(dag.getOutput())) {
             return null;
         }
-        String endTaskName = DigestUtils.md5Hex(dag.getWorkspace() + "_" + dag.getDagName());
+        String endTaskName = DigestUtils.sha256Hex(dag.getWorkspace() + "_" + dag.getDagName());
         dag.setEndTaskName(endTaskName);
         PassTask endPassTask = new PassTask();
         endPassTask.setName(endTaskName);
