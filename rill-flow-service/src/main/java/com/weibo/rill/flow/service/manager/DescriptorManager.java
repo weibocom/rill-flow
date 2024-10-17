@@ -230,7 +230,7 @@ public class DescriptorManager {
         }
         for (BaseTask task : taskMap.values()) {
             processOutputMappingsWhenGetDescriptor(task);
-            processInputMappingsWhenGetDescriptor(task, taskMap);
+            processInputMappingsWhenGetDescriptor(task);
         }
         return dagParser.serialize(dag);
     }
@@ -249,7 +249,7 @@ public class DescriptorManager {
         task.setOutputMappings(newOutputMappings);
     }
 
-    private void processInputMappingsWhenGetDescriptor(BaseTask task, Map<String, BaseTask> taskMap) {
+    private void processInputMappingsWhenGetDescriptor(BaseTask task) {
         task.setInputMappings(null);
     }
 
