@@ -250,7 +250,7 @@ public class DescriptorManager {
         }
         for (Mapping inputMapping : task.getInputMappings()) {
             String[] elements = getSourcePathElementsByMapping(inputMapping);
-            if (elements == null || elements.length < 2) {
+            if (elements.length < 2) {
                 continue;
             }
             String taskName = elements[2];
@@ -611,16 +611,12 @@ public class DescriptorManager {
                     continue;
                 }
                 String taskName = elements[1];
-                BaseTask outputTask = taskMap.get(taskName);
-                if (outputTask == null) {
-                    continue;
-                }
-                inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
+                if (taskMap.containsKey(taskName)) {
+                    inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
 
-                taskPathsMap.putIfAbsent(taskName, new ArrayList<>());
-                List<List<String>> elementsList = taskPathsMap.get(taskName);
-                elementsList.add(Arrays.asList(elements).subList(2, elements.length));
-                taskPathsMap.put(taskName, elementsList);
+                    taskPathsMap.computeIfAbsent(taskName, k -> new ArrayList<>())
+                                .add(Arrays.asList(elements).subList(2, elements.length));
+                }
             }
         }
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
@@ -630,17 +626,16 @@ public class DescriptorManager {
     private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
         return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
     }
-
     private String[] getSourcePathElementsByMapping(Mapping inputMapping) {
         if (!inputMapping.getSource().startsWith("$.")) {
-            return null;
+            return new String[0];
         }
         String source = inputMapping.getSource();
         String path;
         try {
             path = JsonPath.compile(source).getPath();
         } catch (Exception e) {
-            return null;
+            return new String[0];
         }
 
         String normalizedPath = path.replace("\"", "'");
