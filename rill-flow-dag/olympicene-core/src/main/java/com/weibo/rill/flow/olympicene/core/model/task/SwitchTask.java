@@ -51,9 +51,10 @@ public class SwitchTask extends BaseTask {
             @JsonProperty("isKeyCallback") boolean isKeyCallback,
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
-            @JsonProperty("templateId") String templateId) {
+            @JsonProperty("templateId") String templateId,
+            @JsonProperty("input") Map<String, Object> input) {
         super(name, title, description, category, null, false, inputMappings, null, progress,
-                degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+                degrade, timeline, isKeyCallback, keyExp, parameters, templateId, input);
         this.switches = switches;
         this.setNext(switches.stream().map(Switch::getNext).collect(Collectors.joining(",")));
     }

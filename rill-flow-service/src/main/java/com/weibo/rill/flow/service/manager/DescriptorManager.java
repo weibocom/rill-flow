@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.service.manager;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
@@ -241,23 +242,27 @@ public class DescriptorManager {
         List<Mapping> newOutputMappings = outputMappings.stream()
                 .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
                 .toList();
+        if (CollectionUtils.isEmpty(newOutputMappings)) {
+            newOutputMappings = null;
+        }
         task.setOutputMappings(newOutputMappings);
     }
 
     private void processInputMappingsWhenGetDescriptor(BaseTask task, Map<String, BaseTask> taskMap) {
-        if (CollectionUtils.isEmpty(task.getInputMappings())) {
-            return;
-        }
-        for (Mapping inputMapping : task.getInputMappings()) {
-            String[] elements = getSourcePathElementsByMapping(inputMapping);
-            if (elements.length < 2) {
-                continue;
-            }
-            String taskName = elements[2];
-            if (taskMap.get(taskName) != null) {
-                inputMapping.setSource(inputMapping.getSource().replace("$.context", "$"));
-            }
-        }
+        task.setInputMappings(null);
+//        if (CollectionUtils.isEmpty(task.getInputMappings())) {
+//            return;
+//        }
+//        for (Mapping inputMapping : task.getInputMappings()) {
+//            String[] elements = getSourcePathElementsByMapping(inputMapping);
+//            if (elements.length < 2) {
+//                continue;
+//            }
+//            String taskName = elements[2];
+//            if (taskMap.get(taskName) != null) {
+//                inputMapping.setSource(inputMapping.getSource().replace("$.context", "$"));
+//            }
+//        }
     }
 
     public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
@@ -547,6 +552,30 @@ public class DescriptorManager {
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
     }
 
+    private void processInputToGenerateInputMappings(DAG dag) {
+        for (BaseTask task : dag.getTasks()) {
+            Map<String, Object> taskInput = task.getInput();
+            if (MapUtils.isEmpty(taskInput)) {
+                continue;
+            }
+            List<Mapping> inputMappings = task.getInputMappings() == null ? Lists.newArrayList() : task.getInputMappings();
+            for (Map.Entry<String, Object> entry : taskInput.entrySet()) {
+                String target = "$.input." + entry.getKey();
+                Mapping inputMapping;
+                if (entry.getKey() == null || entry.getValue() == null) {
+                    continue;
+                } else if (entry.getValue() instanceof Map) {
+                    inputMapping = JSONObject.parseObject(JSONObject.toJSONString(entry.getValue()), Mapping.class);
+                    inputMapping.setTarget(target);
+                } else {
+                    inputMapping = new Mapping(entry.getValue().toString(), target);
+                }
+                inputMappings.add(inputMapping);
+            }
+            task.setInputMappings(inputMappings);
+        }
+    }
+
     private boolean containsEmpty(String... member) {
         return member == null || Arrays.stream(member).anyMatch(StringUtils::isEmpty);
     }
@@ -590,35 +619,39 @@ public class DescriptorManager {
     }
 
     /**
-     * 为 DAG 对象生成 outputMappings
-     * 1. 如果 dag 的 version 不是 v2.0 或者 dag 的 tasks 为空，那么直接返回
-     * 2. 遍历 dag 中所有的 tasks 的 inputMappings 的 source，将它们中 $.context 开头的转换为标准的 jsonPath，对于竖线分隔的，则分隔后转换为 jsonPath
-     * 3. 分析 $.context.task_name 中的全部 task_name，通过 task_name 为 key 建立 LinkedHashMultimap，将所有 jsonPath 放入到 LinkedHashMultimap 中
-     * 4. 找到 task_name 对应的每个 path 的最大公共部分
-     * @param dag
+     * 在创建 dag 后自动生成 outputMappings
+     * 
+     * @param dag DAG对象
      */
     private void generateOutputMappings(DAG dag) {
         if (dag.getVersion() == null || !dag.getVersion().equalsIgnoreCase(NEW_VERSION_MARK) || CollectionUtils.isEmpty(dag.getTasks())) {
             return;
         }
+        processInputToGenerateInputMappings(dag);
         Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        
         for (BaseTask task: dag.getTasks()) {
             List<Mapping> inputMappings = task.getInputMappings();
             for (Mapping inputMapping : inputMappings) {
+                // 获取源路径元素，如 source: $.taskA.output.key 转换为 elements: [$, taskA, output, key]
                 String[] elements = getSourcePathElementsByMapping(inputMapping);
-                if (elements == null || elements.length < 2) {
+                if (elements.length < 2) {
                     continue;
                 }
                 String taskName = elements[1];
                 if (taskMap.containsKey(taskName)) {
+                    // 更新输入映射的源
                     inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
 
+                    // 将路径添加到任务路径映射中
                     taskPathsMap.computeIfAbsent(taskName, k -> new ArrayList<>())
                                 .add(Arrays.asList(elements).subList(2, elements.length));
                 }
             }
         }
+        
+        // 获取输出映射并生成到任务中
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
         generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
     }
@@ -626,8 +659,9 @@ public class DescriptorManager {
     private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
         return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
     }
+
     private String[] getSourcePathElementsByMapping(Mapping inputMapping) {
-        if (!inputMapping.getSource().startsWith("$.")) {
+        if (inputMapping.getSource() == null || !inputMapping.getSource().startsWith("$.")) {
             return new String[0];
         }
         String source = inputMapping.getSource();

@@ -28,27 +28,22 @@ class DescriptorManagerTest extends Specification {
                 "    requestType: POST\n" +
                 "    pattern: task_sync\n" +
                 "    next: functionB\n" +
-                "    inputMappings:\n" +
-                "      - source: hello\n" +
-                "        target: \$.input.body.world\n" +
+                "    input:\n" +
+                "      body.world: hello\n" +
                 "    resourceProtocol: http\n" +
                 "  - name: functionB\n" +
                 "    category: function\n" +
                 "    resourceName: http://test.url\n" +
                 "    requestType: POST\n" +
-                "    inputMappings:\n" +
-                "      - source: \$.functionA.datax.y\n" +
-                "        target: \$.input.body.datax.y\n" +
-                "      - source: \$.functionA.dataz[\"a.b\"]\n" +
-                "        target: \$.input.body.dataz\n" +
-                "      - source: \$.functionA.datax.a\n" +
-                "        target: \$.input.body.datax.a\n" +
-                "      - source: \$.functionA.datay.hello\n" +
-                "        target: \$.input.body.datay.hello\n" +
-                "      - source: \$.functionA.objs.0.id\n" +
-                "        target: \$.input.body.id\n" +
-                "      - source: \$.context.hello.objs.0.id\n" +
-                "        target: \$.input.body.hello.id\n" +
+                "    input:\n" +
+                "      body.datax.y: \$.functionA.datax.y\n" +
+                "      body.dataz: \$.functionA.dataz[\"a.b\"]\n" +
+                "      body.datax.a: \$.functionA.datax.a\n" +
+                "      body.datay.hello: \$.functionA.datay.hello\n" +
+                "      body.id: \$.functionA.objs.0.id\n" +
+                "      body.hello.id: \$.context.hello.objs.0.id\n" +
+                "      body.world:\n" +
+                "        transform: return \"hello world\";\n" +
                 "    resourceProtocol: http\n" +
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
@@ -66,10 +61,14 @@ class DescriptorManagerTest extends Specification {
                 assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
             } else {
                 HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
-                assert inputMappings.size() == 6
+                assert inputMappings.size() == 7
                 assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y", "\$.input.body.datax.y"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
                 assert inputMappings.contains(new Mapping("\$.context.hello.objs.0.id", "\$.input.body.hello.id"))
+                Mapping inputMapping = new Mapping();
+                inputMapping.setTransform("return \"hello world\";")
+                inputMapping.setTarget("\$.input.body.world")
+                assert inputMappings.contains(inputMapping)
             }
         }
         println dagParser.serialize(dag)
@@ -102,9 +101,9 @@ class DescriptorManagerTest extends Specification {
                 "    target: \"\$.context.functionA.dataz['a.b']\"\n" +
                 "  - source: \"\$.output.objs\"\n" +
                 "    target: \"\$.context.functionA.objs\"\n" +
-                "  - source: 5\n" +
-                "    target: \$.context.common.number\n" +
                 "  requestType: \"POST\"\n" +
+                "  input:\n" +
+                "    body.world: \"hello\"\n" +
                 "  key_callback: false\n" +
                 "- !<function>\n" +
                 "  name: \"functionB\"\n" +
@@ -122,24 +121,30 @@ class DescriptorManagerTest extends Specification {
                 "    target: \"\$.input.body.datax.a\"\n" +
                 "  - source: \"\$.context.functionA.datay.hello\"\n" +
                 "    target: \"\$.input.body.datay.hello\"\n" +
-                "  - source: \"\$.context.hello.objs.0.id\"\n" +
+                "  - source: \"\$.context.functionA.objs.0.id\"\n" +
                 "    target: \"\$.input.body.id\"\n" +
+                "  - source: \"\$.context.hello.objs.0.id\"\n" +
+                "    target: \"\$.input.body.hello.id\"\n" +
+                "  - transform: \"return \\\"hello world\\\";\"\n" +
+                "    target: \"\$.input.body.world\"\n" +
                 "  requestType: \"POST\"\n" +
+                "  input:\n" +
+                "    body.datax.y: \"\$.functionA.datax.y\"\n" +
+                "    body.dataz: \"\$.functionA.dataz[\\\"a.b\\\"]\"\n" +
+                "    body.datax.a: \"\$.functionA.datax.a\"\n" +
+                "    body.datay.hello: \"\$.functionA.datay.hello\"\n" +
+                "    body.id: \"\$.functionA.objs.0.id\"\n" +
+                "    body.hello.id: \"\$.context.hello.objs.0.id\"\n" +
+                "    body.world:\n" +
+                "      transform: \"return \\\"hello world\\\";\"\n" +
                 "  key_callback: false\n"
         when:
         String newDescriptor = descriptorManager.processInputOutputMappingsWhenGetDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
         then:
         newDag.getTasks().forEach(it -> {
-            if (it.getName() == "functionA") {
-                assert it.getOutputMappings().size() == 1
-                assert it.getOutputMappings().contains(new Mapping("5", "\$.context.common.number"))
-            } else {
-                assert it.inputMappings.size() == 5
-                assert it.inputMappings.contains(new Mapping("\$.functionA.datax.y", "\$.input.body.datax.y"))
-                assert it.inputMappings.contains(new Mapping("\$.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
-                assert it.inputMappings.contains(new Mapping("\$.context.hello.objs.0.id", "\$.input.body.id"))
-            }
+            assert it.inputMappings == null
+            assert it.outputMappings == null
         })
     }
 }

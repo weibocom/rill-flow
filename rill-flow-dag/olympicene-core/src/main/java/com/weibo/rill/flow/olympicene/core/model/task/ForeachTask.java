@@ -58,8 +58,10 @@ public class ForeachTask extends BaseTask {
             @JsonProperty("isKeyCallback") boolean isKeyCallback,
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
-            @JsonProperty("templateId") String templateId) {
-        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+            @JsonProperty("templateId") String templateId,
+            @JsonProperty("input") Map<String, Object> input) {
+        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade,
+                timeline, isKeyCallback, keyExp, parameters, templateId, input);
         this.synchronization = synchronization;
         this.iterationMapping = iterationMapping;
         this.tasks = tasks;
