@@ -8,6 +8,7 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskValidator
+import org.apache.commons.codec.digest.DigestUtils
 import spock.lang.Specification
 
 class DescriptorManagerTest extends Specification {
@@ -70,7 +71,6 @@ class DescriptorManagerTest extends Specification {
                 assert inputMappings.contains(inputMapping)
             }
         }
-        println dagParser.serialize(dag)
     }
 
     def "test processInputOutputMappingsWhenGetDescriptor"() {
