@@ -17,7 +17,6 @@
 package com.weibo.rill.flow.service.manager;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +32,7 @@ import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
+import com.weibo.rill.flow.olympicene.core.model.task.PassTask;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
@@ -229,10 +229,20 @@ public class DescriptorManager {
         if (!taskExistsInput) {
             return descriptor;
         }
+        List<BaseTask> tasks = new ArrayList<>();
         for (BaseTask task : taskMap.values()) {
             processOutputMappingsWhenGetDescriptor(task);
             processInputMappingsWhenGetDescriptor(task);
+            if (!task.getName().equals(dag.getEndTaskName())) {
+                String next = task.getNext();
+                Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
+                nextSet.remove(dag.getEndTaskName());
+                next = String.join(",", nextSet);
+                task.setNext(next);
+                tasks.add(task);
+            }
         }
+        dag.setTasks(tasks);
         return dagParser.serialize(dag);
     }
 
@@ -541,11 +551,12 @@ public class DescriptorManager {
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
     }
 
-    private boolean processInputToGenerateInputMappings(DAG dag) {
+    private boolean processInputToGenerateInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
         if (CollectionUtils.isEmpty(dag.getTasks())) {
             return false;
         }
-        boolean taskExistsInput = false;
+        PassTask endPassTask = generateEndPassTask(dag, taskMap);
+        boolean taskExistsInput = endPassTask != null;
         for (BaseTask task : dag.getTasks()) {
             Map<String, Object> taskInput = task.getInput();
             if (MapUtils.isEmpty(taskInput)) {
@@ -570,6 +581,27 @@ public class DescriptorManager {
             task.setInputMappings(inputMappings);
         }
         return taskExistsInput;
+    }
+
+    private PassTask generateEndPassTask(DAG dag, Map<String, BaseTask> taskMap) {
+        if (MapUtils.isEmpty(dag.getOutput())) {
+            return null;
+        }
+        String endTaskName = DigestUtils.md5Hex(dag.getWorkspace() + "_" + dag.getDagName());
+        dag.setEndTaskName(endTaskName);
+        PassTask endPassTask = new PassTask();
+        endPassTask.setName(endTaskName);
+        endPassTask.setInput(dag.getOutput());
+        endPassTask.setCategory("pass");
+        List<Mapping> outputMappings = Lists.newArrayList();
+        for (String key : dag.getOutput().keySet()) {
+            outputMappings.add(new Mapping("$.input." + key, "$.context." + key));
+        }
+        endPassTask.setOutputMappings(outputMappings);
+
+        taskMap.put(endTaskName, endPassTask);
+        dag.getTasks().add(endPassTask);
+        return endPassTask;
     }
 
     private boolean containsEmpty(String... member) {
@@ -620,34 +652,42 @@ public class DescriptorManager {
      * @param dag DAG对象
      */
     private void generateOutputMappings(DAG dag) {
-        boolean taskExistsInput = processInputToGenerateInputMappings(dag);
+        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        boolean taskExistsInput = processInputToGenerateInputMappings(dag, taskMap);
         if (!taskExistsInput) {
             return;
         }
         Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
-        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         
         for (BaseTask task: dag.getTasks()) {
             List<Mapping> inputMappings = task.getInputMappings();
             for (Mapping inputMapping : inputMappings) {
-                // 获取源路径元素，如 source: $.taskA.output.key 转换为 elements: [$, taskA, output, key]
                 String[] elements = getSourcePathElementsByMapping(inputMapping);
                 if (elements.length < 2) {
                     continue;
                 }
-                String taskName = elements[1];
-                if (taskMap.containsKey(taskName)) {
-                    // 更新输入映射的源
+                String outputTaskName = elements[1];
+                if (taskMap.containsKey(outputTaskName)) {
                     inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
-
-                    // 将路径添加到任务路径映射中
-                    taskPathsMap.computeIfAbsent(taskName, k -> new ArrayList<>())
+                    taskPathsMap.computeIfAbsent(outputTaskName, k -> new ArrayList<>())
                                 .add(Arrays.asList(elements).subList(2, elements.length));
+
+                    if (task.getName().equalsIgnoreCase(dag.getEndTaskName())) {
+                        BaseTask outputTask = taskMap.get(outputTaskName);
+                        String next = outputTask.getNext();
+                        if (next == null) {
+                            next = outputTaskName;
+                        } else {
+                            Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
+                            nextSet.add(dag.getEndTaskName());
+                            next = String.join(",", nextSet);
+                        }
+                        outputTask.setNext(next);
+                    }
                 }
             }
         }
-        
-        // 获取输出映射并生成到任务中
+
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
         generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
     }

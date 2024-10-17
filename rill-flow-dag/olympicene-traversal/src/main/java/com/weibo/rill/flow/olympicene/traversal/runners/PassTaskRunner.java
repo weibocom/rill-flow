@@ -60,7 +60,7 @@ public class PassTaskRunner extends AbstractTaskRunner {
         log.info("pass task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         if (CollectionUtils.isNotEmpty(taskInfo.getTask().getOutputMappings())) {
             Map<String, Object> context = ContextHelper.getInstance().getContext(dagContextStorage, executionId, taskInfo);
-            outputMappings(context, new HashMap<>(), new HashMap<>(), taskInfo.getTask().getOutputMappings());
+            outputMappings(context, input, new HashMap<>(), taskInfo.getTask().getOutputMappings());
             saveContext(executionId, context, Sets.newHashSet(taskInfo));
         }
 
