@@ -243,6 +243,7 @@ public class DescriptorManager {
             }
         }
         dag.setTasks(tasks);
+        dag.setEndTaskName(null);
         return dagParser.serialize(dag);
     }
 
