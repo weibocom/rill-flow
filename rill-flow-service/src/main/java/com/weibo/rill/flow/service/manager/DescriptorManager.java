@@ -233,13 +233,13 @@ public class DescriptorManager {
         for (BaseTask task : taskMap.values()) {
             processOutputMappingsWhenGetDescriptor(task);
             processInputMappingsWhenGetDescriptor(task);
-            if (!task.getName().equals(dag.getEndTaskName())) {
+            tasks.add(task);
+            if (!task.getName().equals(dag.getEndTaskName()) && task.getNext() != null) {
                 String next = task.getNext();
                 Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
                 nextSet.remove(dag.getEndTaskName());
                 next = String.join(",", nextSet);
                 task.setNext(next);
-                tasks.add(task);
             }
         }
         dag.setTasks(tasks);

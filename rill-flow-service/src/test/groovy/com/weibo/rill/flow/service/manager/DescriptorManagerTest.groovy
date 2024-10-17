@@ -132,8 +132,7 @@ class DescriptorManagerTest extends Specification {
                 "    body.id: \"\$.functionA.objs.0.id\"\n" +
                 "    body.hello.id: \"\$.context.hello.objs.0.id\"\n" +
                 "    body.world:\n" +
-                "      transform: \"return \\\"hello world\\\";\"\n" +
-                "  key_callback: false\n"
+                "      transform: \"return \\\"hello world\\\";\"\n"
         when:
         String newDescriptor = descriptorManager.processInputOutputMappingsWhenGetDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
@@ -142,5 +141,9 @@ class DescriptorManagerTest extends Specification {
             assert it.inputMappings == null
             assert it.outputMappings == null
         })
+    }
+
+    def "test dag output"() {
+
     }
 }
