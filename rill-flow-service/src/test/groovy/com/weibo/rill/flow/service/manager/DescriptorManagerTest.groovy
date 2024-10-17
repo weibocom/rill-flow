@@ -122,7 +122,7 @@ class DescriptorManagerTest extends Specification {
                 "    target: \"\$.input.body.datax.a\"\n" +
                 "  - source: \"\$.context.functionA.datay.hello\"\n" +
                 "    target: \"\$.input.body.datay.hello\"\n" +
-                "  - source: \"\$.context.functionA.objs.0.id\"\n" +
+                "  - source: \"\$.context.hello.objs.0.id\"\n" +
                 "    target: \"\$.input.body.id\"\n" +
                 "  requestType: \"POST\"\n" +
                 "  key_callback: false\n"
@@ -134,6 +134,11 @@ class DescriptorManagerTest extends Specification {
             if (it.getName() == "functionA") {
                 assert it.getOutputMappings().size() == 1
                 assert it.getOutputMappings().contains(new Mapping("5", "\$.context.common.number"))
+            } else {
+                assert it.inputMappings.size() == 5
+                assert it.inputMappings.contains(new Mapping("\$.functionA.datax.y", "\$.input.body.datax.y"))
+                assert it.inputMappings.contains(new Mapping("\$.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
+                assert it.inputMappings.contains(new Mapping("\$.context.hello.objs.0.id", "\$.input.body.id"))
             }
         })
     }

@@ -253,7 +253,7 @@ public class DescriptorManager {
             if (elements == null || elements.length < 2) {
                 continue;
             }
-            String taskName = elements[1];
+            String taskName = elements[2];
             if (taskMap.get(taskName) != null) {
                 inputMapping.setSource(inputMapping.getSource().replace("$.context", "$"));
             }
