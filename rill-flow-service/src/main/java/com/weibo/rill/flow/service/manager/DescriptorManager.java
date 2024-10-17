@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.service.manager;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -559,7 +560,7 @@ public class DescriptorManager {
                 if (entry.getKey() == null || entry.getValue() == null) {
                     continue;
                 } else if (entry.getValue() instanceof Map) {
-                    inputMapping = JSONObject.parseObject(JSONObject.toJSONString(entry.getValue()), Mapping.class);
+                    inputMapping = JSON.parseObject(JSON.toJSONString(entry.getValue()), Mapping.class);
                     inputMapping.setTarget(target);
                 } else {
                     inputMapping = new Mapping(entry.getValue().toString(), target);
