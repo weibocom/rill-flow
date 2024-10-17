@@ -64,12 +64,18 @@ class DescriptorManagerTest extends Specification {
                 assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
                 assert outputMappings.contains(new Mapping("\$.output.objs", "\$.context.functionA.objs"))
                 assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
+            } else {
+                HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
+                assert inputMappings.size() == 6
+                assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y", "\$.input.body.datax.y"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
+                assert inputMappings.contains(new Mapping("\$.context.hello.objs.0.id", "\$.input.body.hello.id"))
             }
         }
         println dagParser.serialize(dag)
     }
 
-    def "test removeRedundantOutputMappings"() {
+    def "test processInputOutputMappingsWhenGetDescriptor"() {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
@@ -121,7 +127,7 @@ class DescriptorManagerTest extends Specification {
                 "  requestType: \"POST\"\n" +
                 "  key_callback: false\n"
         when:
-        String newDescriptor = descriptorManager.removeRedundantOutputMappings(descriptor)
+        String newDescriptor = descriptorManager.processInputOutputMappingsWhenGetDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
         then:
         newDag.getTasks().forEach(it -> {

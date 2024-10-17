@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -210,7 +211,7 @@ public class DescriptorManager {
             if (StringUtils.isEmpty(descriptor)) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
-            return removeRedundantOutputMappings(descriptor);
+            return processInputOutputMappingsWhenGetDescriptor(descriptor);
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
@@ -219,23 +220,44 @@ public class DescriptorManager {
         }
     }
 
-    private String removeRedundantOutputMappings(String descriptor) {
+    private String processInputOutputMappingsWhenGetDescriptor(String descriptor) {
         DAG dag = dagParser.parse(descriptor);
         if (!NEW_VERSION_MARK.equalsIgnoreCase(dag.getVersion())) {
             return descriptor;
         }
-        List<BaseTask> tasks = dag.getTasks();
-        for (BaseTask task : tasks) {
-            List<Mapping> outputMappings = task.getOutputMappings();
-            if (CollectionUtils.isEmpty(outputMappings)) {
-                continue;
-            }
-            List<Mapping> newOutputMappings = outputMappings.stream()
-                    .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
-                    .toList();
-            task.setOutputMappings(newOutputMappings);
+        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        for (BaseTask task : taskMap.values()) {
+            processOutputMappingsWhenGetDescriptor(task);
+            processInputMappingsWhenGetDescriptor(task, taskMap);
         }
         return dagParser.serialize(dag);
+    }
+
+    private void processOutputMappingsWhenGetDescriptor(BaseTask task) {
+        List<Mapping> outputMappings = task.getOutputMappings();
+        if (CollectionUtils.isEmpty(outputMappings)) {
+            return;
+        }
+        List<Mapping> newOutputMappings = outputMappings.stream()
+                .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
+                .toList();
+        task.setOutputMappings(newOutputMappings);
+    }
+
+    private void processInputMappingsWhenGetDescriptor(BaseTask task, Map<String, BaseTask> taskMap) {
+        if (CollectionUtils.isEmpty(task.getInputMappings())) {
+            return;
+        }
+        for (Mapping inputMapping : task.getInputMappings()) {
+            String[] elements = getSourcePathElementsByMapping(inputMapping);
+            if (elements == null || elements.length < 2) {
+                continue;
+            }
+            String taskName = elements[1];
+            if (taskMap.get(taskName) != null) {
+                inputMapping.setSource(inputMapping.getSource().replace("$.context", "$"));
+            }
+        }
     }
 
     public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
@@ -579,21 +601,59 @@ public class DescriptorManager {
         if (dag.getVersion() == null || !dag.getVersion().equalsIgnoreCase(NEW_VERSION_MARK) || CollectionUtils.isEmpty(dag.getTasks())) {
             return;
         }
-        Set<String> paths = new HashSet<>();
-        Map<String, BaseTask> taskMap = new HashMap<>();
-        for (BaseTask task : dag.getTasks()) {
-            taskMap.put(task.getName(), task);
+        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
+        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        for (BaseTask task: dag.getTasks()) {
             List<Mapping> inputMappings = task.getInputMappings();
-            for (Mapping mapping : inputMappings) {
-                if (!mapping.getSource().startsWith("$.")) {
+            for (Mapping inputMapping : inputMappings) {
+                String[] elements = getSourcePathElementsByMapping(inputMapping);
+                if (elements == null || elements.length < 2) {
                     continue;
                 }
-                String source = mapping.getSource();
-                paths.add(JsonPath.compile(source).getPath());
+                String taskName = elements[1];
+                BaseTask outputTask = taskMap.get(taskName);
+                if (outputTask == null) {
+                    continue;
+                }
+                inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
+
+                taskPathsMap.putIfAbsent(taskName, new ArrayList<>());
+                List<List<String>> elementsList = taskPathsMap.get(taskName);
+                elementsList.add(Arrays.asList(elements).subList(2, elements.length));
+                taskPathsMap.put(taskName, elementsList);
             }
         }
-        LinkedHashMultimap<String, String> mappingsMultimap = processPaths(paths);
-        for (Map.Entry<String, String> mappingsEntry: mappingsMultimap.entries()) {
+        LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
+        generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
+    }
+
+    private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
+        return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
+    }
+
+    private String[] getSourcePathElementsByMapping(Mapping inputMapping) {
+        if (!inputMapping.getSource().startsWith("$.")) {
+            return null;
+        }
+        String source = inputMapping.getSource();
+        String path;
+        try {
+            path = JsonPath.compile(source).getPath();
+        } catch (Exception e) {
+            return null;
+        }
+
+        String normalizedPath = path.replace("\"", "'");
+        return Arrays.stream(normalizedPath.split("\\['|']"))
+                .filter(e -> !e.isEmpty())
+                .toArray(String[]::new);
+    }
+
+    private void generateOutputMappingsIntoTasks(LinkedHashMultimap<String, String> outputMappingsMultimap, Map<String, BaseTask> taskMap) {
+        if (outputMappingsMultimap.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, String> mappingsEntry: outputMappingsMultimap.entries()) {
             String taskName = mappingsEntry.getKey();
             String path = mappingsEntry.getValue();
             BaseTask task = taskMap.get(taskName);
@@ -609,24 +669,8 @@ public class DescriptorManager {
         }
     }
 
-    private LinkedHashMultimap<String, String> processPaths(Set<String> paths) {
+    private LinkedHashMultimap<String, String> getOutputMappingsByPaths(Map<String, List<List<String>>> taskPathsMap) {
         LinkedHashMultimap<String, String> result = LinkedHashMultimap.create();
-        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
-
-        for (String path : paths) {
-            String normalizedPath = path.replace("\"", "'");
-            String[] elements = Arrays.stream(normalizedPath.split("\\['|']"))
-                                      .filter(e -> !e.isEmpty())
-                                      .toArray(String[]::new);
-            if (elements.length < 2) {
-                continue;
-            }
-            String taskName = elements[1];
-            taskPathsMap.putIfAbsent(taskName, new ArrayList<>());
-            List<List<String>> elementsList = taskPathsMap.get(taskName);
-            elementsList.add(Arrays.asList(elements).subList(2, elements.length));
-            taskPathsMap.put(taskName, elementsList);
-        }
 
         Map<String, List<List<String>>> commonPrefixes = getLongestCommonPrefixes(taskPathsMap);
         for (Map.Entry<String, List<List<String>>> commonPrefixesEntry: commonPrefixes.entrySet()) {
