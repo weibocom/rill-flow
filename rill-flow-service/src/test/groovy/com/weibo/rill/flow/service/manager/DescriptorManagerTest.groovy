@@ -20,7 +20,6 @@ class DescriptorManagerTest extends Specification {
                 "dagName: testGenerateOutputMappings\n" +
                 "alias: release\n" +
                 "type: flow\n" +
-                "version: v2.0\n" +
                 "tasks:\n" +
                 "  - name: functionA\n" +
                 "    category: function\n" +
@@ -78,11 +77,9 @@ class DescriptorManagerTest extends Specification {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
-                "version: \"v2.0\"\n" +
                 "type: \"flow\"\n" +
                 "tasks:\n" +
-                "- !<function>\n" +
-                "  name: \"functionA\"\n" +
+                "- name: \"functionA\"\n" +
                 "  category: \"function\"\n" +
                 "  next: \"functionB\"\n" +
                 "  tolerance: false\n" +
@@ -105,8 +102,7 @@ class DescriptorManagerTest extends Specification {
                 "  input:\n" +
                 "    body.world: \"hello\"\n" +
                 "  key_callback: false\n" +
-                "- !<function>\n" +
-                "  name: \"functionB\"\n" +
+                "- name: \"functionB\"\n" +
                 "  category: \"function\"\n" +
                 "  tolerance: false\n" +
                 "  resourceName: \"http://test.url\"\n" +

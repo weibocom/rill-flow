@@ -118,7 +118,6 @@ public class DescriptorManager {
     private static final String MD5_PREFIX = "md5_";
     private static final String RELEASE = "release";
     private static final String DEFAULT = "default";
-    private static final String NEW_VERSION_MARK = "v2.0";
 
     private static final String VERSION_ADD = """
             local maxVersionCount = ARGV[1];
@@ -223,10 +222,12 @@ public class DescriptorManager {
 
     private String processInputOutputMappingsWhenGetDescriptor(String descriptor) {
         DAG dag = dagParser.parse(descriptor);
-        if (!NEW_VERSION_MARK.equalsIgnoreCase(dag.getVersion())) {
+        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        boolean taskExistsInput = taskMap.values().stream()
+                .anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+        if (!taskExistsInput) {
             return descriptor;
         }
-        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         for (BaseTask task : taskMap.values()) {
             processOutputMappingsWhenGetDescriptor(task);
             processInputMappingsWhenGetDescriptor(task, taskMap);
@@ -250,19 +251,6 @@ public class DescriptorManager {
 
     private void processInputMappingsWhenGetDescriptor(BaseTask task, Map<String, BaseTask> taskMap) {
         task.setInputMappings(null);
-//        if (CollectionUtils.isEmpty(task.getInputMappings())) {
-//            return;
-//        }
-//        for (Mapping inputMapping : task.getInputMappings()) {
-//            String[] elements = getSourcePathElementsByMapping(inputMapping);
-//            if (elements.length < 2) {
-//                continue;
-//            }
-//            String taskName = elements[2];
-//            if (taskMap.get(taskName) != null) {
-//                inputMapping.setSource(inputMapping.getSource().replace("$.context", "$"));
-//            }
-//        }
     }
 
     public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
@@ -552,11 +540,17 @@ public class DescriptorManager {
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
     }
 
-    private void processInputToGenerateInputMappings(DAG dag) {
+    private boolean processInputToGenerateInputMappings(DAG dag) {
+        if (CollectionUtils.isEmpty(dag.getTasks())) {
+            return false;
+        }
+        boolean taskExistsInput = false;
         for (BaseTask task : dag.getTasks()) {
             Map<String, Object> taskInput = task.getInput();
             if (MapUtils.isEmpty(taskInput)) {
                 continue;
+            } else {
+                taskExistsInput = true;
             }
             List<Mapping> inputMappings = task.getInputMappings() == null ? Lists.newArrayList() : task.getInputMappings();
             for (Map.Entry<String, Object> entry : taskInput.entrySet()) {
@@ -574,6 +568,7 @@ public class DescriptorManager {
             }
             task.setInputMappings(inputMappings);
         }
+        return taskExistsInput;
     }
 
     private boolean containsEmpty(String... member) {
@@ -624,10 +619,10 @@ public class DescriptorManager {
      * @param dag DAG对象
      */
     private void generateOutputMappings(DAG dag) {
-        if (dag.getVersion() == null || !dag.getVersion().equalsIgnoreCase(NEW_VERSION_MARK) || CollectionUtils.isEmpty(dag.getTasks())) {
+        boolean taskExistsInput = processInputToGenerateInputMappings(dag);
+        if (!taskExistsInput) {
             return;
         }
-        processInputToGenerateInputMappings(dag);
         Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         
@@ -657,6 +652,9 @@ public class DescriptorManager {
     }
 
     private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
+        if (CollectionUtils.isEmpty(dag.getTasks())) {
+            return Maps.newHashMap();
+        }
         return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
     }
 
