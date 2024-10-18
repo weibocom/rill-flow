@@ -201,8 +201,6 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         while (matcher.find()) {
             if (matcher.group(1) != null) {
                 jsonPathParts.add(matcher.group(1));
-            } else if (matcher.group(2) != null) {
-                jsonPathParts.add(matcher.group(2));
             }
         }
 
