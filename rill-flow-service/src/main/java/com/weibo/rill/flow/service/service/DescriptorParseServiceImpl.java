@@ -183,7 +183,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
             int i = 0;
             for (; i < result.size() && i < currentPath.size(); i++) {
                 String element = currentPath.get(i);
-                if (element.equals("[*]") || element.matches("\\d+") || !element.equals(result.get(i))) {
+                if (element.equals("[*]") || element.matches("\\[\\d+]") || !element.equals(result.get(i))) {
                     break;
                 }
             }

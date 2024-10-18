@@ -41,8 +41,8 @@ class DescriptorParseServiceImplTest extends Specification {
                 "      body.dataz: \$.functionA.dataz[\"a.b\"]\n" +
                 "      body.datax.a: \$.functionA.datax.a\n" +
                 "      body.datay.hello: \$.functionA.datay.hello\n" +
-                "      body.id: \$.functionA.objs.0.id\n" +
-                "      body.hello.id: \$.context.hello.objs.0.id\n" +
+                "      body.id: \$.functionA.objs[0].id\n" +
+                "      body.hello.id: \$.context.hello.objs[0].id\n" +
                 "      body.world:\n" +
                 "        transform: return \"hello world\";\n" +
                 "    resourceProtocol: http\n" +
@@ -65,7 +65,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 assert inputMappings.size() == 7
                 assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y", "\$.input.body.datax.y"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
-                assert inputMappings.contains(new Mapping("\$.context.hello.objs.0.id", "\$.input.body.hello.id"))
+                assert inputMappings.contains(new Mapping("\$.context.hello.objs[0].id", "\$.input.body.hello.id"))
                 Mapping inputMapping = new Mapping();
                 inputMapping.setTransform("return \"hello world\";")
                 inputMapping.setTarget("\$.input.body.world")
