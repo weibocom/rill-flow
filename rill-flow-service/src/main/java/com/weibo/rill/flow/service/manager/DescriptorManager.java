@@ -747,7 +747,7 @@ public class DescriptorManager {
             if (outputMappings == null) {
                 outputMappings = new ArrayList<>();
             }
-            outputMappings.add(new Mapping("$.output" + path, "$.context." + taskName + path));
+            outputMappings.add(new Mapping("$.output" + path, CONTEXT_PREFIX + taskName + path));
             task.setOutputMappings(outputMappings);
         }
     }
