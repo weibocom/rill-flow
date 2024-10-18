@@ -2,13 +2,15 @@ package com.weibo.rill.flow.service.manager
 
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
+import com.weibo.rill.flow.olympicene.core.model.task.PassTask
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskValidator
-import org.apache.commons.codec.digest.DigestUtils
+import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
 class DescriptorManagerTest extends Specification {
@@ -50,7 +52,7 @@ class DescriptorManagerTest extends Specification {
         when:
         descriptorManager.generateOutputMappings(dag)
         then:
-        dag.getTasks().size() == 2
+        assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
             if (task.getName() == "functionA") {
                 Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
@@ -144,6 +146,72 @@ class DescriptorManagerTest extends Specification {
     }
 
     def "test dag output"() {
-
+        given:
+        String descriptor = "workspace: default\n" +
+                "dagName: testGenerateOutputMappings\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "tasks:\n" +
+                "  - name: functionA\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    pattern: task_sync\n" +
+                "    next: functionB\n" +
+                "    input:\n" +
+                "      body.world: hello\n" +
+                "    resourceProtocol: http\n" +
+                "  - name: functionB\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    input:\n" +
+                "      body.datax.y: \$.functionA.datax.y\n" +
+                "      body.dataz: \$.functionA.dataz[\"a.b\"]\n" +
+                "      body.datax.a: \$.functionA.datax.a\n" +
+                "      body.datay.hello: \$.functionA.datay.hello\n" +
+                "      body.id: \$.functionA.objs.0.id\n" +
+                "      body.hello.id: \$.context.hello.objs.0.id\n" +
+                "      body.world:\n" +
+                "        transform: return \"hello world\";\n" +
+                "    resourceProtocol: http\n" +
+                "    pattern: task_sync\n" +
+                "output:\n" +
+                "  end.x: \$.functionB.output.x\n" +
+                "  end.y: \$.functionB.output.y\n" +
+                "  end.as: \$.functionA.objs.*\n"
+        DAG dag = dagParser.parse(descriptor)
+        when:
+        descriptorManager.generateOutputMappings(dag)
+        then:
+        assert dag.getTasks().size() == 3
+        assert StringUtils.isNotBlank(dag.getEndTaskName())
+        dag.getTasks().forEach {task -> {
+            Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
+            if (task.getName().equals("functionA")) {
+                assert outputMappings.size() == 4
+                assert outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
+                assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
+                assert outputMappings.contains(new Mapping("\$.output.objs", "\$.context.functionA.objs"))
+                assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
+                assert task.next.equals("functionB," + dag.getEndTaskName()) || task.next.equals(dag.getEndTaskName() + ",functionB")
+            } else if (task.getName().equals("functionB")) {
+                assert outputMappings.size() == 1
+                assert outputMappings.contains(new Mapping("\$.output.output", "\$.context.functionB.output"))
+                assert task.getNext().equals(dag.getEndTaskName())
+            } else {
+                assert task instanceof PassTask
+                assert task.getName() == dag.getEndTaskName()
+                Set<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
+                assert inputMappings.size() == 3
+                assert inputMappings.contains(new Mapping("\$.context.functionB.output.x", "\$.input.end.x"))
+                assert inputMappings.contains(new Mapping("\$.context.functionB.output.y", "\$.input.end.y"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.objs.*", "\$.input.end.as"))
+                assert outputMappings.size() == 3
+                assert outputMappings.contains(new Mapping("\$.input.end.x", "\$.context.end.x"))
+                assert outputMappings.contains(new Mapping("\$.input.end.y", "\$.context.end.y"))
+                assert outputMappings.contains(new Mapping("\$.input.end.as", "\$.context.end.as"))
+            }
+        }}
     }
 }

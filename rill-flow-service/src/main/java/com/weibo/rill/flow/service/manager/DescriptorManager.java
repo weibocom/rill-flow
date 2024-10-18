@@ -51,6 +51,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -588,7 +589,7 @@ public class DescriptorManager {
         if (MapUtils.isEmpty(dag.getOutput())) {
             return null;
         }
-        String endTaskName = dag.getWorkspace() + dag.getDagName() + "EndPassTask";
+        String endTaskName = "endPassTask" + (new SimpleDateFormat("yyyyMMdd")).format(new Date());
         dag.setEndTaskName(endTaskName);
         PassTask endPassTask = new PassTask();
         endPassTask.setName(endTaskName);
@@ -676,8 +677,8 @@ public class DescriptorManager {
                     if (task.getName().equalsIgnoreCase(dag.getEndTaskName())) {
                         BaseTask outputTask = taskMap.get(outputTaskName);
                         String next = outputTask.getNext();
-                        if (next == null) {
-                            next = outputTaskName;
+                        if (StringUtils.isEmpty(next)) {
+                            next = dag.getEndTaskName();
                         } else {
                             Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
                             nextSet.add(dag.getEndTaskName());
@@ -794,7 +795,7 @@ public class DescriptorManager {
             int i = 0;
             for (; i < result.size() && i < currentPath.size(); i++) {
                 String element = currentPath.get(i);
-                if (element.equals("*") || element.matches("\\d+") || !element.equals(result.get(i))) {
+                if (element.equals("[*]") || element.matches("\\d+") || !element.equals(result.get(i))) {
                     break;
                 }
             }
