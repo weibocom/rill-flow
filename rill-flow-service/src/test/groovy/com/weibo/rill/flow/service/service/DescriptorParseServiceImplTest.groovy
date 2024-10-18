@@ -213,4 +213,111 @@ class DescriptorParseServiceImplTest extends Specification {
             }
         }}
     }
+
+    def "test get descriptor with output"() {
+        given:
+        String descriptor = "workspace: \"default\"\n" +
+                "dagName: \"testGenerateOutputMappings\"\n" +
+                "type: \"flow\"\n" +
+                "tasks:\n" +
+                "- !<function>\n" +
+                "  name: \"functionA\"\n" +
+                "  category: \"function\"\n" +
+                "  next: \"functionB,endPassTask20241018\"\n" +
+                "  tolerance: false\n" +
+                "  resourceName: \"http://test.url\"\n" +
+                "  resourceProtocol: \"http\"\n" +
+                "  pattern: \"task_sync\"\n" +
+                "  inputMappings:\n" +
+                "  - source: \"hello\"\n" +
+                "    target: \"\$.input.body.world\"\n" +
+                "  outputMappings:\n" +
+                "  - source: \"\$.output.datay.hello\"\n" +
+                "    target: \"\$.context.functionA.datay.hello\"\n" +
+                "  - source: \"\$.output.datax\"\n" +
+                "    target: \"\$.context.functionA.datax\"\n" +
+                "  - source: \"\$.output.dataz['a.b']\"\n" +
+                "    target: \"\$.context.functionA.dataz['a.b']\"\n" +
+                "  - source: \"\$.output.objs\"\n" +
+                "    target: \"\$.context.functionA.objs\"\n" +
+                "  requestType: \"POST\"\n" +
+                "  input:\n" +
+                "    body.world: \"hello\"\n" +
+                "  key_callback: false\n" +
+                "- !<function>\n" +
+                "  name: \"functionB\"\n" +
+                "  category: \"function\"\n" +
+                "  next: \"endPassTask20241018\"\n" +
+                "  tolerance: false\n" +
+                "  resourceName: \"http://test.url\"\n" +
+                "  resourceProtocol: \"http\"\n" +
+                "  pattern: \"task_sync\"\n" +
+                "  inputMappings:\n" +
+                "  - source: \"\$.context.functionA.datax.y\"\n" +
+                "    target: \"\$.input.body.datax.y\"\n" +
+                "  - source: \"\$.context.functionA.dataz[\\\"a.b\\\"]\"\n" +
+                "    target: \"\$.input.body.dataz\"\n" +
+                "  - source: \"\$.context.functionA.datax.a\"\n" +
+                "    target: \"\$.input.body.datax.a\"\n" +
+                "  - source: \"\$.context.functionA.datay.hello\"\n" +
+                "    target: \"\$.input.body.datay.hello\"\n" +
+                "  - source: \"\$.context.functionA.objs.0.id\"\n" +
+                "    target: \"\$.input.body.id\"\n" +
+                "  - source: \"\$.context.hello.objs.0.id\"\n" +
+                "    target: \"\$.input.body.hello.id\"\n" +
+                "  - transform: \"return \\\"hello world\\\";\"\n" +
+                "    target: \"\$.input.body.world\"\n" +
+                "  outputMappings:\n" +
+                "  - source: \"\$.output.output\"\n" +
+                "    target: \"\$.context.functionB.output\"\n" +
+                "  requestType: \"POST\"\n" +
+                "  input:\n" +
+                "    body.datax.y: \"\$.functionA.datax.y\"\n" +
+                "    body.dataz: \"\$.functionA.dataz[\\\"a.b\\\"]\"\n" +
+                "    body.datax.a: \"\$.functionA.datax.a\"\n" +
+                "    body.datay.hello: \"\$.functionA.datay.hello\"\n" +
+                "    body.id: \"\$.functionA.objs.0.id\"\n" +
+                "    body.hello.id: \"\$.context.hello.objs.0.id\"\n" +
+                "    body.world:\n" +
+                "      transform: \"return \\\"hello world\\\";\"\n" +
+                "  key_callback: false\n" +
+                "- !<pass>\n" +
+                "  name: \"endPassTask20241018\"\n" +
+                "  category: \"pass\"\n" +
+                "  inputMappings:\n" +
+                "  - source: \"\$.context.functionB.output.x\"\n" +
+                "    target: \"\$.input.end.x\"\n" +
+                "  - source: \"\$.context.functionB.output.y\"\n" +
+                "    target: \"\$.input.end.y\"\n" +
+                "  - source: \"\$.context.functionA.objs.*\"\n" +
+                "    target: \"\$.input.end.as\"\n" +
+                "  outputMappings:\n" +
+                "  - source: \"\$.input.end.x\"\n" +
+                "    target: \"\$.context.end.x\"\n" +
+                "  - source: \"\$.input.end.y\"\n" +
+                "    target: \"\$.context.end.y\"\n" +
+                "  - source: \"\$.input.end.as\"\n" +
+                "    target: \"\$.context.end.as\"\n" +
+                "  input:\n" +
+                "    end.x: \"\$.functionB.output.x\"\n" +
+                "    end.y: \"\$.functionB.output.y\"\n" +
+                "    end.as: \"\$.functionA.objs.*\"\n" +
+                "  tolerance: false\n" +
+                "  key_callback: false\n" +
+                "output:\n" +
+                "  end.x: \"\$.functionB.output.x\"\n" +
+                "  end.y: \"\$.functionB.output.y\"\n" +
+                "  end.as: \"\$.functionA.objs.*\"\n" +
+                "end_task_name: \"endPassTask20241018\"\n"
+        when:
+        String resultDescriptor = descriptorParseService.processWhenGetDescriptor(descriptor)
+        DAG dag = dagParser.parse(resultDescriptor)
+        then:
+        assert dag.tasks.size() == 2
+        assert dag.getEndTaskName() == null
+        dag.tasks.forEach {task -> {
+            assert task.getInputMappings() == null
+            assert task.getOutputMappings() == null
+        }}
+    }
 }

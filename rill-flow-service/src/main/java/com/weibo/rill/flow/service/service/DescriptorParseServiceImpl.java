@@ -260,16 +260,19 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         }
         List<BaseTask> tasks = new ArrayList<>();
         for (BaseTask task : taskMap.values()) {
+            if (task.getName().equals(dag.getEndTaskName())) {
+                continue;
+            }
             processOutputMappingsWhenGetDescriptor(task);
             processInputMappingsWhenGetDescriptor(task);
-            tasks.add(task);
-            if (!task.getName().equals(dag.getEndTaskName()) && task.getNext() != null) {
+            if (task.getNext() != null) {
                 String next = task.getNext();
                 Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
                 nextSet.remove(dag.getEndTaskName());
                 next = String.join(",", nextSet);
                 task.setNext(next);
             }
+            tasks.add(task);
         }
         dag.setTasks(tasks);
         dag.setEndTaskName(null);

@@ -209,7 +209,7 @@ public class DescriptorManager {
             if (StringUtils.isEmpty(descriptor)) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
-            return descriptorParseService.processWhenGetDescriptor(descriptor);
+            return descriptor;
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
