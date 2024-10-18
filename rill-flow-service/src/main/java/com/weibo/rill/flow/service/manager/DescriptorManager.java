@@ -598,7 +598,7 @@ public class DescriptorManager {
         endPassTask.setCategory("pass");
         List<Mapping> outputMappings = Lists.newArrayList();
         for (String key : dag.getOutput().keySet()) {
-            outputMappings.add(new Mapping("$.input." + key, "$.context." + key));
+            outputMappings.add(new Mapping("$.input." + key, CONTEXT_PREFIX + key));
         }
         endPassTask.setOutputMappings(outputMappings);
 
