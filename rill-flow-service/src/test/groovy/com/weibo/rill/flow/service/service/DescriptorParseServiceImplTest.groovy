@@ -1,4 +1,4 @@
-package com.weibo.rill.flow.service.manager
+package com.weibo.rill.flow.service.service
 
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
@@ -12,11 +12,11 @@ import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskV
 import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
-class DescriptorManagerTest extends Specification {
+class DescriptorParseServiceImplTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
-    DescriptorManager descriptorManager = new DescriptorManager(dagParser: dagParser)
+    DescriptorParseServiceImpl descriptorParseService = new DescriptorParseServiceImpl(dagParser: dagParser)
 
-    def "test generateOutputMappings"() {
+    def testProcessWhenSetDAG() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -49,7 +49,7 @@ class DescriptorManagerTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorManager.generateOutputMappings(dag)
+        descriptorParseService.processWhenSetDAG(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -74,7 +74,7 @@ class DescriptorManagerTest extends Specification {
         }
     }
 
-    def "test processInputOutputMappingsWhenGetDescriptor"() {
+    def testProcessWhenGetDescriptor() {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
@@ -135,7 +135,7 @@ class DescriptorManagerTest extends Specification {
                 "    body.world:\n" +
                 "      transform: \"return \\\"hello world\\\";\"\n"
         when:
-        String newDescriptor = descriptorManager.processInputOutputMappingsWhenGetDescriptor(descriptor)
+        String newDescriptor = descriptorParseService.processWhenGetDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
         then:
         newDag.getTasks().forEach(it -> {
@@ -181,7 +181,7 @@ class DescriptorManagerTest extends Specification {
                 "  end.as: \$.functionA.objs.*\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorManager.generateOutputMappings(dag)
+        descriptorParseService.processWhenSetDAG(dag)
         then:
         assert dag.getTasks().size() == 3
         assert StringUtils.isNotBlank(dag.getEndTaskName())
