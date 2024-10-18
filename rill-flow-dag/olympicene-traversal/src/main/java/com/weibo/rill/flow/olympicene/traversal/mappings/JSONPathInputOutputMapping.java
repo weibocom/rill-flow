@@ -211,33 +211,51 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
                 part = part.substring(1, part.length() - 1);
             }
             if (current instanceof Map) {
-                Map<String, Object> mapCurrent = (Map<String, Object>) current;
-                if (!mapCurrent.containsKey(part)) {
-                    if (i + 1 < jsonPathParts.size() && jsonPathParts.get(i + 1).matches("\\d+")) {
-                        mapCurrent.put(part, new ArrayList<>());
-                    } else {
-                        mapCurrent.put(part, new HashMap<>());
-                    }
-                }
-                current = mapCurrent.get(part);
+                current = processMapMappingPart(current, part, jsonPathParts, i);
             } else if (current instanceof List) {
-                List<Object> listCurrent = (List<Object>) current;
-                int index = Integer.parseInt(part);
-                while (listCurrent.size() <= index) {
-                    listCurrent.add(null);
-                }
-                if (listCurrent.get(index) == null) {
-                    if (i + 1 < jsonPathParts.size() && jsonPathParts.get(i + 1).matches("\\d+")) {
-                        listCurrent.set(index, new ArrayList<>());
-                    } else {
-                        listCurrent.set(index, new HashMap<>());
-                    }
-                }
-                current = listCurrent.get(index);
+                current = processListMappingPart(current, part, jsonPathParts, i);
             }
         }
 
         return JsonPath.using(conf).parse(map).set(path, value).json();
+    }
+
+    private Object processListMappingPart(Object current, String part, List<String> jsonPathParts, int i) {
+        List<Object> listCurrent = (List<Object>) current;
+        int index = Integer.parseInt(part);
+        if (listCurrent.get(index) == null) {
+            if (jsonPathParts.get(i + 1).matches("\\d+")) {
+                List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+                listCurrent.set(index, nextArray);
+            } else if (i + 1 < jsonPathParts.size() ) {
+                listCurrent.set(index, new HashMap<>());
+            }
+        }
+        current = listCurrent.get(index);
+        return current;
+    }
+
+    private Object processMapMappingPart(Object current, String part, List<String> jsonPathParts, int i) {
+        Map<String, Object> mapCurrent = (Map<String, Object>) current;
+        if (!mapCurrent.containsKey(part)) {
+            if (jsonPathParts.get(i + 1).matches("\\d+")) {
+                List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+                mapCurrent.put(part, nextArray);
+            } else if (i + 1 < jsonPathParts.size()) {
+                mapCurrent.put(part, new HashMap<>());
+            }
+        }
+        current = mapCurrent.get(part);
+        return current;
+    }
+
+    private List<Object> createAndFillNextArrayPart(List<String> jsonPathParts, int i) {
+        List<Object> nextArray = new ArrayList<>();
+        int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
+        while (nextArray.size() <= nextIndex) {
+            nextArray.add(null);
+        }
+        return nextArray;
     }
 
     @Override
