@@ -13,9 +13,9 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class DescriptorParseServiceImpl implements DescriptorParseService {
     private static final String CONTEXT_PREFIX = "$.context.";
 
-    @Autowired
+    @Resource
     private DAGStringParser dagParser;
 
     @Override
