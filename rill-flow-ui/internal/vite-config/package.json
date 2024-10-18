@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@ant-design/colors": "^7.0.0",
+    "@vben/vite-config": "file:",
     "vite": "^4.4.0"
   },
   "devDependencies": {

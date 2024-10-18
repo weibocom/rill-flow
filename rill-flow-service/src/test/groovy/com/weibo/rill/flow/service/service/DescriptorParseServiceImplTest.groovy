@@ -58,7 +58,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 assert outputMappings.size() == 4
                 assert outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
                 assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
-                assert outputMappings.contains(new Mapping("\$.output.objs", "\$.context.functionA.objs"))
+                assert outputMappings.contains(new Mapping("\$.output.objs[0].id", "\$.context.functionA.objs[0].id"))
                 assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
             } else {
                 HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())

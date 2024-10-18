@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath {
     Configuration conf = Configuration.builder().options(Option.DEFAULT_PATH_LEAF_TO_NULL).build();
-    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[\"(.*?)\"]|\\['(.*?)']");
+    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[(.*?)]");
 
     @Value("${rill.flow.function.trigger.uri}")
     private String rillFlowFunctionTriggerUri;
@@ -206,15 +206,36 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
             }
         }
 
-        jsonPathParts.remove(jsonPathParts.size() - 1);
-
         Object current = map;
-        for (String part: jsonPathParts) {
+        for (int i = 0; i < jsonPathParts.size() - 1; i++) {
+            String part = jsonPathParts.get(i);
+            if (part.startsWith("\"") || part.startsWith("'")) {
+                part = part.substring(1, part.length() - 1);
+            }
             if (current instanceof Map) {
                 Map<String, Object> mapCurrent = (Map<String, Object>) current;
-                current = mapCurrent.computeIfAbsent(part, k -> new HashMap<>());
-            } else {
-                break;
+                if (!mapCurrent.containsKey(part)) {
+                    if (i + 1 < jsonPathParts.size() && jsonPathParts.get(i + 1).matches("\\d+")) {
+                        mapCurrent.put(part, new ArrayList<>());
+                    } else {
+                        mapCurrent.put(part, new HashMap<>());
+                    }
+                }
+                current = mapCurrent.get(part);
+            } else if (current instanceof List) {
+                List<Object> listCurrent = (List<Object>) current;
+                int index = Integer.parseInt(part);
+                while (listCurrent.size() <= index) {
+                    listCurrent.add(null);
+                }
+                if (listCurrent.get(index) == null) {
+                    if (i + 1 < jsonPathParts.size() && jsonPathParts.get(i + 1).matches("\\d+")) {
+                        listCurrent.set(index, new ArrayList<>());
+                    } else {
+                        listCurrent.set(index, new HashMap<>());
+                    }
+                }
+                current = listCurrent.get(index);
             }
         }
 

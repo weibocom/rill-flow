@@ -139,6 +139,8 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
                 for (String element : elements) {
                     if (element.contains(".")) {
                         mappingSb.append("['").append(element).append("']");
+                    } else if (element.matches("\\[\\d+]")) {
+                        mappingSb.append(element);
                     } else {
                         mappingSb.append(".").append(element);
                     }
@@ -148,7 +150,6 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         }
         return result;
     }
-
 
     private Map<String, List<List<String>>> getLongestCommonPrefixes(Map<String, List<List<String>>> taskPathsMap) {
         Map<String, List<List<String>>> result = new HashMap<>();
@@ -183,7 +184,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
             int i = 0;
             for (; i < result.size() && i < currentPath.size(); i++) {
                 String element = currentPath.get(i);
-                if (element.equals("[*]") || element.matches("\\[\\d+]") || !element.equals(result.get(i))) {
+                if (element.equals("[*]") || !element.equals(result.get(i))) {
                     break;
                 }
             }
