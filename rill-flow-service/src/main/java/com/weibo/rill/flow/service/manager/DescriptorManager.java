@@ -120,6 +120,7 @@ public class DescriptorManager {
     private static final String MD5_PREFIX = "md5_";
     private static final String RELEASE = "release";
     private static final String DEFAULT = "default";
+    private static final String CONTEXT_PREFIX = "$.context.";
 
     private static final String VERSION_ADD = """
             local maxVersionCount = ARGV[1];
@@ -254,7 +255,7 @@ public class DescriptorManager {
             return;
         }
         List<Mapping> newOutputMappings = outputMappings.stream()
-                .filter(mapping -> !mapping.getTarget().startsWith("$.context." + task.getName()))
+                .filter(mapping -> !mapping.getTarget().startsWith(CONTEXT_PREFIX + task.getName()))
                 .toList();
         if (CollectionUtils.isEmpty(newOutputMappings)) {
             newOutputMappings = null;
@@ -655,43 +656,55 @@ public class DescriptorManager {
      */
     private void generateOutputMappings(DAG dag) {
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        boolean taskExistsInput = processInputToGenerateInputMappings(dag, taskMap);
-        if (!taskExistsInput) {
+        if (!processInputToGenerateInputMappings(dag, taskMap)) {
             return;
         }
-        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
-        
-        for (BaseTask task: dag.getTasks()) {
-            List<Mapping> inputMappings = task.getInputMappings();
-            for (Mapping inputMapping : inputMappings) {
-                String[] elements = getSourcePathElementsByMapping(inputMapping);
-                if (elements.length < 2) {
-                    continue;
-                }
-                String outputTaskName = elements[1];
-                if (taskMap.containsKey(outputTaskName)) {
-                    inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
-                    taskPathsMap.computeIfAbsent(outputTaskName, k -> new ArrayList<>())
-                                .add(Arrays.asList(elements).subList(2, elements.length));
+        Map<String, List<List<String>>> taskPathsMap = processTaskInputMappings(dag, taskMap);
+        LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
+        generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
+    }
 
-                    if (task.getName().equalsIgnoreCase(dag.getEndTaskName())) {
-                        BaseTask outputTask = taskMap.get(outputTaskName);
-                        String next = outputTask.getNext();
-                        if (StringUtils.isEmpty(next)) {
-                            next = dag.getEndTaskName();
-                        } else {
-                            Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
-                            nextSet.add(dag.getEndTaskName());
-                            next = String.join(",", nextSet);
-                        }
-                        outputTask.setNext(next);
-                    }
+    private Map<String, List<List<String>>> processTaskInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
+        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
+        for (BaseTask task : dag.getTasks()) {
+            processTaskInputMapping(task, taskMap, taskPathsMap, dag.getEndTaskName());
+        }
+        return taskPathsMap;
+    }
+
+    private void processTaskInputMapping(BaseTask task, Map<String, BaseTask> taskMap, 
+                                         Map<String, List<List<String>>> taskPathsMap, String endTaskName) {
+        for (Mapping inputMapping : task.getInputMappings()) {
+            String[] elements = getSourcePathElementsByMapping(inputMapping);
+            if (elements.length < 2) {
+                continue;
+            }
+            String outputTaskName = elements[1];
+            if (taskMap.containsKey(outputTaskName)) {
+                updateInputMapping(inputMapping, outputTaskName, elements, taskPathsMap);
+                if (task.getName().equalsIgnoreCase(endTaskName)) {
+                    updateOutputTaskNext(taskMap.get(outputTaskName), endTaskName);
                 }
             }
         }
+    }
 
-        LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
-        generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
+    private void updateInputMapping(Mapping inputMapping, String outputTaskName, String[] elements, 
+                                    Map<String, List<List<String>>> taskPathsMap) {
+        inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
+        taskPathsMap.computeIfAbsent(outputTaskName, k -> new ArrayList<>())
+                    .add(Arrays.asList(elements).subList(2, elements.length));
+    }
+
+    private void updateOutputTaskNext(BaseTask outputTask, String endTaskName) {
+        String next = outputTask.getNext();
+        if (StringUtils.isEmpty(next)) {
+            outputTask.setNext(endTaskName);
+        } else {
+            Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
+            nextSet.add(endTaskName);
+            outputTask.setNext(String.join(",", nextSet));
+        }
     }
 
     private Map<String, BaseTask> getTaskMapByDag(DAG dag) {

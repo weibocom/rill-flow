@@ -2,7 +2,6 @@ package com.weibo.rill.flow.service.manager
 
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
