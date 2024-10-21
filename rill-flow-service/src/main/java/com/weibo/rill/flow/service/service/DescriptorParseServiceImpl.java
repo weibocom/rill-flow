@@ -144,7 +144,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         return result;
     }
 
-    private static void processPathElements(List<String> elements, LinkedHashMultimap<String, String> result, String taskName) {
+    private void processPathElements(List<String> elements, LinkedHashMultimap<String, String> result, String taskName) {
         StringBuilder mappingSb = new StringBuilder();
         for (String element : elements) {
             if (element.contains(".")) {
