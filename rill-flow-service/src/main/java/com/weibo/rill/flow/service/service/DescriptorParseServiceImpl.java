@@ -155,7 +155,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
 
         String normalizedPath = path.replace("\"", "'");
         return Arrays.stream(normalizedPath.split("\\['|']"))
-                .filter(e -> !e.isEmpty())
+                .filter(StringUtils::isNotEmpty)
                 .toArray(String[]::new);
     }
 
