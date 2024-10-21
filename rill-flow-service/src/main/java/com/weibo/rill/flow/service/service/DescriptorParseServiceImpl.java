@@ -304,7 +304,8 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     public String processWhenGetDescriptor(String descriptor) {
         DAG dag = dagParser.parse(descriptor);
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        boolean taskExistsInput = taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+        boolean taskExistsInput = StringUtils.isNotBlank(dag.getEndTaskName())
+                || taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
         // 如果没有按照新版本配置，则不需要处理
         if (!taskExistsInput) {
             return descriptor;
