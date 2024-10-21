@@ -34,6 +34,7 @@ import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.service.DescriptorParseService;
 import com.weibo.rill.flow.service.service.ProtocolPluginService;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,8 @@ public class DAGDescriptorFacade {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private DAGSubmitChecker dagSubmitChecker;
+    @javax.annotation.Resource
+    private DescriptorParseService descriptorParseService;
 
     public Map<String, Object> modifyBusiness(boolean add, String businessId) {
         boolean ret = add ? descriptorManager.createBusiness(businessId) : descriptorManager.remBusiness(businessId);
@@ -193,7 +196,7 @@ public class DAGDescriptorFacade {
                     .alias(alias)
                     .attachments(attachments)
                     .type(DAGDescriptorEvent.Type.addDescriptor)
-                    .build();
+                    .add(false).build();
             applicationEventPublisher.publishEvent(new DAGDescriptorEvent(operation));
 
             return ImmutableMap.of(RET, descriptorId != null, DESCRIPTOR_ID, Optional.ofNullable(descriptorId).orElse(""));
@@ -210,13 +213,15 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
+        String descriptor = descriptorManager.getDagDescriptor(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
-                DESCRIPTOR, descriptorManager.getDagDescriptor(uid, input, descriptorId));
+                DESCRIPTOR, descriptorParseService.processWhenGetDescriptor(descriptor));
     }
 
     public JSONObject getDescriptor(String descriptorId) {
         String descriptor = descriptorManager.getDagDescriptor(null, null, descriptorId);
+        descriptor = descriptorParseService.processWhenGetDescriptor(descriptor);
         JSONObject descriptorObject = yamlToJson(descriptor);
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);

@@ -73,6 +73,42 @@ class JSONPathTest extends Specification {
         ['input': ['type': 'gif']] | _
     }
 
+    def "set value when there is an array in the path"() {
+        given:
+        String path = "\$.input.meta.user[1].id"
+        long value = 1
+
+        when:
+        mapping.setValue(map, value, path)
+
+        then:
+        mapping.getValue(map, path) == value
+
+        where:
+        map                        | _
+        [:]                        | _
+        ['context': 123]           | _
+        ['input': ['type': 'gif']] | _
+    }
+
+    def "set value when the last part of the path is an array"() {
+        given:
+        String path = "\$.input.meta.user[1]"
+        long value = 1
+
+        when:
+        mapping.setValue(map, value, path)
+
+        then:
+        mapping.getValue(map, path) == value
+
+        where:
+        map                        | _
+        [:]                        | _
+        ['context': 123]           | _
+        ['input': ['type': 'gif']] | _
+    }
+
     def "set value intermediate route test contains dot"() {
         given:
         String path = "\$.input.meta.user.[\"id.key\"]"

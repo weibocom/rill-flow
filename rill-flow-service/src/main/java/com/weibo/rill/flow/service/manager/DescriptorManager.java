@@ -30,6 +30,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.service.DescriptorParseService;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -140,6 +142,8 @@ public class DescriptorManager {
     private AviatorCache aviatorCache;
     @Autowired
     private SwitcherManager switcherManagerImpl;
+    @Resource
+    private DescriptorParseService descriptorParseService;
 
     private final Cache<String, String> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()
             .maximumSize(300)
@@ -482,6 +486,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
+        descriptorParseService.processWhenSetDAG(dag);
 
         createAlias(businessId, featureName, alias);
 
@@ -494,7 +499,7 @@ public class DescriptorManager {
         argv.add(String.valueOf(versionMaxCount));
         argv.add(String.valueOf(System.currentTimeMillis()));
         argv.add(md5);
-        argv.add(descriptor);
+        argv.add(dagParser.serialize(dag));
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
