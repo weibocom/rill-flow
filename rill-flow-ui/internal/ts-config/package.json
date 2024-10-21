@@ -20,7 +20,6 @@
   ],
   "dependencies": {
     "@types/node": "^20.4.0",
-    "@vben/ts-config": "file:",
     "vite": "^4.4.0"
   }
 }
