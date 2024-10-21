@@ -41,6 +41,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "    requestType: POST\n" +
                 "    input:\n" +
                 "      body.datax.y: \$.functionA.datax.y\n" +
+                "      body.datax.y.z: \$.functionA.datax.y.z\n" +
                 "      body.dataz: \$.functionA.dataz[\"a.b\"]\n" +
                 "      body.datax.a: \$.functionA.datax.a\n" +
                 "      body.datay.hello: \$.functionA.datay.hello\n" +
@@ -68,8 +69,9 @@ class DescriptorParseServiceImplTest extends Specification {
                 assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
             } else {
                 HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
-                assert inputMappings.size() == 8
+                assert inputMappings.size() == 9
                 assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y", "\$.input.body.datax.y"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y.z", "\$.input.body.datax.y.z"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
                 assert inputMappings.contains(new Mapping("\$.context.hello.objs[0].id", "\$.input.body.hello.id"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.objs[1].x", "\$.input.body.x"))
