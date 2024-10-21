@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class DescriptorParseServiceImpl implements DescriptorParseService {
     private static final String CONTEXT_PREFIX = "$.context.";
+    private static final String INPUT_PREFIX = "$.input.";
 
     @Resource
     private DAGStringParser dagParser;
@@ -250,7 +251,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
             }
             List<Mapping> inputMappings = task.getInputMappings() == null ? Lists.newArrayList() : task.getInputMappings();
             for (Map.Entry<String, Object> entry : taskInput.entrySet()) {
-                String target = "$.input." + entry.getKey();
+                String target = INPUT_PREFIX + entry.getKey();
                 Mapping inputMapping;
                 if (entry.getKey() == null || entry.getValue() == null) {
                     continue;
@@ -286,7 +287,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         // 由于图的 end 任务没有后续任务，所以需要生成它的 outputMappings 来实现将参数传递的信息放入到 context 中
         List<Mapping> outputMappings = Lists.newArrayList();
         for (String key : dag.getOutput().keySet()) {
-            outputMappings.add(new Mapping("$.input." + key, CONTEXT_PREFIX + key));
+            outputMappings.add(new Mapping(INPUT_PREFIX + key, CONTEXT_PREFIX + key));
         }
         endPassTask.setOutputMappings(outputMappings);
 
@@ -312,8 +313,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理
         List<BaseTask> tasks = taskMap.values().stream()
             .filter(task -> !task.getName().equals(dag.getEndTaskName()))
-            .map(task -> processTask(task, dag.getEndTaskName()))
-            .collect(Collectors.toList());
+            .map(task -> processTask(task, dag.getEndTaskName())).toList();
 
         // 3. 重新序列化生成 descriptor
         dag.setTasks(tasks);
@@ -391,12 +391,11 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         }
 
         Set<String> inputTargets = task.getInput().keySet().stream()
-                .map(key -> "$.input." + key)
+                .map(key -> INPUT_PREFIX + key)
                 .collect(Collectors.toSet());
 
         List<Mapping> filteredMappings = inputMappings.stream()
-                .filter(mapping -> !inputTargets.contains(mapping.getTarget()))
-                .collect(Collectors.toList());
+                .filter(mapping -> !inputTargets.contains(mapping.getTarget())).toList();
 
         task.setInputMappings(CollectionUtils.isEmpty(filteredMappings) ? null : filteredMappings);
     }
