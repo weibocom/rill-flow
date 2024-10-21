@@ -304,31 +304,39 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     public String processWhenGetDescriptor(String descriptor) {
         DAG dag = dagParser.parse(descriptor);
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        boolean needPostProcess = StringUtils.isNotBlank(dag.getEndTaskName())
-                || taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
-        // 如果没有按照新版本配置，则不需要处理
-        if (!needPostProcess) {
+        if (!needsPostProcessing(dag, taskMap)) {
             return descriptor;
         }
-        List<BaseTask> tasks = new ArrayList<>();
-        for (BaseTask task : taskMap.values()) {
-            if (task.getName().equals(dag.getEndTaskName())) {
-                continue;
-            }
-            processOutputMappingsWhenGetDescriptor(task);
-            processInputMappingsWhenGetDescriptor(task);
-            if (task.getNext() != null) {
-                String next = task.getNext();
-                Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(next.split(",")));
-                nextSet.remove(dag.getEndTaskName());
-                next = String.join(",", nextSet);
-                task.setNext(next);
-            }
-            tasks.add(task);
-        }
+        
+        List<BaseTask> tasks = taskMap.values().stream()
+            .filter(task -> !task.getName().equals(dag.getEndTaskName()))
+            .map(task -> processTask(task, dag.getEndTaskName()))
+            .collect(Collectors.toList());
+        
         dag.setTasks(tasks);
         dag.setEndTaskName(null);
         return dagParser.serialize(dag);
+    }
+
+    private boolean needsPostProcessing(DAG dag, Map<String, BaseTask> taskMap) {
+        return StringUtils.isNotBlank(dag.getEndTaskName()) ||
+               taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+    }
+
+    private BaseTask processTask(BaseTask task, String endTaskName) {
+        processOutputMappingsWhenGetDescriptor(task);
+        processInputMappingsWhenGetDescriptor(task);
+        processNext(task, endTaskName);
+        return task;
+    }
+
+    private void processNext(BaseTask task, String endTaskName) {
+        if (task.getNext() == null || StringUtils.isEmpty(endTaskName)) {
+            return;
+        }
+        Set<String> nextSet = new LinkedHashSet<>(Arrays.asList(task.getNext().split(",")));
+        nextSet.remove(endTaskName);
+        task.setNext(String.join(",", nextSet));
     }
 
     /**
