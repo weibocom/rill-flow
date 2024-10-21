@@ -5,13 +5,13 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum TaskInputType {
+public enum TaskInputOutputType {
     BLOCK("block"),
     STREAM("stream");
 
     private final String value;
 
-    public static TaskInputType getInputTypeByValue(String value) {
+    public static TaskInputOutputType getTypeByValue(String value) {
         if (value != null && value.equalsIgnoreCase("stream")) {
             return STREAM;
         }

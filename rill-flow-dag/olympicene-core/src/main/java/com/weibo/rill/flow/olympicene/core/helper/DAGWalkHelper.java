@@ -90,7 +90,7 @@ public class DAGWalkHelper {
     private void findNextStreamInputTask(TaskInfo taskInfo, Map<String, TaskInfo> streamInputTaskInfoMap, Set<String> skipTaskNames) {
         List<TaskInfo> nextTaskInfos = taskInfo.getNext();
         String category = taskInfo.getTask().getCategory();
-        TaskInputType inputType = TaskInputType.getInputTypeByValue(taskInfo.getTask().getInputType());
+        TaskInputOutputType inputType = TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType());
 
         // 判断是否需要跳过当前任务
         if (shouldSkipTask(taskInfo, nextTaskInfos, category, inputType)) {
@@ -101,7 +101,7 @@ public class DAGWalkHelper {
         for (TaskInfo nextTaskInfo : nextTaskInfos) {
             String nextTaskName = nextTaskInfo.getName();
             String nextCategory = nextTaskInfo.getTask().getCategory();
-            TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
+            TaskInputOutputType nextInputType = TaskInputOutputType.getTypeByValue(nextTaskInfo.getTask().getInputType());
 
             // 如果已经处理过该任务名称或者该任务是分支任务（SWITCH、CHOICE、FOREACH、RETURN），则跳过该任务
             boolean shouldSkip = skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory);
@@ -111,7 +111,7 @@ public class DAGWalkHelper {
             // 将该任务名称加入已处理集合
             skipTaskNames.add(nextTaskName);
             // 如果下一个任务是未开始的stream输入任务，且不依赖于尚未执行完成的stream输入任务，则将其加入 streamInputTaskInfoMap
-            if (nextInputType == TaskInputType.STREAM && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
+            if (nextInputType == TaskInputOutputType.STREAM && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
                 if (!isDependOnUnfinishedStreamInputTask(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
                     streamInputTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
                 }
@@ -135,9 +135,9 @@ public class DAGWalkHelper {
      * @param inputType 当前任务输入类型
      * @return 是否需要跳过当前任务
      */
-    private boolean shouldSkipTask(TaskInfo taskInfo, List<TaskInfo> nextTaskInfos, String category, TaskInputType inputType) {
+    private boolean shouldSkipTask(TaskInfo taskInfo, List<TaskInfo> nextTaskInfos, String category, TaskInputOutputType inputType) {
         return CollectionUtils.isEmpty(nextTaskInfos) || FORK_TASK_CATEGORIES.contains(category)
-                || (inputType == TaskInputType.STREAM && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED);
+                || (inputType == TaskInputOutputType.STREAM && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED);
     }
 
     /**
@@ -159,17 +159,17 @@ public class DAGWalkHelper {
             .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
             .anyMatch(dependencyTask -> {
                 skipTaskNames.add(dependencyTask.getName());
-                TaskInputType inputType = TaskInputType.getInputTypeByValue(dependencyTask.getTask().getInputType());
+                TaskInputOutputType inputType = TaskInputOutputType.getTypeByValue(dependencyTask.getTask().getInputType());
                 // 如果依赖的任务是 Stream 输入类型且未完成，则返回 true，如果依赖的任务不是 Stream 输入类型，则递归检查其依赖的任务是否有未完成的 Stream 输入节点
-                return (inputType == TaskInputType.STREAM && !dependencyTask.getTaskStatus().isSuccessOrSkip())
-                    || (inputType != TaskInputType.STREAM && isDependOnUnfinishedStreamInputTask(dependencyTask, skipTaskNames));
+                return (inputType == TaskInputOutputType.STREAM && !dependencyTask.getTaskStatus().isSuccessOrSkip())
+                    || (inputType != TaskInputOutputType.STREAM && isDependOnUnfinishedStreamInputTask(dependencyTask, skipTaskNames));
             });
     }
 
     private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
         boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
-        TaskInputType inputType = TaskInputType.getInputTypeByValue(taskInfo.getTask().getInputType());
-        boolean isStreamInputTask = inputType == TaskInputType.STREAM;
+        TaskInputOutputType inputType = TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType());
+        boolean isStreamInputTask = inputType == TaskInputOutputType.STREAM;
         return isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode, isKeyCallback, isStreamInputTask);
     }
 
@@ -191,18 +191,18 @@ public class DAGWalkHelper {
         return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
                // 检查所有依赖任务是否都已完成
                taskInfo.getDependencies().stream().allMatch(dependency -> {
-                   TaskInputType dependencyInputType = TaskInputType.getInputTypeByValue(dependency.getTask().getInputType());
+                   TaskInputOutputType dependencyInputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getInputType());
                    // 如果被判断的任务是 Stream 输入类型且依赖路径上存在任何未完成的 Stream 输入任务
                    // 由于 stream 任务必须在它依赖的所有 stream 任务都被跳过或已完成后才可以运行
                    // 因此返回 false
-                   if (isStreamInputTask && dependencyInputType == TaskInputType.STREAM && !dependency.getTaskStatus().isSuccessOrSkip()) {
+                   if (isStreamInputTask && dependencyInputType == TaskInputOutputType.STREAM && !dependency.getTaskStatus().isSuccessOrSkip()) {
                        return false;
                    }
                    // 如果依赖任务是 Stream 输入类型，递归检查其依赖任务是否都已完成
-                   return dependencyInputType == TaskInputType.STREAM
+                   return dependencyInputType == TaskInputOutputType.STREAM
                            && isDependenciesAllSuccessOrSkip(dependency, isKeyMode, isKeyCallback, isStreamInputTask)
                            // 如果依赖任务不是 Stream 输入类型，检查其是否已完成
-                           || dependencyInputType != TaskInputType.STREAM && dependency.getTaskStatus().isSuccessOrSkip()
+                           || dependencyInputType != TaskInputOutputType.STREAM && dependency.getTaskStatus().isSuccessOrSkip()
                            // 如果是关键路径模式且是关键路径回调任务，检查其是否已成功或关键成功或跳过
                            || isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip();
                });
