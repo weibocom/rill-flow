@@ -16,6 +16,9 @@ class DescriptorParseServiceImplTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
     DescriptorParseServiceImpl descriptorParseService = new DescriptorParseServiceImpl(dagParser: dagParser)
 
+    /**
+     * 测试常规 input 的解析与 inputMappings 及 outputMappings 的生成
+     */
     def testProcessWhenSetDAG() {
         given:
         String descriptor = "workspace: default\n" +
@@ -42,6 +45,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "      body.datax.a: \$.functionA.datax.a\n" +
                 "      body.datay.hello: \$.functionA.datay.hello\n" +
                 "      body.id: \$.functionA.objs[0].id\n" +
+                "      body.x: \$.functionA.objs[1].x\n" +
                 "      body.hello.id: \$.context.hello.objs[0].id\n" +
                 "      body.world:\n" +
                 "        transform: return \"hello world\";\n" +
@@ -55,17 +59,20 @@ class DescriptorParseServiceImplTest extends Specification {
         for (BaseTask task : dag.getTasks()) {
             if (task.getName() == "functionA") {
                 Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
-                assert outputMappings.size() == 4
-                assert outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
+                assert outputMappings.size() == 6
+                assert outputMappings.contains(new Mapping("\$.output.datax.a", "\$.context.functionA.datax.a"))
+                assert outputMappings.contains(new Mapping("\$.output.datax.y", "\$.context.functionA.datax.y"))
                 assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
                 assert outputMappings.contains(new Mapping("\$.output.objs[0].id", "\$.context.functionA.objs[0].id"))
+                assert outputMappings.contains(new Mapping("\$.output.objs[1].x", "\$.context.functionA.objs[1].x"))
                 assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
             } else {
                 HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
-                assert inputMappings.size() == 7
+                assert inputMappings.size() == 8
                 assert inputMappings.contains(new Mapping("\$.context.functionA.datax.y", "\$.input.body.datax.y"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.dataz[\"a.b\"]", "\$.input.body.dataz"))
                 assert inputMappings.contains(new Mapping("\$.context.hello.objs[0].id", "\$.input.body.hello.id"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.objs[1].x", "\$.input.body.x"))
                 Mapping inputMapping = new Mapping();
                 inputMapping.setTransform("return \"hello world\";")
                 inputMapping.setTarget("\$.input.body.world")
@@ -74,6 +81,106 @@ class DescriptorParseServiceImplTest extends Specification {
         }
     }
 
+    /**
+     * 生成 jsonpath 包含数组情况的 inputMappings 与 outputMappings 的生成
+     */
+    def "test ProcessWhenGetDescriptor when include *"() {
+        given:
+        String descriptor = "workspace: default\n" +
+                "dagName: testGenerateOutputMappings\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "tasks:\n" +
+                "  - name: functionA\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    pattern: task_sync\n" +
+                "    next: functionB\n" +
+                "    input:\n" +
+                "      body.world: hello\n" +
+                "    resourceProtocol: http\n" +
+                "  - name: functionB\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    input:\n" +
+                "      body.elements: \$.functionA.elements.*.name\n" +
+                "      body.first_id: \$.functionA.elements[0].id\n" +
+                "    resourceProtocol: http\n" +
+                "    pattern: task_sync\n"
+        DAG dag = dagParser.parse(descriptor)
+        when:
+        descriptorParseService.processWhenSetDAG(dag)
+        then:
+        assert dag.getTasks().size() == 2
+        for (BaseTask task : dag.getTasks()) {
+            if (task.getName() == "functionA") {
+                Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
+                assert outputMappings.size() == 2
+                assert outputMappings.contains(new Mapping("\$.output.elements.*.name", "\$.context.functionA.elements.*.name"))
+                assert outputMappings.contains(new Mapping("\$.output.elements[0].id", "\$.context.functionA.elements[0].id"))
+            } else {
+                HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
+                inputMappings.size() == 2
+                assert inputMappings.contains(new Mapping("\$.context.functionA.elements[*].name", "\$.input.body.elements"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.elements[0].id", "\$.input.body.first_id"))
+            }
+        }
+    }
+
+    /**
+     * 测试 outputMappings 已经存在指定项的情况
+     */
+    def "test ProcessWhenGetDescriptor when target exists"() {
+        given:
+        String descriptor = "workspace: default\n" +
+                "dagName: testGenerateOutputMappings\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "tasks:\n" +
+                "  - name: functionA\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    pattern: task_sync\n" +
+                "    next: functionB\n" +
+                "    input:\n" +
+                "      body.world: hello\n" +
+                "    resourceProtocol: http\n" +
+                "    outputMappings:\n" +
+                "      - source: \$.output.id\n" +
+                "        target: \$.context.functionA.id\n" +
+                "  - name: functionB\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    input:\n" +
+                "      body.functionA.id: \$.functionA.id\n" +
+                "    resourceProtocol: http\n" +
+                "    pattern: task_sync\n"
+        DAG dag = dagParser.parse(descriptor)
+        when:
+        descriptorParseService.processWhenSetDAG(dag)
+        then:
+        assert dag.getTasks().size() == 2
+        for (BaseTask task : dag.getTasks()) {
+            if (task.getName() == "functionA") {
+                Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
+                assert outputMappings.size() == 1
+                assert outputMappings.contains(new Mapping("\$.output.id", "\$.context.functionA.id"))
+            } else {
+                HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
+                inputMappings.size() == 1
+                assert inputMappings.contains(new Mapping("\$.context.functionA.id", "\$.input.body.functionA.id"))
+            }
+        }
+
+    }
+
+    /**
+     * 测试下发时处理 descriptor 的情况
+     */
     def testProcessWhenGetDescriptor() {
         given:
         String descriptor = "workspace: \"default\"\n" +
@@ -144,6 +251,9 @@ class DescriptorParseServiceImplTest extends Specification {
         })
     }
 
+    /**
+     * 测试 dag 输出节点的生成以及对应 outputMappings 的生成
+     */
     def "test dag output"() {
         given:
         String descriptor = "workspace: default\n" +
@@ -214,6 +324,9 @@ class DescriptorParseServiceImplTest extends Specification {
         }}
     }
 
+    /**
+     * 测试 dag 包含 output 时 descriptor 的下发
+     */
     def "test get descriptor with output"() {
         given:
         String descriptor = "workspace: \"default\"\n" +

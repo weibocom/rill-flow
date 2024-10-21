@@ -122,16 +122,19 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
             if (outputMappings == null) {
                 outputMappings = new ArrayList<>();
             }
-            outputMappings.add(new Mapping("$.output" + path, CONTEXT_PREFIX + taskName + path));
-            task.setOutputMappings(outputMappings);
+            Set<String> targets = outputMappings.stream().map(Mapping::getTarget).collect(Collectors.toSet());
+            String target = CONTEXT_PREFIX + taskName + path;
+            if (!targets.contains(target)) {
+                outputMappings.add(new Mapping("$.output" + path, target));
+                task.setOutputMappings(outputMappings);
+            }
         }
     }
 
     private LinkedHashMultimap<String, String> getOutputMappingsByPaths(Map<String, List<List<String>>> taskPathsMap) {
         LinkedHashMultimap<String, String> result = LinkedHashMultimap.create();
 
-        Map<String, List<List<String>>> commonPrefixes = getLongestCommonPrefixes(taskPathsMap);
-        for (Map.Entry<String, List<List<String>>> commonPrefixesEntry: commonPrefixes.entrySet()) {
+        for (Map.Entry<String, List<List<String>>> commonPrefixesEntry: taskPathsMap.entrySet()) {
             String taskName = commonPrefixesEntry.getKey();
             List<List<String>> elementsList = commonPrefixesEntry.getValue();
             for (List<String> elements: elementsList) {
@@ -139,61 +142,17 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
                 for (String element : elements) {
                     if (element.contains(".")) {
                         mappingSb.append("['").append(element).append("']");
-                    } else if (element.matches("\\[\\d+]")) {
+                    } else if (element.matches("\\[\\d+]") || element.equals("[*]")) {
                         mappingSb.append(element);
                     } else {
                         mappingSb.append(".").append(element);
                     }
                 }
-                result.put(taskName, mappingSb.toString());
-            }
-        }
-        return result;
-    }
-
-    private Map<String, List<List<String>>> getLongestCommonPrefixes(Map<String, List<List<String>>> taskPathsMap) {
-        Map<String, List<List<String>>> result = new HashMap<>();
-        for (Map.Entry<String, List<List<String>>> entry : taskPathsMap.entrySet()) {
-            String taskName = entry.getKey();
-            Map<String, List<List<String>>> pathGroups = new HashMap<>();
-            List<List<String>> elementsList = entry.getValue();
-            for (List<String> elements : elementsList) {
-                pathGroups.putIfAbsent(elements.get(0), new ArrayList<>());
-                List<List<String>> groupPaths = pathGroups.get(elements.get(0));
-                groupPaths.add(elements);
-                pathGroups.put(elements.get(0), groupPaths);
-            }
-            List<List<String>> commonPrefixPaths = new ArrayList<>();
-            for (List<List<String>> paths : pathGroups.values()) {
-                List<String> elements = getLongestCommonPrefixElements(paths);
-                commonPrefixPaths.add(elements);
-            }
-            result.put(taskName, commonPrefixPaths);
-        }
-        return result;
-    }
-
-    private List<String> getLongestCommonPrefixElements(List<List<String>> paths) {
-        if (paths == null || paths.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<String> result = new ArrayList<>(paths.get(0));
-
-        for (List<String> currentPath : paths) {
-            int i = 0;
-            for (; i < result.size() && i < currentPath.size(); i++) {
-                String element = currentPath.get(i);
-                if (element.equals("[*]") || !element.equals(result.get(i))) {
-                    break;
+                if (!result.containsKey(mappingSb.toString())) {
+                    result.put(taskName, mappingSb.toString());
                 }
             }
-            result = result.subList(0, i);
-            if (result.isEmpty()) {
-                break;
-            }
         }
-
         return result;
     }
 
