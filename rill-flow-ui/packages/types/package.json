@@ -27,5 +27,8 @@
     "//stub": "pnpm unbuild --stub",
     "clean": "pnpm rimraf .turbo node_modules dist",
     "lint": "pnpm eslint ."
+  },
+  "dependencies": {
+    "@vben/types": "file:"
   }
 }

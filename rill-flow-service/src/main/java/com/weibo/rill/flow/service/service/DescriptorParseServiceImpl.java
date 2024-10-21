@@ -138,22 +138,26 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
             String taskName = commonPrefixesEntry.getKey();
             List<List<String>> elementsList = commonPrefixesEntry.getValue();
             for (List<String> elements: elementsList) {
-                StringBuilder mappingSb = new StringBuilder();
-                for (String element : elements) {
-                    if (element.contains(".")) {
-                        mappingSb.append("['").append(element).append("']");
-                    } else if (element.matches("\\[\\d+]") || element.equals("[*]")) {
-                        mappingSb.append(element);
-                    } else {
-                        mappingSb.append(".").append(element);
-                    }
-                }
-                if (!result.containsKey(mappingSb.toString())) {
-                    result.put(taskName, mappingSb.toString());
-                }
+                processPathElements(elements, result, taskName);
             }
         }
         return result;
+    }
+
+    private static void processPathElements(List<String> elements, LinkedHashMultimap<String, String> result, String taskName) {
+        StringBuilder mappingSb = new StringBuilder();
+        for (String element : elements) {
+            if (element.contains(".")) {
+                mappingSb.append("['").append(element).append("']");
+            } else if (element.matches("\\[\\d+]") || element.equals("[*]")) {
+                mappingSb.append(element);
+            } else {
+                mappingSb.append(".").append(element);
+            }
+        }
+        if (!result.containsKey(mappingSb.toString())) {
+            result.put(taskName, mappingSb.toString());
+        }
     }
 
     private boolean processInputToGenerateInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
