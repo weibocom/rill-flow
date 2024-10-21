@@ -42,7 +42,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         if (!processInputToGenerateInputMappings(dag, taskMap)) {
             return;
         }
-        // 3. 处理任务的 inputMappings，返回 inputMappings 对应的元素列表的列表
+        // 3. 处理任务的 inputMappings，返回各任务 inputMappings 的 source 对应的元素列表的列表
         Map<String, List<List<String>>> taskPathsMap = processTaskInputMappings(dag, taskMap);
         // 4. 通过各个任务 inputMappings 对应的元素列表的列表，生成任务的 outputMappings
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
