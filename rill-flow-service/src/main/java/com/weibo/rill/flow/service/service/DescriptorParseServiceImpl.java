@@ -304,8 +304,8 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     public String processWhenGetDescriptor(String descriptor) {
         DAG dag = dagParser.parse(descriptor);
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        boolean taskExistsInput = taskMap.values().stream()
-                .anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+        boolean taskExistsInput = taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+        // 如果没有按照新版本配置，则不需要处理
         if (!taskExistsInput) {
             return descriptor;
         }
@@ -353,6 +353,21 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      * @param task 待处理的任务
      */
     private void processInputMappingsWhenGetDescriptor(BaseTask task) {
-        task.setInputMappings(null);
+        if (CollectionUtils.isEmpty(task.getInputMappings())) {
+            return;
+        }
+        Map<String, Object> input = task.getInput();
+        Set<String> targets = new HashSet<>();
+        input.keySet().forEach(key -> targets.add("$.input." + key));
+        List<Mapping> resInputMappings = new ArrayList<>();
+        for (Mapping inputMapping : task.getInputMappings()) {
+            if (!targets.contains(inputMapping.getTarget())) {
+                resInputMappings.add(inputMapping);
+            }
+        }
+        if (CollectionUtils.isEmpty(resInputMappings)) {
+            resInputMappings = null;
+        }
+        task.setInputMappings(resInputMappings);
     }
 }
