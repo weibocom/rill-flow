@@ -302,34 +302,57 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      */
     @Override
     public String processWhenGetDescriptor(String descriptor) {
+        // 1. 解析 descriptor，获取 taskName 到 task 的映射 map，并判断是否需要后续处理
         DAG dag = dagParser.parse(descriptor);
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         if (!needsPostProcessing(dag, taskMap)) {
             return descriptor;
         }
-        
+
+        // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理
         List<BaseTask> tasks = taskMap.values().stream()
             .filter(task -> !task.getName().equals(dag.getEndTaskName()))
             .map(task -> processTask(task, dag.getEndTaskName()))
             .collect(Collectors.toList());
-        
+
+        // 3. 重新序列化生成 descriptor
         dag.setTasks(tasks);
         dag.setEndTaskName(null);
         return dagParser.serialize(dag);
     }
 
+    /**
+     * 判断是否需要后续处理
+     * @param dag DAG对象
+     * @param taskMap 任务映射
+     * @return 如果DAG有结束任务名称或任何任务有非空输入，则返回true；否则返回false
+     */
     private boolean needsPostProcessing(DAG dag, Map<String, BaseTask> taskMap) {
         return StringUtils.isNotBlank(dag.getEndTaskName()) ||
                taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
     }
 
+    /**
+     * 处理单个任务，包括 outputMappings、inputMappings、next 的处理
+     * @param task 待处理的任务
+     * @param endTaskName 结束任务的名称
+     * @return 处理后的任务
+     */
     private BaseTask processTask(BaseTask task, String endTaskName) {
+        // 1. 处理 outputMappings，删除自动生成的配置项
         processOutputMappingsWhenGetDescriptor(task);
+        // 2. 处理 inputMappings，删除存在于 input 中的配置项
         processInputMappingsWhenGetDescriptor(task);
+        // 3. 处理 next，删除指向 endTask 的指针
         processNext(task, endTaskName);
         return task;
     }
 
+    /**
+     * 处理任务的 next 属性，删除指向 endTask 的指针
+     * @param task 待处理的任务
+     * @param endTaskName 结束任务的名称
+     */
     private void processNext(BaseTask task, String endTaskName) {
         if (task.getNext() == null || StringUtils.isEmpty(endTaskName)) {
             return;
