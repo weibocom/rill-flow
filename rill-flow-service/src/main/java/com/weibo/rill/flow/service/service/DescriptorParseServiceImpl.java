@@ -349,25 +349,23 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     }
 
     /**
-     * 处理获取描述符时的 inputMappings
+     * 处理获取描述符时的 inputMappings, 从任务的 inputMappings 中删除存在于 input 中的配置项
      * @param task 待处理的任务
      */
     private void processInputMappingsWhenGetDescriptor(BaseTask task) {
-        if (CollectionUtils.isEmpty(task.getInputMappings())) {
+        List<Mapping> inputMappings = task.getInputMappings();
+        if (CollectionUtils.isEmpty(inputMappings)) {
             return;
         }
-        Map<String, Object> input = task.getInput();
-        Set<String> targets = new HashSet<>();
-        input.keySet().forEach(key -> targets.add("$.input." + key));
-        List<Mapping> resInputMappings = new ArrayList<>();
-        for (Mapping inputMapping : task.getInputMappings()) {
-            if (!targets.contains(inputMapping.getTarget())) {
-                resInputMappings.add(inputMapping);
-            }
-        }
-        if (CollectionUtils.isEmpty(resInputMappings)) {
-            resInputMappings = null;
-        }
-        task.setInputMappings(resInputMappings);
+
+        Set<String> inputTargets = task.getInput().keySet().stream()
+                .map(key -> "$.input." + key)
+                .collect(Collectors.toSet());
+
+        List<Mapping> filteredMappings = inputMappings.stream()
+                .filter(mapping -> !inputTargets.contains(mapping.getTarget()))
+                .collect(Collectors.toList());
+
+        task.setInputMappings(CollectionUtils.isEmpty(filteredMappings) ? null : filteredMappings);
     }
 }
