@@ -211,16 +211,24 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
                 part = part.substring(1, part.length() - 1);
             }
             if (current instanceof Map) {
-                current = processMapMappingPart(current, part, jsonPathParts, i);
+                current = processMapJsonPathPart(current, part, jsonPathParts, i);
             } else if (current instanceof List) {
-                current = processListMappingPart(current, part, jsonPathParts, i);
+                current = processListJsonPathPart(current, part, jsonPathParts, i);
             }
         }
 
         return JsonPath.using(conf).parse(map).set(path, value).json();
     }
 
-    private Object processListMappingPart(Object current, String part, List<String> jsonPathParts, int i) {
+    /**
+     * 处理 List 类型的 jsonPath 元素
+     * @param current 根据上一 jsonPath 元素已经生成的 List 对象
+     * @param part 当前 jsonPath 元素
+     * @param jsonPathParts jsonPath 元素列表
+     * @param i 当前元素索引
+     * @return 处理后的对象
+     */
+    private Object processListJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         List<Object> listCurrent = (List<Object>) current;
         int index = Integer.parseInt(part);
         if (listCurrent.get(index) == null) {
@@ -235,7 +243,15 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         return current;
     }
 
-    private Object processMapMappingPart(Object current, String part, List<String> jsonPathParts, int i) {
+    /**
+     * 处理 Map 类型的 jsonPath 元素
+     * @param current 根据上一 jsonPath 元素已经生成的 Map 对象
+     * @param part 当前 jsonPath 元素
+     * @param jsonPathParts jsonPath 元素列表
+     * @param i 当前元素索引
+     * @return 处理后的对象
+     */
+    private Object processMapJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         Map<String, Object> mapCurrent = (Map<String, Object>) current;
         if (!mapCurrent.containsKey(part)) {
             if (jsonPathParts.get(i + 1).matches("\\d+")) {
@@ -245,10 +261,15 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
                 mapCurrent.put(part, new HashMap<>());
             }
         }
-        current = mapCurrent.get(part);
-        return current;
+        return mapCurrent.get(part);
     }
 
+    /**
+     * 下一个元素创建数组类型对象，并用 null 值填充指定元素个数
+     * @param jsonPathParts jsonPath 元素列表
+     * @param i 当前元素索引
+     * @return 创建的数组对象
+     */
     private List<Object> createAndFillNextArrayPart(List<String> jsonPathParts, int i) {
         List<Object> nextArray = new ArrayList<>();
         int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
