@@ -78,11 +78,11 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     private void processTaskInputMapping(BaseTask task, Map<String, BaseTask> taskMap,
                                          Map<String, List<List<String>>> taskPathsMap, String endTaskName) {
         for (Mapping inputMapping : task.getInputMappings()) {
-            String[] elements = getSourcePathElementsByMapping(inputMapping);
-            if (elements.length < 2) {
+            List<String> elements = getSourcePathElementsByMapping(inputMapping);
+            if (elements.size() < 2) {
                 continue;
             }
-            String outputTaskName = elements[1];
+            String outputTaskName = elements.get(1);
             if (taskMap.containsKey(outputTaskName)) {
                 // 更新 inputMappings，并填充 taskPathsMap
                 updateInputMapping(inputMapping, outputTaskName, elements, taskPathsMap);
@@ -101,11 +101,11 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      * @param elements 路径元素
      * @param taskPathsMap 任务路径映射
      */
-    private void updateInputMapping(Mapping inputMapping, String outputTaskName, String[] elements,
+    private void updateInputMapping(Mapping inputMapping, String outputTaskName, List<String> elements,
                                     Map<String, List<List<String>>> taskPathsMap) {
         inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
         taskPathsMap.computeIfAbsent(outputTaskName, k -> new ArrayList<>())
-                .add(Arrays.asList(elements).subList(2, elements.length));
+                .add(elements.subList(2, elements.size()));
     }
 
     /**
@@ -141,22 +141,22 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      * @param inputMapping 输入映射
      * @return jsonpath 元素数组
      */
-    private String[] getSourcePathElementsByMapping(Mapping inputMapping) {
+    private List<String> getSourcePathElementsByMapping(Mapping inputMapping) {
         if (inputMapping.getSource() == null || !inputMapping.getSource().startsWith("$.")) {
-            return new String[0];
+            return new ArrayList<>();
         }
         String source = inputMapping.getSource();
         String path;
         try {
             path = JsonPath.compile(source).getPath();
         } catch (Exception e) {
-            return new String[0];
+            return new ArrayList<>();
         }
 
         String normalizedPath = path.replace("\"", "'");
         return Arrays.stream(normalizedPath.split("\\['|']"))
                 .filter(StringUtils::isNotEmpty)
-                .toArray(String[]::new);
+                .toList();
     }
 
     /**
