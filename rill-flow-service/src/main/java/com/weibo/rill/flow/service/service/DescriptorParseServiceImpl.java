@@ -39,7 +39,8 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
     public void processWhenSetDAG(DAG dag) {
         // 1. 获取任务名称与任务的映射
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        // 2. 处理 task 的 input 以及 dag 的 output，为任务生成 inputMappings，返回是否需要后续处理，不需要后续处理则直接返回
+        // 2. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
+        // 返回是否需要后续处理，不需要后续处理则直接返回
         if (!processInputToGenerateInputMappings(dag, taskMap)) {
             return;
         }
