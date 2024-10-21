@@ -60,7 +60,7 @@ class DescriptorParseServiceImplTest extends Specification {
         for (BaseTask task : dag.getTasks()) {
             if (task.getName() == "functionA") {
                 Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
-                assert outputMappings.size() == 6
+                assert outputMappings.size() == 7
                 assert outputMappings.contains(new Mapping("\$.output.datax.a", "\$.context.functionA.datax.a"))
 //                assert outputMappings.contains(new Mapping("\$.output.datax.y", "\$.context.functionA.datax.y"))
                 assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
