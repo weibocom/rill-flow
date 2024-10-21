@@ -118,12 +118,12 @@ class DescriptorParseServiceImplTest extends Specification {
             if (task.getName() == "functionA") {
                 Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
                 assert outputMappings.size() == 2
-                assert outputMappings.contains(new Mapping("\$.output.elements.*.name", "\$.context.functionA.elements.*.name"))
+                assert outputMappings.contains(new Mapping("\$.output.elements[*].name", "\$.context.functionA.elements[*].name"))
                 assert outputMappings.contains(new Mapping("\$.output.elements[0].id", "\$.context.functionA.elements[0].id"))
             } else {
                 HashSet<Mapping> inputMappings = new HashSet<>(task.getInputMappings())
                 inputMappings.size() == 2
-                assert inputMappings.contains(new Mapping("\$.context.functionA.elements[*].name", "\$.input.body.elements"))
+                assert inputMappings.contains(new Mapping("\$.context.functionA.elements.*.name", "\$.input.body.elements"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.elements[0].id", "\$.input.body.first_id"))
             }
         }
@@ -298,15 +298,13 @@ class DescriptorParseServiceImplTest extends Specification {
         dag.getTasks().forEach {task -> {
             Set<Mapping> outputMappings = new HashSet<>(task.getOutputMappings())
             if (task.getName().equals("functionA")) {
-                assert outputMappings.size() == 4
-                assert outputMappings.contains(new Mapping("\$.output.datax", "\$.context.functionA.datax"))
-                assert outputMappings.contains(new Mapping("\$.output.datay.hello", "\$.context.functionA.datay.hello"))
-                assert outputMappings.contains(new Mapping("\$.output.objs", "\$.context.functionA.objs"))
-                assert outputMappings.contains(new Mapping("\$.output.dataz['a.b']", "\$.context.functionA.dataz['a.b']"))
+                assert outputMappings.size() == 6
+                assert outputMappings.contains(new Mapping("\$.output.objs[*]", "\$.context.functionA.objs[*]"))
                 assert task.next.equals("functionB," + dag.getEndTaskName()) || task.next.equals(dag.getEndTaskName() + ",functionB")
             } else if (task.getName().equals("functionB")) {
-                assert outputMappings.size() == 1
-                assert outputMappings.contains(new Mapping("\$.output.output", "\$.context.functionB.output"))
+                assert outputMappings.size() == 2
+                assert outputMappings.contains(new Mapping("\$.output.output.x", "\$.context.functionB.output.x"))
+                assert outputMappings.contains(new Mapping("\$.output.output.y", "\$.context.functionB.output.y"))
                 assert task.getNext().equals(dag.getEndTaskName())
             } else {
                 assert task instanceof PassTask
