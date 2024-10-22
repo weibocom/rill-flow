@@ -118,4 +118,13 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoC)
         !ret.contains(taskInfoD)
     }
+
+    /**
+     * 1. 非流式输入，所有依赖全部完成 -> 执行
+     * 2. 非流式输入，有一个 block 输出节点未完成 -> 不执行
+     * 3. 非流式输入，有一个 stream 输出节点未完成 -> 不执行
+     * 4. 流式输入，有一个 block 输出节点完成，其他 block 输出节点未完成 -> 执行
+     * 5. 流式输入，所有依赖均未开始执行，但依赖的一个 stream 输出节点可执行 -> 执行
+     * 6. 流式输入，所有依赖均未开始执行，依赖的 stream 输出节点也不可执行 -> 不执行
+     */
 }
