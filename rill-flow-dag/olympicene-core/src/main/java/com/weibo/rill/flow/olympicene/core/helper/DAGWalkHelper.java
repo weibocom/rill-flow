@@ -114,8 +114,8 @@ public class DAGWalkHelper {
                     boolean needRun = taskInfo.getDependencies().stream().anyMatch(dependency -> {
                         TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
                         // 如果依赖任务是流输出类型且已开始执行，或者准备运行，则将当前任务添加到准备运行的流任务集合中
-                        return dependencyOutputType == TaskInputOutputType.STREAM && dependency.getTaskStatus() != TaskStatus.NOT_STARTED
-                                || readyToRunTasks.contains(dependency);
+                        return dependencyOutputType == TaskInputOutputType.STREAM
+                                && (dependency.getTaskStatus() != TaskStatus.NOT_STARTED || readyToRunTasks.contains(dependency));
                     });
                     if (needRun) {
                         readyToRunStreamTasks.add(taskInfo);

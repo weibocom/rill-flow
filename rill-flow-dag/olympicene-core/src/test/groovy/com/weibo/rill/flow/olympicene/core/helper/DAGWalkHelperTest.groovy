@@ -85,7 +85,45 @@ class DAGWalkHelperTest extends Specification {
         [:]                                        || DAGStatus.SUCCEED
     }
 
-    def "test getReadyToRunTasks is key mode"() {
+    /**
+     * 1. 非流式输入，所有依赖全部完成 -> 执行
+     * 2. 非流式输入，关键路径依赖完成 -> 执行
+     * 3. 非流式输入，有一个 block 输出节点未完成 -> 不执行
+     * 4. 非流式输入，有一个 stream 输出节点未完成 -> 不执行
+     * 5. 流式输入，依赖的 block 节点均未完成 -> 不执行
+     * 6. 流式输入，有一个 block 输出节点完成，其他 block 输出节点未完成 -> 执行
+     * 7. 流式输入，所有依赖均未开始执行，但依赖的一个 stream 输出节点可执行 -> 执行
+     * 8. 流式输入，所有依赖均未开始执行，依赖的 stream 输出节点也不可执行 -> 不执行
+     */
+
+    def "1.test getReadyToRunTasks when dependencies all succeed"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.SUCCEED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.KEY_SUCCEED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoC])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoC.setDependencies([taskInfoA, taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+        then:
+        !ret.contains(taskInfoA)
+        !ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+    }
+
+    def "2.3. test getReadyToRunTasks is key mode"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -104,11 +142,51 @@ class DAGWalkHelperTest extends Specification {
         taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
         taskD.getName() >> "D"
         TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        BaseTask taskE = Mock(BaseTask)
+        taskE.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskE.getName() >> "E"
+        TaskInfo taskInfoE = new TaskInfo(name: "E", taskStatus: TaskStatus.SUCCEED, task: taskE)
         taskInfoA.setNext([taskInfoC])
         taskInfoB.setNext([taskInfoC])
         taskInfoC.setDependencies([taskInfoA, taskInfoB])
         taskInfoC.setNext([taskInfoD])
-        taskInfoD.setDependencies([taskInfoC])
+        taskInfoD.setDependencies([taskInfoC, taskInfoE])
+        taskInfoE.setNext([taskInfoD])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD, taskInfoE])
+        then:
+        !ret.contains(taskInfoA)
+        !ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+        !ret.contains(taskInfoD)
+        !ret.contains(taskInfoE)
+    }
+
+    def "4. test getReadyToRunTasks when dependent on an unstarted block output task"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.SUCCEED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.SUCCEED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.getOutputType() >> "stream"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoD])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoA, taskInfoB, taskInfoC])
 
         when:
         Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
@@ -119,12 +197,148 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoD)
     }
 
-    /**
-     * 1. 非流式输入，所有依赖全部完成 -> 执行
-     * 2. 非流式输入，有一个 block 输出节点未完成 -> 不执行
-     * 3. 非流式输入，有一个 stream 输出节点未完成 -> 不执行
-     * 4. 流式输入，有一个 block 输出节点完成，其他 block 输出节点未完成 -> 执行
-     * 5. 流式输入，所有依赖均未开始执行，但依赖的一个 stream 输出节点可执行 -> 执行
-     * 6. 流式输入，所有依赖均未开始执行，依赖的 stream 输出节点也不可执行 -> 不执行
-     */
+    def "5. test getReadyToRunTasks when stream input task dependents on all unstarted tasks"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        taskD.getInputType() >> "stream"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoD])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoA, taskInfoB, taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+        !ret.contains(taskInfoD)
+    }
+
+    def "6. test getReadyToRunTasks when stream input task dependents on a success task"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.SUCCEED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        taskD.getInputType() >> "stream"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoD])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoA, taskInfoB, taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        !ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+        ret.contains(taskInfoD)
+    }
+
+    def "7. test getReadyToRunTasks when stream input task dependents on an unstarted stream output task"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.getOutputType() >> "stream"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        taskD.getInputType() >> "stream"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        taskInfoA.setNext([taskInfoD])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoA, taskInfoB, taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        ret.contains(taskInfoC)
+        ret.contains(taskInfoD)
+    }
+
+    def "8. test getReadyToRunTasks when stream input task dependents on an unstarted stream output task which won't be run next"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.getOutputType() >> "stream"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        BaseTask taskD = Mock(BaseTask)
+        taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskD.getName() >> "D"
+        taskD.getInputType() >> "stream"
+        TaskInfo taskInfoD = new TaskInfo(name: "D", taskStatus: TaskStatus.NOT_STARTED, task: taskD)
+        BaseTask taskE = Mock(BaseTask)
+        taskE.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskE.getName() >> "E"
+        TaskInfo taskInfoE = new TaskInfo(name: "E", taskStatus: TaskStatus.NOT_STARTED, task: taskE)
+        taskInfoA.setNext([taskInfoD])
+        taskInfoB.setNext([taskInfoD])
+        taskInfoC.setDependencies([taskInfoE])
+        taskInfoC.setNext([taskInfoD])
+        taskInfoD.setDependencies([taskInfoA, taskInfoB, taskInfoC])
+        taskInfoE.setNext([taskInfoC])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD, taskInfoE])
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
+        !ret.contains(taskInfoD)
+        ret.contains(taskInfoE)
+    }
 }
