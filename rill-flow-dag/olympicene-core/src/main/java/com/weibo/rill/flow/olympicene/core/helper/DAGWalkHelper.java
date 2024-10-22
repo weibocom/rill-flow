@@ -71,15 +71,32 @@ public class DAGWalkHelper {
     /**
      * 判断依赖的所有任务是否都已完成
      * 1. 如果没有依赖，说明依赖的所有任务都已完成
-     * 2. 判断所有依赖的 block 输出任务是否都已经完成，或在关键路径模式下关键路径完成
+     * 2. 流式输入任务，有任意依赖的 block 输出任务完成或关键路径下完成
+     * 3. 非流式输入任务，所有依赖的 block 输出任务是否都已经完成，或在关键路径模式下关键路径完成
      */
     private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
+        // 1. 没有依赖视为依赖均已完成
+        if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
+            return true;
+        }
+        TaskInputOutputType inputType = TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType());
+        if (inputType == TaskInputOutputType.STREAM) {
+            // 2. 流式输入任务，任意依赖的非流式任务已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
+            return taskInfo.getDependencies().stream().anyMatch(dependency -> {
+                TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
+                return dependencyOutputType == TaskInputOutputType.STREAM && dependency.getTaskStatus() != TaskStatus.NOT_STARTED
+                        || dependencyOutputType == TaskInputOutputType.BLOCK && isTaskSuccessOrSkip(dependency, isKeyMode);
+            });
+        } else {
+            // 3. 非流式输入任务，所有依赖任务是否都已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
+            return taskInfo.getDependencies().stream().allMatch(dependency -> isTaskSuccessOrSkip(dependency, isKeyMode));
+        }
+    }
+
+    private boolean isTaskSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
         boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
-                // 1. 没有依赖视为依赖均已完成
-        return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
-                // 2. 检查所有依赖任务是否都已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
-                taskInfo.getDependencies().stream().allMatch(dependency -> dependency.getTaskStatus().isSuccessOrSkip()
-                        || (isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip()));
+        return taskInfo.getTaskStatus().isSuccessOrSkip()
+                || (isKeyMode && isKeyCallback && taskInfo.getTaskStatus().isSuccessOrKeySuccessOrSkip());
     }
 
     /**
