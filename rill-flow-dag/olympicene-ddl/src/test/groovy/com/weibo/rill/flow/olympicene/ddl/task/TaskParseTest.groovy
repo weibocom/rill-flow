@@ -19,6 +19,7 @@ class TaskParseTest extends Specification {
                 "group: split\n" +
                 "pattern: task_scheduler\n" +
                 "inputType: stream\n" +
+                "outputType: block\n" +
                 "inputMappings:\n" +
                 "   - target: url\n" +
                 "     source: url\n" +
@@ -39,6 +40,7 @@ class TaskParseTest extends Specification {
         ret.inputMappings.size() == 2
         ret.outputMappings.size() == 1
         ret.inputType == 'stream'
+        ret.outputType == 'block'
         ret.next == 'segmentForeach'
         ret.category == TaskCategory.FUNCTION.getValue()
     }
