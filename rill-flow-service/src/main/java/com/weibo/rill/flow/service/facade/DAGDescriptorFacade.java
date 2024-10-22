@@ -35,7 +35,6 @@ import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
 import com.weibo.rill.flow.service.service.DescriptorParseService;
-import com.weibo.rill.flow.service.service.ProtocolPluginService;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -69,8 +68,6 @@ public class DAGDescriptorFacade {
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
     @Autowired
-    ProtocolPluginService protocolPluginService;
-    @Autowired
     private DescriptorManager descriptorManager;
     @Autowired
     @Qualifier("descriptorRedisClient")
@@ -79,7 +76,8 @@ public class DAGDescriptorFacade {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private DAGSubmitChecker dagSubmitChecker;
-    @javax.annotation.Resource
+    @Autowired
+    @Qualifier("descriptorParseServiceImpl")
     private DescriptorParseService descriptorParseService;
 
     public Map<String, Object> modifyBusiness(boolean add, String businessId) {
