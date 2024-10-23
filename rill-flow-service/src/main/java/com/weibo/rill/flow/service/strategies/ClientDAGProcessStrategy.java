@@ -1,4 +1,4 @@
-package com.weibo.rill.flow.service.service;
+package com.weibo.rill.flow.service.strategies;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.LinkedHashMultimap;
@@ -13,18 +13,16 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * descriptor 解析服务
- */
-@Service
-public class DescriptorParseServiceImpl implements DescriptorParseService {
+@Component(DAGProcessStrategyContext.CLIENT_STRATEGY)
+public class ClientDAGProcessStrategy implements DAGProcessStrategy {
+
     private static final String CONTEXT_PREFIX = "$.context.";
     private static final String INPUT_PREFIX = "$.input.";
 
@@ -36,13 +34,13 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      * @param dag 待处理的DAG对象
      */
     @Override
-    public void processWhenSetDAG(DAG dag) {
+    public DAG onStorage(DAG dag) {
         // 1. 获取任务名称与任务的映射
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         // 2. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
         // 返回是否需要后续处理，不需要后续处理则直接返回
         if (!processInputToGenerateInputMappings(dag, taskMap)) {
-            return;
+            return dag;
         }
         // 3. 处理任务的 inputMappings，返回各任务 inputMappings 的 source 对应的元素列表的列表
         Map<String, List<List<String>>> taskPathsMap = processTaskInputMappings(dag, taskMap);
@@ -50,6 +48,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
         // 5. 生成任务的输出映射
         generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
+        return dag;
     }
 
     /**
@@ -303,7 +302,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      * @return 处理后的描述符字符串
      */
     @Override
-    public String processWhenGetDescriptor(String descriptor) {
+    public String onRetrieval(String descriptor) {
         // 1. 解析 descriptor，获取 taskName 到 task 的映射 map，并判断是否需要后续处理
         DAG dag = dagParser.parse(descriptor);
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
@@ -313,8 +312,8 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
 
         // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理
         List<BaseTask> tasks = taskMap.values().stream()
-            .filter(task -> !task.getName().equals(dag.getEndTaskName()))
-            .map(task -> processTask(task, dag.getEndTaskName())).toList();
+                .filter(task -> !task.getName().equals(dag.getEndTaskName()))
+                .map(task -> processTask(task, dag.getEndTaskName())).toList();
 
         // 3. 重新序列化生成 descriptor
         dag.setTasks(tasks);
@@ -330,7 +329,7 @@ public class DescriptorParseServiceImpl implements DescriptorParseService {
      */
     private boolean needsPostProcessing(DAG dag, Map<String, BaseTask> taskMap) {
         return StringUtils.isNotBlank(dag.getEndTaskName()) ||
-               taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
+                taskMap.values().stream().anyMatch(task -> MapUtils.isNotEmpty(task.getInput()));
     }
 
     /**

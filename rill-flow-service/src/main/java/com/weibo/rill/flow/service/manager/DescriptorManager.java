@@ -30,7 +30,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.service.DescriptorParseService;
+import com.weibo.rill.flow.service.strategies.DAGProcessStrategyContext;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -142,8 +141,8 @@ public class DescriptorManager {
     private AviatorCache aviatorCache;
     @Autowired
     private SwitcherManager switcherManagerImpl;
-    @Resource
-    private DescriptorParseService descriptorParseService;
+    @Autowired
+    private DAGProcessStrategyContext dagProcessStrategyContext;
 
     private final Cache<String, String> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()
             .maximumSize(300)
@@ -156,12 +155,13 @@ public class DescriptorManager {
 
     public String getDagDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        return getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
     }
 
     public String getDagDescriptorForClient(Long uid, Map<String, Object> input, String dagDescriptorId) {
         String descriptor = getDagDescriptor(uid, input, dagDescriptorId);
-        return descriptorParseService.processWhenGetDescriptor(descriptor);
+        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CLIENT_STRATEGY);
     }
 
     /**
@@ -491,7 +491,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
-        descriptorParseService.processWhenSetDAG(dag);
+        dag = dagProcessStrategyContext.onStorage(dag, DAGProcessStrategyContext.CLIENT_STRATEGY);
 
         createAlias(businessId, featureName, alias);
 
