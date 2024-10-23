@@ -2,7 +2,6 @@ package com.weibo.rill.flow.service.strategies;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
@@ -120,7 +119,7 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
     }
 
     /**
-     * 根据DAG获取任务名称到任务的映射
+     * DAG获取任务名称到任务的映射
      */
     private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
         if (CollectionUtils.isEmpty(dag.getTasks())) {
@@ -157,24 +156,18 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
         if (outputMappingsMultimap.isEmpty()) {
             return;
         }
-        for (Map.Entry<String, String> mappingsEntry: outputMappingsMultimap.entries()) {
-            String taskName = mappingsEntry.getKey();
-            String path = mappingsEntry.getValue();
+        outputMappingsMultimap.forEach((taskName, path) -> {
             BaseTask task = taskMap.get(taskName);
-            if (task == null) {
-                continue;
+            if (task != null) {
+                List<Mapping> outputMappings = Optional.ofNullable(task.getOutputMappings()).orElse(new ArrayList<>());
+                Set<String> targets = outputMappings.stream().map(Mapping::getTarget).collect(Collectors.toSet());
+                String target = CONTEXT_PREFIX + taskName + path;
+                if (!targets.contains(target)) {
+                    outputMappings.add(new Mapping("$.output" + path, target));
+                    task.setOutputMappings(outputMappings);
+                }
             }
-            List<Mapping> outputMappings = task.getOutputMappings();
-            if (outputMappings == null) {
-                outputMappings = new ArrayList<>();
-            }
-            Set<String> targets = outputMappings.stream().map(Mapping::getTarget).collect(Collectors.toSet());
-            String target = CONTEXT_PREFIX + taskName + path;
-            if (!targets.contains(target)) {
-                outputMappings.add(new Mapping("$.output" + path, target));
-                task.setOutputMappings(outputMappings);
-            }
-        }
+        });
     }
 
     /**
@@ -200,7 +193,7 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
      */
     private void processPathElements(List<String> elements, LinkedHashMultimap<String, String> result, String taskName) {
         StringBuilder mappingSb = new StringBuilder();
-        for (String element : elements) {
+        elements.forEach(element -> {
             if (element.contains(".")) {
                 mappingSb.append("['").append(element).append("']");
             } else if (element.matches("\\[\\d+]") || element.equals("[*]")) {
@@ -208,7 +201,7 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
             } else {
                 mappingSb.append(".").append(element);
             }
-        }
+        });
         if (!result.containsKey(mappingSb.toString())) {
             result.put(taskName, mappingSb.toString());
         }
@@ -234,12 +227,11 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
             } else {
                 needPostProcess = true;
             }
-            List<Mapping> inputMappings = task.getInputMappings() == null ? Lists.newArrayList() : task.getInputMappings();
-            taskInput.forEach((key, value) -> {
+            List<Mapping> inputMappings = task.getInputMappings() == null ? new ArrayList<>() : task.getInputMappings();
+            taskInput.entrySet().stream().filter(entry -> entry.getKey() != null && entry.getValue() != null).forEach(entry -> {
+                String key = entry.getKey();
+                Object value = entry.getValue();
                 String target = INPUT_PREFIX + key;
-                if (key == null || value == null) {
-                    return;
-                }
                 Mapping inputMapping;
                 if (value instanceof Map) {
                     inputMapping = JSON.parseObject(JSON.toJSONString(value), Mapping.class);
@@ -267,9 +259,8 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
         endPassTask.setInput(dag.getOutput());
         endPassTask.setCategory("pass");
         // 由于图的 end 任务没有后续任务，所以需要生成它的 outputMappings 来实现将参数传递的信息放入到 context 中
-        List<Mapping> outputMappings = Lists.newArrayList();
-        dag.getOutput().keySet().forEach(key -> outputMappings.add(new Mapping(INPUT_PREFIX + key, CONTEXT_PREFIX + key)));
-        endPassTask.setOutputMappings(outputMappings);
+        endPassTask.setOutputMappings(dag.getOutput().keySet().stream()
+                .map(key -> new Mapping(INPUT_PREFIX + key, CONTEXT_PREFIX + key)).toList());
 
         taskMap.put(DAG_END_TASK_NAME, endPassTask);
         dag.getTasks().add(endPassTask);
@@ -289,8 +280,7 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
         }
 
         // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理，同时在任务列表中删除 DAG 结束节点
-        List<BaseTask> tasks = taskMap.values().stream()
-                .filter(task -> !task.getName().equals(dag.getEndTaskName()))
+        List<BaseTask> tasks = taskMap.values().stream().filter(task -> !task.getName().equals(dag.getEndTaskName()))
                 .map(task -> processTask(task, dag.getEndTaskName())).toList();
 
         // 3. 重新序列化生成 descriptor
@@ -342,12 +332,8 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
             return;
         }
         List<Mapping> newOutputMappings = outputMappings.stream()
-                .filter(mapping -> !mapping.getTarget().startsWith(CONTEXT_PREFIX + task.getName()))
-                .toList();
-        if (CollectionUtils.isEmpty(newOutputMappings)) {
-            newOutputMappings = null;
-        }
-        task.setOutputMappings(newOutputMappings);
+                .filter(mapping -> !mapping.getTarget().startsWith(CONTEXT_PREFIX + task.getName() + ".")).toList();
+        task.setOutputMappings(CollectionUtils.isEmpty(newOutputMappings)? null: newOutputMappings);
     }
 
     /**
@@ -358,10 +344,8 @@ public class ClientDAGProcessStrategy implements DAGProcessStrategy {
         if (CollectionUtils.isEmpty(inputMappings)) {
             return;
         }
-
         Set<String> inputTargets = task.getInput().keySet().stream()
-                .map(key -> INPUT_PREFIX + key)
-                .collect(Collectors.toSet());
+                .map(key -> INPUT_PREFIX + key).collect(Collectors.toSet());
 
         List<Mapping> filteredMappings = inputMappings.stream()
                 .filter(mapping -> !inputTargets.contains(mapping.getTarget())).toList();
