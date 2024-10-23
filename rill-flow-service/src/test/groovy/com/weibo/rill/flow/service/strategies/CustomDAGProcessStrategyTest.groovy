@@ -12,9 +12,9 @@ import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskV
 import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
-class ClientDAGProcessStrategyTest extends Specification {
+class CustomDAGProcessStrategyTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
-    ClientDAGProcessStrategy strategy = new ClientDAGProcessStrategy(dagParser: dagParser)
+    CustomDAGProcessStrategy strategy = new CustomDAGProcessStrategy(dagParser: dagParser)
 
     /**
      * 测试常规 input 的解析与 inputMappings 及 outputMappings 的生成
