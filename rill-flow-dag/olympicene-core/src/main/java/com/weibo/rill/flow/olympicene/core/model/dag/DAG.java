@@ -39,6 +39,7 @@ public class DAG {
     private String version;
     private DAGType type;
     private Timeline timeline;
+    @Setter
     private List<BaseTask> tasks;
     @Setter
     private List<BaseResource> resources;
