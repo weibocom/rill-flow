@@ -18,19 +18,19 @@ package com.weibo.rill.flow.service.strategies;
 
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 @Component
 @Slf4j
 public class DAGProcessStrategyContext {
-    @Autowired
+    @Resource
     private Map<String, DAGProcessStrategy> strategies;
 
-    public final static String DEFAULT_STRATEGY = "defaultDAGProcessStrategy";
-    public final static String CLIENT_STRATEGY = "clientDAGProcessStrategy";
+    public static final String DEFAULT_STRATEGY = "defaultDAGProcessStrategy";
+    public static final String CLIENT_STRATEGY = "clientDAGProcessStrategy";
 
     public DAG onStorage(DAG dag, String strategyName) {
         DAGProcessStrategy strategy = strategies.get(strategyName);
