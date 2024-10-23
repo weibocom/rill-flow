@@ -263,7 +263,7 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
     private List<Object> createAndFillNextArrayPart(List<String> jsonPathParts, int i) {
         List<Object> nextArray = new ArrayList<>();
         int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
-        while (nextArray.size() <= nextIndex) {
+        for (int j = 0; j <= nextIndex; j++) {
             nextArray.add(null);
         }
         return nextArray;
