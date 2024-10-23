@@ -162,7 +162,7 @@ public class DescriptorManager {
 
     public String getDagDescriptorForClient(Long uid, Map<String, Object> input, String dagDescriptorId) {
         String descriptor = getDagDescriptor(uid, input, dagDescriptorId);
-        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CLIENT_STRATEGY);
+        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
     }
 
     /**
@@ -492,7 +492,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
-        dag = dagProcessStrategyContext.onStorage(dag, DAGProcessStrategyContext.CLIENT_STRATEGY);
+        dag = dagProcessStrategyContext.onStorage(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
 
         createAlias(businessId, featureName, alias);
 

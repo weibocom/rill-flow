@@ -15,7 +15,7 @@ class DAGProcessStrategyContextTest extends Specification {
         clientStrategy = Mock(DAGProcessStrategy)
         strategyContext.strategies = [
             (DAGProcessStrategyContext.DEFAULT_STRATEGY): defaultStrategy,
-            (DAGProcessStrategyContext.CLIENT_STRATEGY): clientStrategy
+            (DAGProcessStrategyContext.CUSTOM_STRATEGY): clientStrategy
         ]
     }
 
@@ -25,7 +25,7 @@ class DAGProcessStrategyContextTest extends Specification {
         DAG outputDag = new DAG()
 
         when:
-        def result = strategyContext.onStorage(inputDag, DAGProcessStrategyContext.CLIENT_STRATEGY)
+        def result = strategyContext.onStorage(inputDag, DAGProcessStrategyContext.CUSTOM_STRATEGY)
 
         then:
         1 * clientStrategy.onStorage(inputDag) >> outputDag
@@ -51,7 +51,7 @@ class DAGProcessStrategyContextTest extends Specification {
         String processedDescriptor = "processedTestDescriptor"
 
         when:
-        def result = strategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CLIENT_STRATEGY)
+        def result = strategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY)
 
         then:
         1 * clientStrategy.onRetrieval(descriptor) >> processedDescriptor

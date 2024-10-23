@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component(DAGProcessStrategyContext.CLIENT_STRATEGY)
+@Component(DAGProcessStrategyContext.CUSTOM_STRATEGY)
 public class ClientDAGProcessStrategy implements DAGProcessStrategy {
 
     private static final String CONTEXT_PREFIX = "$.context.";

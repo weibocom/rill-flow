@@ -30,7 +30,7 @@ public class DAGProcessStrategyContext {
     private Map<String, DAGProcessStrategy> strategies;
 
     public static final String DEFAULT_STRATEGY = "defaultDAGProcessStrategy";
-    public static final String CLIENT_STRATEGY = "clientDAGProcessStrategy";
+    public static final String CUSTOM_STRATEGY = "customDAGProcessStrategy";
 
     public DAG onStorage(DAG dag, String strategyName) {
         DAGProcessStrategy strategy = strategies.get(strategyName);
