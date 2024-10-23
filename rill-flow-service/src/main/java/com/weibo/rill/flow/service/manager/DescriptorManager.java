@@ -159,6 +159,11 @@ public class DescriptorManager {
         return getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
     }
 
+    public String getDagDescriptorForClient(Long uid, Map<String, Object> input, String dagDescriptorId) {
+        String descriptor = getDagDescriptor(uid, input, dagDescriptorId);
+        return descriptorParseService.processWhenGetDescriptor(descriptor);
+    }
+
     /**
      * @param useCache 是否使用缓存:descriptorIdToRedisKeyCache
      * <pre>

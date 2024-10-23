@@ -212,15 +212,14 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
-        String descriptor = descriptorManager.getDagDescriptor(uid, input, descriptorId);
+        String descriptor = descriptorManager.getDagDescriptorForClient(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
-                DESCRIPTOR, descriptorParseService.processWhenGetDescriptor(descriptor));
+                DESCRIPTOR, descriptor);
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        String descriptor = descriptorManager.getDagDescriptor(null, null, descriptorId);
-        descriptor = descriptorParseService.processWhenGetDescriptor(descriptor);
+        String descriptor = descriptorManager.getDagDescriptorForClient(null, null, descriptorId);
         JSONObject descriptorObject = yamlToJson(descriptor);
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);
