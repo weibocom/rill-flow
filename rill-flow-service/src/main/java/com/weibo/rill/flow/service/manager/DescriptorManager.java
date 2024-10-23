@@ -142,7 +142,7 @@ public class DescriptorManager {
     @Autowired
     private SwitcherManager switcherManagerImpl;
     @Autowired
-    @Qualifier("DAGProcessStrategyContext")
+    @Qualifier("dagProcessStrategyContext")
     private DAGProcessStrategyContext dagProcessStrategyContext;
 
     private final Cache<String, String> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()

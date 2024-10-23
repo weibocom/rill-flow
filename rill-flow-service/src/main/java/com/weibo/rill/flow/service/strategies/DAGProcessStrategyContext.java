@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Map;
 
-@Component
 @Slf4j
+@Component("dagProcessStrategyContext")
 public class DAGProcessStrategyContext {
     @Resource
     private Map<String, DAGProcessStrategy> strategies;
