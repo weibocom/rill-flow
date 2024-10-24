@@ -31,6 +31,8 @@ import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
@@ -177,7 +179,8 @@ public class DAGDescriptorFacade {
             if (StringUtils.isNotEmpty(descriptor)) {
                 dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
             }
-            String descriptorId = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptor);
+            DescriptorVO descriptorVO = new DescriptorVO(descriptor);
+            String descriptorId = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO);
 
             Map<String, String> attachments = Maps.newHashMap();
             String attachmentName = String.format("descriptor-%s_%s_%s.txt", businessId, featureName, alias);
@@ -206,15 +209,15 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
-        String descriptor = descriptorManager.getDescriptor(uid, input, descriptorId);
+        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
-                DESCRIPTOR, descriptor);
+                DESCRIPTOR, descriptorVO.getDescriptor());
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        String descriptor = descriptorManager.getDescriptor(null, null, descriptorId);
-        JSONObject descriptorObject = yamlToJson(descriptor);
+        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(null, null, descriptorId);
+        JSONObject descriptorObject = yamlToJson(descriptorVO.getDescriptor());
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "descriptor is null: " + descriptorId);

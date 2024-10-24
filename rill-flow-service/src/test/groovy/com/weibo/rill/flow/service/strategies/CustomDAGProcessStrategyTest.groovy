@@ -19,18 +19,22 @@ package com.weibo.rill.flow.service.strategies
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskValidator
+import com.weibo.rill.flow.service.service.DAGDescriptorConverter
+import com.weibo.rill.flow.service.service.DAGDescriptorConverterImpl
 import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
 class CustomDAGProcessStrategyTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
-    CustomDAGProcessStrategy strategy = new CustomDAGProcessStrategy(dagParser: dagParser)
+    DAGDescriptorConverter converter = new DAGDescriptorConverterImpl(dagParser: dagParser)
 
     /**
      * 测试常规 input 的解析与 inputMappings 及 outputMappings 的生成
@@ -68,9 +72,8 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "        transform: return \"hello world\";\n" +
                 "    resourceProtocol: http\n" +
                 "    pattern: task_sync\n"
-        DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.transformDAGProperties(dag)
+        DAG dag = converter.convertDescriptorVOToDAG(new DescriptorVO(descriptor))
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -127,9 +130,8 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "      body.first_id: \$.functionA.elements[0].id\n" +
                 "    resourceProtocol: http\n" +
                 "    pattern: task_sync\n"
-        DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.transformDAGProperties(dag)
+        DAG dag = converter.convertDescriptorVOToDAG(new DescriptorVO(descriptor))
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -177,9 +179,8 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "      body.functionA.id: \$.functionA.id\n" +
                 "    resourceProtocol: http\n" +
                 "    pattern: task_sync\n"
-        DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.transformDAGProperties(dag)
+        DAG dag = converter.convertDescriptorVOToDAG(new DescriptorVO(descriptor))
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -260,10 +261,11 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    body.world:\n" +
                 "      transform: \"return \\\"hello world\\\";\"\n"
         when:
-        String newDescriptor = strategy.transformDescriptor(descriptor)
-        DAG newDag = dagParser.parse(newDescriptor)
+        DAG originDag = converter.convertDescriptorDOToDAG(new DescriptorDO(descriptor))
+        DescriptorVO descriptorVO = converter.convertDAGToDescriptorVO(originDag)
+        DAG dag = dagParser.parse(descriptorVO.getDescriptor())
         then:
-        newDag.getTasks().forEach(it -> {
+        dag.getTasks().forEach(it -> {
             assert it.inputMappings == null
             assert it.outputMappings == null
         })
@@ -307,9 +309,8 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "  end.x: \$.functionB.output.x\n" +
                 "  end.y: \$.functionB.output.y\n" +
                 "  end.as: \$.functionA.objs.*\n"
-        DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.transformDAGProperties(dag)
+        DAG dag = converter.convertDescriptorVOToDAG(new DescriptorVO(descriptor))
         then:
         assert dag.getTasks().size() == 3
         assert StringUtils.isNotBlank(dag.getEndTaskName())
@@ -439,8 +440,9 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "  end.as: \"\$.functionA.objs.*\"\n" +
                 "end_task_name: \"endPassTask20241018\"\n"
         when:
-        String resultDescriptor = strategy.transformDescriptor(descriptor)
-        DAG dag = dagParser.parse(resultDescriptor)
+        DAG originDag = converter.convertDescriptorDOToDAG(new DescriptorDO(descriptor))
+        DescriptorVO descriptorVO = converter.convertDAGToDescriptorVO(originDag)
+        DAG dag = dagParser.parse(descriptorVO.getDescriptor())
         then:
         assert dag.tasks.size() == 2
         assert dag.getEndTaskName() == null
