@@ -25,6 +25,7 @@ import com.weibo.rill.flow.interfaces.model.strategy.Progress;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @JsonTypeName("pass")
+@NoArgsConstructor
 public class PassTask extends BaseTask {
 
     @JsonCreator
@@ -51,8 +53,10 @@ public class PassTask extends BaseTask {
                     @JsonProperty("isKeyCallback") boolean isKeyCallback,
                     @JsonProperty("keyExp") String keyExp,
                     @JsonProperty("parameters") Map<String, Object> parameters,
-                    @JsonProperty("templateId") String templateId) {
-        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+                    @JsonProperty("templateId") String templateId,
+                    @JsonProperty("input") Map<String, Object> input) {
+        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade,
+                timeline, isKeyCallback, keyExp, parameters, templateId, input);
         Optional.ofNullable(timeline).ifPresent(it -> it.setTimeoutInSeconds(null));
     }
 

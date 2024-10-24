@@ -30,6 +30,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
+import com.weibo.rill.flow.service.strategies.DAGProcessStrategyContext;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -140,6 +141,9 @@ public class DescriptorManager {
     private AviatorCache aviatorCache;
     @Autowired
     private SwitcherManager switcherManagerImpl;
+    @Autowired
+    @Qualifier("dagProcessStrategyContext")
+    private DAGProcessStrategyContext dagProcessStrategyContext;
 
     private final Cache<String, String> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()
             .maximumSize(300)
@@ -150,9 +154,24 @@ public class DescriptorManager {
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build();
 
-    public String getDagDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
+    /**
+     * 获取 DAG 对象，用于 rill-flow 系统内部流程执行
+     */
+    public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        return getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        descriptor = dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
+        return dagParser.parse(descriptor);
+    }
+
+    /**
+     * 获取 DAG 描述符，用于提供用户编辑和展示
+     */
+    public String getDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
+        // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
+        String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        // 在下发给用户展示和编辑之前，对工作流描述符的属性进行处理，去除系统运行所需的属性
+        return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
     }
 
     /**
@@ -175,7 +194,7 @@ public class DescriptorManager {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
             if (fields.length < 2 || nameInvalid(fields[0], fields[1])) {
-                log.info("getDagDescriptor dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
+                log.info("getDescriptor dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
 
@@ -185,7 +204,7 @@ public class DescriptorManager {
             String thirdField = fields.length > 2 ? fields[2] : null;
             if (StringUtils.isEmpty(thirdField)) {
                 thirdField = getDescriptorAliasByGrayRule(uid, input, businessId, featureName);
-                log.info("getDagDescriptor result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
+                log.info("getDescriptor result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
             if (thirdField.startsWith(MD5_PREFIX)) {
@@ -209,7 +228,7 @@ public class DescriptorManager {
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
-            log.warn("getDagDescriptor fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
+            log.warn("getDescriptor fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
     }
@@ -482,6 +501,8 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
+        // 在存储到 redis 之前，对 DAG 属性进行处理，增加系统运行所需的属性
+        dag = dagProcessStrategyContext.transformDAGProperties(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
 
         createAlias(businessId, featureName, alias);
 
@@ -494,7 +515,7 @@ public class DescriptorManager {
         argv.add(String.valueOf(versionMaxCount));
         argv.add(String.valueOf(System.currentTimeMillis()));
         argv.add(md5);
-        argv.add(descriptor);
+        argv.add(dagParser.serialize(dag));
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);

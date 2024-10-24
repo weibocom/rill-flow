@@ -30,13 +30,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
-import com.weibo.rill.flow.common.model.Node;
-import com.weibo.rill.flow.common.model.NodeType;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.manager.DescriptorManager;
-import com.weibo.rill.flow.service.service.ProtocolPluginService;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -48,7 +45,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -66,8 +66,6 @@ public class DAGDescriptorFacade {
     private static final String VERSIONS = "versions";
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
-    @Autowired
-    ProtocolPluginService protocolPluginService;
     @Autowired
     private DescriptorManager descriptorManager;
     @Autowired
@@ -191,7 +189,7 @@ public class DAGDescriptorFacade {
                     .alias(alias)
                     .attachments(attachments)
                     .type(DAGDescriptorEvent.Type.addDescriptor)
-                    .build();
+                    .add(false).build();
             applicationEventPublisher.publishEvent(new DAGDescriptorEvent(operation));
 
             return ImmutableMap.of(RET, descriptorId != null, DESCRIPTOR_ID, Optional.ofNullable(descriptorId).orElse(""));
@@ -208,13 +206,14 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
+        String descriptor = descriptorManager.getDescriptor(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
-                DESCRIPTOR, descriptorManager.getDagDescriptor(uid, input, descriptorId));
+                DESCRIPTOR, descriptor);
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        String descriptor = descriptorManager.getDagDescriptor(null, null, descriptorId);
+        String descriptor = descriptorManager.getDescriptor(null, null, descriptorId);
         JSONObject descriptorObject = yamlToJson(descriptor);
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);

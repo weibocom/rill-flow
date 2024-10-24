@@ -63,7 +63,8 @@ class OlympiceneFacadeTest extends Specification {
 
         dagSubmitChecker.getCheckConfig(_) >> null
         dagSubmitChecker.check(*_) >> null
-        descriptorManager.getDagDescriptor(*_) >> null
+        descriptorManager.getDAG(*_) >> dag
+        descriptorManager.getDescriptor(*_) >> null
         dagStringParser.parse(_) >> dag
     }
 

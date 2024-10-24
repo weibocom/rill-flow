@@ -18,6 +18,8 @@ package com.weibo.rill.flow.interfaces.model.mapping;
 
 import lombok.*;
 
+import java.util.Objects;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -49,5 +51,20 @@ public class Mapping {
     public Mapping(String source, String target) {
         this.source = source;
         this.target = target;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Mapping mapping = (Mapping) o;
+        return Objects.equals(reference, mapping.reference) && Objects.equals(source, mapping.source)
+                && Objects.equals(transform, mapping.transform) && Objects.equals(target, mapping.target)
+                && Objects.equals(variable, mapping.variable);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reference, source, transform, target, variable);
     }
 }
