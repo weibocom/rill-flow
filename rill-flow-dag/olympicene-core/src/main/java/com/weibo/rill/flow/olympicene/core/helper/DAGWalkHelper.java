@@ -26,7 +26,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,22 +52,78 @@ public class DAGWalkHelper {
     }
 
     public Set<TaskInfo> getReadyToRunTasks(Collection<TaskInfo> taskInfos) {
+        boolean isKeyMode = isKeyMode(taskInfos);
+
+        // 筛选出准备运行的任务:
+        // 1. 任务不为空且状态为未开始
+        // 2. 所有依赖的 block 输出任务都已成功或跳过
+        // 3. 如果是关键路径回调任务，并且在关键路径模式下，则只要关键路径完成执行就可以运行
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> !taskInfo.getTask().isKeyCallback())
-                .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrSkip()))
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode))
                 .collect(Collectors.toSet());
 
-        if (isKeyMode(taskInfos)) {
-            Set<TaskInfo> keyCallbackTasks = taskInfos.stream()
-                    .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                    .filter(taskInfo -> taskInfo.getTask().isKeyCallback()) // 此类型任务只需前置依赖节点关键路径完成即可执行
-                    .filter(taskInfo -> CollectionUtils.isEmpty(taskInfo.getDependencies()) || taskInfo.getDependencies().stream().allMatch(i -> i.getTaskStatus().isSuccessOrKeySuccessOrSkip()))
-                    .collect(Collectors.toSet());
-            readyToRunTasks.addAll(keyCallbackTasks);
-        }
-
+        // 4. 如果 stream 输入的任务依赖的任意 stream 输出任务在待执行列表中，则该 stream 输入任务也可以执行
+        readyToRunTasks.addAll(getReadyToRunStreamInputTasks(taskInfos, readyToRunTasks));
         return readyToRunTasks;
+    }
+
+    /**
+     * 判断依赖的所有任务是否都已完成
+     * 1. 如果没有依赖，说明依赖的所有任务都已完成
+     * 2. 流式输入任务，有任意依赖的 block 输出任务完成或关键路径下完成
+     * 3. 非流式输入任务，所有依赖的 block 输出任务是否都已经完成，或在关键路径模式下关键路径完成
+     */
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
+        // 1. 没有依赖视为依赖均已完成
+        if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
+            return true;
+        }
+        TaskInputOutputType inputType = TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType());
+        boolean isTaskKeyMode = isKeyMode && taskInfo.getTask().isKeyCallback();
+        if (inputType == TaskInputOutputType.STREAM) {
+            // 2. 流式输入任务，任意依赖的流式任务开始执行或者非流式任务已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
+            return taskInfo.getDependencies().stream().anyMatch(dependency -> {
+                TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
+                return (dependencyOutputType == TaskInputOutputType.STREAM
+                            && dependency.getTaskStatus() != TaskStatus.NOT_STARTED)
+                        || (dependencyOutputType == TaskInputOutputType.BLOCK
+                            && isTaskSuccessOrSkip(dependency, isTaskKeyMode));
+            });
+        } else {
+            // 3. 非流式输入任务，所有依赖任务是否都已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
+            return taskInfo.getDependencies().stream().allMatch(dependency -> isTaskSuccessOrSkip(dependency, isTaskKeyMode));
+        }
+    }
+
+    private boolean isTaskSuccessOrSkip(TaskInfo taskInfo, boolean isTaskKeyMode) {
+        return taskInfo.getTaskStatus().isSuccessOrSkip()
+                || (isTaskKeyMode && taskInfo.getTaskStatus().isSuccessOrKeySuccessOrSkip());
+    }
+
+    /**
+     * 获取准备运行的流式输入任务
+     * 
+     * @param taskInfos 所有任务的集合
+     * @param readyToRunTasks 已准备运行的任务集合
+     * @return 准备运行的流输入任务集合
+     */
+    private Set<TaskInfo> getReadyToRunStreamInputTasks(Collection<TaskInfo> taskInfos, Set<TaskInfo> readyToRunTasks) {
+        Set<TaskInfo> readyToRunStreamTasks = new HashSet<>();
+        taskInfos.stream().filter(Objects::nonNull).filter(taskInfo -> taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
+                .filter(taskInfo -> TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType()) == TaskInputOutputType.STREAM)
+                .forEach(taskInfo -> {
+                    boolean needRun = taskInfo.getDependencies().stream().anyMatch(dependency -> {
+                        TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
+                        // 如果依赖任务是流输出类型且已开始执行，或者准备运行，则将当前任务添加到准备运行的流任务集合中
+                        return dependencyOutputType == TaskInputOutputType.STREAM
+                                && (dependency.getTaskStatus() != TaskStatus.NOT_STARTED || readyToRunTasks.contains(dependency));
+                    });
+                    if (needRun) {
+                        readyToRunStreamTasks.add(taskInfo);
+                    }
+                });
+        return readyToRunStreamTasks;
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {
