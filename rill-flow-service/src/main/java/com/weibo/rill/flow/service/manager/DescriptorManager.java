@@ -504,7 +504,8 @@ public class DescriptorManager {
 
         createAlias(businessId, featureName, alias);
 
-        String md5 = DigestUtils.md5Hex(descriptorVO.getDescriptor());
+        String descriptor = descriptorVO.getDescriptor();
+        String md5 = DigestUtils.md5Hex(descriptor);
 
         DescriptorDO descriptorDO = dagDescriptorConverter.convertDAGToDescriptorDO(dag);
         List<String> keys = Lists.newArrayList();
