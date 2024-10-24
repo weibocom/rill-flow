@@ -45,6 +45,7 @@ public class ChoiceTask extends BaseTask {
             @JsonProperty("description") String description,
             @JsonProperty("category") String category,
             @JsonProperty("next") String next,
+            @JsonProperty("input") Map<String, Object> input,
             @JsonProperty("inputMappings") List<Mapping> inputMappings,
             @JsonProperty("outputMappings") List<Mapping> outputMappings,
             @JsonProperty("choices") List<Choice> choices,
@@ -55,7 +56,8 @@ public class ChoiceTask extends BaseTask {
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
             @JsonProperty("templateId") String templateId) {
-        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade, timeline, isKeyCallback, keyExp, parameters, templateId);
+        super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade,
+                timeline, isKeyCallback, keyExp, parameters, templateId, input);
         this.choices = choices;
     }
 

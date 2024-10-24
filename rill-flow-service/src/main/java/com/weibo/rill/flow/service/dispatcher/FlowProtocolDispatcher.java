@@ -70,8 +70,7 @@ public class FlowProtocolDispatcher implements DispatcherExtension {
         Map<String, Object> data = Maps.newHashMap();
         Optional.ofNullable(dispatchInfo.getInput()).ifPresent(data::putAll);
         Long uid = Optional.ofNullable(data.get("uid")).map(it -> Long.parseLong(String.valueOf(it))).orElse(0L);
-        String dagDescriptor = descriptorManager.getDagDescriptor(uid, data, resource.getSchemeValue());
-        DAG dag = dagBuilder.parse(dagDescriptor);
+        DAG dag = descriptorManager.getDAG(uid, data, resource.getSchemeValue());
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
         data.put("flow_execution_id", executionId);
         DAGSettings dagSettings = DAGSettings.builder()
