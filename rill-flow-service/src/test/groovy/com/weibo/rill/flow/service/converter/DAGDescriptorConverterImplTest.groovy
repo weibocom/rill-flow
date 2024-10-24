@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.strategies
+package com.weibo.rill.flow.service.converter
 
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
@@ -26,12 +26,10 @@ import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
 import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskValidator
-import com.weibo.rill.flow.service.service.DAGDescriptorConverter
-import com.weibo.rill.flow.service.service.DAGDescriptorConverterImpl
 import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
-class CustomDAGProcessStrategyTest extends Specification {
+class DAGDescriptorConverterImplTest extends Specification {
     DAGStringParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
     DAGDescriptorConverter converter = new DAGDescriptorConverterImpl(dagParser: dagParser)
 

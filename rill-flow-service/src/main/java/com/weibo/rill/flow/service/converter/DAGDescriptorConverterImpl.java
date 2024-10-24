@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.service;
+package com.weibo.rill.flow.service.converter;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.LinkedHashMultimap;

@@ -32,7 +32,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.service.DAGDescriptorConverter;
+import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

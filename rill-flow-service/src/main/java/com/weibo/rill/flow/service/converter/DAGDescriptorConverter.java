@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.service;
+package com.weibo.rill.flow.service.converter;
 
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO;
