@@ -160,7 +160,7 @@ public class DescriptorManager {
      */
     public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        DescriptorPO descriptorPO = getDagDescriptorDO(uid, input, dagDescriptorId, false);
+        DescriptorPO descriptorPO = getDagDescriptorPO(uid, input, dagDescriptorId, false);
         return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
     }
 
@@ -189,7 +189,7 @@ public class DescriptorManager {
      *
      * </pre>
      */
-    public DescriptorPO getDagDescriptorDO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    public DescriptorPO getDagDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
@@ -239,7 +239,7 @@ public class DescriptorManager {
 
             String dagDescriptorId = uri.getAuthority();
             // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorPO dagDescriptorPO = getDagDescriptorDO(uid, input, dagDescriptorId, true);
+            DescriptorPO dagDescriptorPO = getDagDescriptorPO(uid, input, dagDescriptorId, true);
             DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
             if (CollectionUtils.isEmpty(dag.getResources())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");
