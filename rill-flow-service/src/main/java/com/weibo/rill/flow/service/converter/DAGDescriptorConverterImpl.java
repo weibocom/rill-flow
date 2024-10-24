@@ -23,7 +23,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
@@ -47,14 +47,14 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
     private DAGStringParser dagParser;
 
     @Override
-    public DAG convertDescriptorDOToDAG(DescriptorDO descriptorDO) {
-        return dagParser.parse(descriptorDO.getDescriptor());
+    public DAG convertDescriptorPOToDAG(DescriptorPO descriptorPO) {
+        return dagParser.parse(descriptorPO.getDescriptor());
     }
 
     @Override
-    public DescriptorDO convertDAGToDescriptorDO(DAG dag) {
+    public DescriptorPO convertDAGToDescriptorPO(DAG dag) {
         String descriptor = dagParser.serialize(dag);
-        return new DescriptorDO(descriptor);
+        return new DescriptorPO(descriptor);
     }
 
     @Override

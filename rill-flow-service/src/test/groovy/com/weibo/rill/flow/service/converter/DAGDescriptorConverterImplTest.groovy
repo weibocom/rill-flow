@@ -19,7 +19,7 @@ package com.weibo.rill.flow.service.converter
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
-import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
@@ -258,7 +258,7 @@ class DAGDescriptorConverterImplTest extends Specification {
                 "    body.world:\n" +
                 "      transform: \"return \\\"hello world\\\";\"\n"
         when:
-        DAG originDag = converter.convertDescriptorDOToDAG(new DescriptorDO(descriptor))
+        DAG originDag = converter.convertDescriptorPOToDAG(new DescriptorPO(descriptor))
         DescriptorVO descriptorVO = converter.convertDAGToDescriptorVO(originDag)
         DAG dag = dagParser.parse(descriptorVO.getDescriptor())
         then:
@@ -437,7 +437,7 @@ class DAGDescriptorConverterImplTest extends Specification {
                 "  end.as: \"\$.functionA.objs.*\"\n" +
                 "end_task_name: \"endPassTask20241018\"\n"
         when:
-        DAG originDag = converter.convertDescriptorDOToDAG(new DescriptorDO(descriptor))
+        DAG originDag = converter.convertDescriptorPOToDAG(new DescriptorPO(descriptor))
         DescriptorVO descriptorVO = converter.convertDAGToDescriptorVO(originDag)
         DAG dag = dagParser.parse(descriptorVO.getDescriptor())
         then:

@@ -27,7 +27,7 @@ import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
@@ -160,8 +160,8 @@ public class DescriptorManager {
      */
     public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        DescriptorDO descriptorDO = getDagDescriptorDO(uid, input, dagDescriptorId, false);
-        return dagDescriptorConverter.convertDescriptorDOToDAG(descriptorDO);
+        DescriptorPO descriptorPO = getDagDescriptorDO(uid, input, dagDescriptorId, false);
+        return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
     }
 
     /**
@@ -189,7 +189,7 @@ public class DescriptorManager {
      *
      * </pre>
      */
-    public DescriptorDO getDagDescriptorDO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    public DescriptorPO getDagDescriptorDO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
@@ -224,7 +224,7 @@ public class DescriptorManager {
             if (StringUtils.isEmpty(descriptor)) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
-            return new DescriptorDO(descriptor);
+            return new DescriptorPO(descriptor);
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
@@ -239,8 +239,8 @@ public class DescriptorManager {
 
             String dagDescriptorId = uri.getAuthority();
             // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorDO dagDescriptorDO = getDagDescriptorDO(uid, input, dagDescriptorId, true);
-            DAG dag = dagDescriptorConverter.convertDescriptorDOToDAG(dagDescriptorDO);
+            DescriptorPO dagDescriptorPO = getDagDescriptorDO(uid, input, dagDescriptorId, true);
+            DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
             if (CollectionUtils.isEmpty(dag.getResources())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");
             }
@@ -504,8 +504,8 @@ public class DescriptorManager {
 
         createAlias(businessId, featureName, alias);
 
-        DescriptorDO descriptorDO = dagDescriptorConverter.convertDAGToDescriptorDO(dag);
-        String descriptor = descriptorDO.getDescriptor();
+        DescriptorPO descriptorPO = dagDescriptorConverter.convertDAGToDescriptorPO(dag);
+        String descriptor = descriptorPO.getDescriptor();
         String md5 = DigestUtils.md5Hex(descriptor);
 
         List<String> keys = Lists.newArrayList();

@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class DescriptorDO {
+public class DescriptorPO {
     private String descriptor;
 }

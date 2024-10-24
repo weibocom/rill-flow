@@ -17,12 +17,12 @@
 package com.weibo.rill.flow.service.converter;
 
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 
 public interface DAGDescriptorConverter {
     DAG convertDescriptorVOToDAG(DescriptorVO descriptorVO);
-    DAG convertDescriptorDOToDAG(DescriptorDO descriptorDO);
+    DAG convertDescriptorPOToDAG(DescriptorPO descriptorPO);
     DescriptorVO convertDAGToDescriptorVO(DAG dag);
-    DescriptorDO convertDAGToDescriptorDO(DAG dag);
+    DescriptorPO convertDAGToDescriptorPO(DAG dag);
 }
