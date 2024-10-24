@@ -220,60 +220,44 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         return JsonPath.using(conf).parse(map).set(path, value).json();
     }
 
-    /**
-     * 处理 List 类型的 jsonPath 元素
-     * @param current 根据上一 jsonPath 元素已经生成的 List 对象
-     * @param part 当前 jsonPath 元素
-     * @param jsonPathParts jsonPath 元素列表
-     * @param i 当前元素索引
-     * @return 处理后的对象
-     */
     private Object processListJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         List<Object> listCurrent = (List<Object>) current;
         int index = Integer.parseInt(part);
-        if (listCurrent.get(index) == null) {
-            if (jsonPathParts.get(i + 1).matches("\\d+")) {
-                List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
-                listCurrent.set(index, nextArray);
-            } else if (i + 1 < jsonPathParts.size() ) {
-                listCurrent.set(index, new HashMap<>());
-            }
+        Object insertPosition = listCurrent.get(index);
+        if (insertPosition != null) {
+            return insertPosition;
         }
-        current = listCurrent.get(index);
-        return current;
+        if (jsonPathParts.get(i + 1).matches("\\d+")) {
+            List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+            listCurrent.set(index, nextArray);
+        } else if (i + 1 < jsonPathParts.size() ) {
+            listCurrent.set(index, new HashMap<>());
+        }
+        return listCurrent.get(index);
     }
 
-    /**
-     * 处理 Map 类型的 jsonPath 元素
-     * @param current 根据上一 jsonPath 元素已经生成的 Map 对象
-     * @param part 当前 jsonPath 元素
-     * @param jsonPathParts jsonPath 元素列表
-     * @param i 当前元素索引
-     * @return 处理后的对象
-     */
     private Object processMapJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         Map<String, Object> mapCurrent = (Map<String, Object>) current;
-        if (!mapCurrent.containsKey(part)) {
-            if (jsonPathParts.get(i + 1).matches("\\d+")) {
-                List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
-                mapCurrent.put(part, nextArray);
-            } else if (i + 1 < jsonPathParts.size()) {
-                mapCurrent.put(part, new HashMap<>());
-            }
+        Object currentValue = mapCurrent.get(part);
+        if (currentValue != null) {
+            return currentValue;
+        }
+        if (jsonPathParts.get(i + 1).matches("\\d+")) {
+            List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+            mapCurrent.put(part, nextArray);
+        } else if (i + 1 < jsonPathParts.size()) {
+            mapCurrent.put(part, new HashMap<>());
         }
         return mapCurrent.get(part);
     }
 
     /**
      * 下一个元素创建数组类型对象，并用 null 值填充指定元素个数
-     * @param jsonPathParts jsonPath 元素列表
-     * @param i 当前元素索引
-     * @return 创建的数组对象
      */
     private List<Object> createAndFillNextArrayPart(List<String> jsonPathParts, int i) {
         List<Object> nextArray = new ArrayList<>();
         int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
-        while (nextArray.size() <= nextIndex) {
+        for (int j = 0; j <= nextIndex; j++) {
             nextArray.add(null);
         }
         return nextArray;

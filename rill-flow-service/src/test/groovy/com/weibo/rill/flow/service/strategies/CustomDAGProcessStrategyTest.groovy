@@ -1,4 +1,20 @@
-package com.weibo.rill.flow.service.service
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package com.weibo.rill.flow.service.strategies
 
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
@@ -12,14 +28,14 @@ import com.weibo.rill.flow.olympicene.ddl.validation.task.impl.NotSupportedTaskV
 import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
-class DescriptorParseServiceImplTest extends Specification {
+class CustomDAGProcessStrategyTest extends Specification {
     DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
-    DescriptorParseServiceImpl descriptorParseService = new DescriptorParseServiceImpl(dagParser: dagParser)
+    CustomDAGProcessStrategy strategy = new CustomDAGProcessStrategy(dagParser: dagParser)
 
     /**
      * 测试常规 input 的解析与 inputMappings 及 outputMappings 的生成
      */
-    def testProcessWhenSetDAG() {
+    def "test transformDescriptor"() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -54,7 +70,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorParseService.processWhenSetDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -86,7 +102,7 @@ class DescriptorParseServiceImplTest extends Specification {
     /**
      * 生成 jsonpath 包含数组情况的 inputMappings 与 outputMappings 的生成
      */
-    def "test ProcessWhenGetDescriptor when include *"() {
+    def "test processDAG when include *"() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -113,7 +129,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorParseService.processWhenSetDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -134,7 +150,7 @@ class DescriptorParseServiceImplTest extends Specification {
     /**
      * 测试 outputMappings 已经存在指定项的情况
      */
-    def "test ProcessWhenGetDescriptor when target exists"() {
+    def 'test transformDescriptor when target exists'() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -163,7 +179,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorParseService.processWhenSetDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -183,7 +199,7 @@ class DescriptorParseServiceImplTest extends Specification {
     /**
      * 测试下发时处理 descriptor 的情况
      */
-    def testProcessWhenGetDescriptor() {
+    def "testTransformDescriptor"() {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
@@ -244,7 +260,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "    body.world:\n" +
                 "      transform: \"return \\\"hello world\\\";\"\n"
         when:
-        String newDescriptor = descriptorParseService.processWhenGetDescriptor(descriptor)
+        String newDescriptor = strategy.transformDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
         then:
         newDag.getTasks().forEach(it -> {
@@ -293,7 +309,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "  end.as: \$.functionA.objs.*\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        descriptorParseService.processWhenSetDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 3
         assert StringUtils.isNotBlank(dag.getEndTaskName())
@@ -423,7 +439,7 @@ class DescriptorParseServiceImplTest extends Specification {
                 "  end.as: \"\$.functionA.objs.*\"\n" +
                 "end_task_name: \"endPassTask20241018\"\n"
         when:
-        String resultDescriptor = descriptorParseService.processWhenGetDescriptor(descriptor)
+        String resultDescriptor = strategy.transformDescriptor(descriptor)
         DAG dag = dagParser.parse(resultDescriptor)
         then:
         assert dag.tasks.size() == 2

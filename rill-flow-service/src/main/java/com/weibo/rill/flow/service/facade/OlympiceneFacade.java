@@ -119,8 +119,7 @@ public class OlympiceneFacade {
     }
 
     public Map<String, Object> submit(Long uid, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
-        String dagDescriptor = descriptorManager.getDagDescriptor(uid, context, descriptorId);
-        DAG dag = dagStringParser.parse(dagDescriptor);
+        DAG dag = descriptorManager.getDAG(uid, context, descriptorId);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
         dagSubmitChecker.check(executionId, resourceCheckConfig);

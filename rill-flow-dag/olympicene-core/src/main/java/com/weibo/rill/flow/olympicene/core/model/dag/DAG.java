@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class DAG {
     private String workspace;
@@ -40,6 +39,7 @@ public class DAG {
     private String version;
     private DAGType type;
     private Timeline timeline;
+    @Setter
     private List<BaseTask> tasks;
     @Setter
     private List<BaseResource> resources;
@@ -50,6 +50,7 @@ public class DAG {
     private Map<String, List<Mapping>> commonMapping;
     private String inputSchema;
     private Map<String, Object> output;
+    @Setter
     private String endTaskName;
 
     @JsonCreator
