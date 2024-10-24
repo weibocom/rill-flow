@@ -25,6 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @Component("dagProcessStrategyContext")
+// 策略模式上下文，管理和保存 Strategy 对象，实现具体策略行为的执行
 public class DAGProcessStrategyContext {
     @Resource
     private Map<String, DAGProcessStrategy> strategies;
