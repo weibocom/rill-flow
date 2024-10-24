@@ -154,14 +154,22 @@ public class DescriptorManager {
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build();
 
-    public String getDagDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
+    /**
+     * 获取 DAG 对象，用于 rill-flow 系统内部流程执行
+     */
+    public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
         String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
-        return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
+        descriptor = dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
+        return dagParser.parse(descriptor);
     }
 
-    public String getDagDescriptorForCustom(Long uid, Map<String, Object> input, String dagDescriptorId) {
-        String descriptor = getDagDescriptor(uid, input, dagDescriptorId);
+    /**
+     * 获取 DAG 描述符，用于提供用户编辑和展示
+     */
+    public String getDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
+        // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
+        String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
         return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
     }
 
@@ -185,7 +193,7 @@ public class DescriptorManager {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
             if (fields.length < 2 || nameInvalid(fields[0], fields[1])) {
-                log.info("getDagDescriptor dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
+                log.info("getDescriptor dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
 
@@ -195,7 +203,7 @@ public class DescriptorManager {
             String thirdField = fields.length > 2 ? fields[2] : null;
             if (StringUtils.isEmpty(thirdField)) {
                 thirdField = getDescriptorAliasByGrayRule(uid, input, businessId, featureName);
-                log.info("getDagDescriptor result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
+                log.info("getDescriptor result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
             if (thirdField.startsWith(MD5_PREFIX)) {
@@ -219,7 +227,7 @@ public class DescriptorManager {
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
-            log.warn("getDagDescriptor fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
+            log.warn("getDescriptor fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
     }

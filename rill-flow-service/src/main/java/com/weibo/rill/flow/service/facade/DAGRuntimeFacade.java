@@ -377,9 +377,8 @@ public class DAGRuntimeFacade {
     }
 
     public Map<String, Object> dependencyCheck(String descriptorId, String descriptor) {
-        String dagDescriptor = StringUtils.isNotBlank(descriptorId) ?
-                descriptorManager.getDagDescriptor(0L, Collections.emptyMap(), descriptorId) : descriptor;
-        DAG dag = dagStringParser.parse(dagDescriptor);
+        DAG dag = StringUtils.isNotBlank(descriptorId) ?
+                descriptorManager.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
         Map<String, List<String>> dependencies = dagWalkHelper.getDependedResources(dag);
         List<Map<String, Object>> resourceToNames = dependencies.entrySet().stream()
                 .map(entry -> ImmutableMap.of("resource_name", entry.getKey(), "names", entry.getValue()))
