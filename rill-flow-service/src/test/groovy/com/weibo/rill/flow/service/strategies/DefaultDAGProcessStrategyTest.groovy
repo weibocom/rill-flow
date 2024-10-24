@@ -28,7 +28,7 @@ class DefaultDAGProcessStrategyTest extends Specification {
         def inputDAG = Mock(DAG)
 
         when:
-        def result = defaultStrategy.processDAG(inputDAG)
+        def result = defaultStrategy.transformDAGProperties(inputDAG)
 
         then:
         result == inputDAG

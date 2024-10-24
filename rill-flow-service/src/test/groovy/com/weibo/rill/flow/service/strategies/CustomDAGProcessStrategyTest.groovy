@@ -70,7 +70,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.processDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -129,7 +129,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.processDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -179,7 +179,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.processDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -309,7 +309,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "  end.as: \$.functionA.objs.*\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.processDAG(dag)
+        strategy.transformDAGProperties(dag)
         then:
         assert dag.getTasks().size() == 3
         assert StringUtils.isNotBlank(dag.getEndTaskName())

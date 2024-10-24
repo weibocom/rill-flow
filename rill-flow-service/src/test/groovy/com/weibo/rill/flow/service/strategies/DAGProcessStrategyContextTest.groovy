@@ -41,10 +41,10 @@ class DAGProcessStrategyContextTest extends Specification {
         DAG outputDag = new DAG()
 
         when:
-        def result = strategyContext.processDAG(inputDag, DAGProcessStrategyContext.CUSTOM_STRATEGY)
+        def result = strategyContext.transformDAGProperties(inputDag, DAGProcessStrategyContext.CUSTOM_STRATEGY)
 
         then:
-        1 * customStrategy.processDAG(inputDag) >> outputDag
+        1 * customStrategy.transformDAGProperties(inputDag) >> outputDag
         result == outputDag
     }
 
@@ -54,10 +54,10 @@ class DAGProcessStrategyContextTest extends Specification {
         DAG outputDag = new DAG()
 
         when:
-        def result = strategyContext.processDAG(inputDag, "nonExistentStrategy")
+        def result = strategyContext.transformDAGProperties(inputDag, "nonExistentStrategy")
 
         then:
-        1 * defaultStrategy.processDAG(inputDag) >> outputDag
+        1 * defaultStrategy.transformDAGProperties(inputDag) >> outputDag
         result == outputDag
     }
 

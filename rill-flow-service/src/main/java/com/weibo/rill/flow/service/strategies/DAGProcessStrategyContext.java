@@ -35,13 +35,13 @@ public class DAGProcessStrategyContext {
     // 供用户编辑使用的策略，上行时添加系统所需的额外属性，下行时去除相应的额外属性
     public static final String CUSTOM_STRATEGY = "customDAGProcessStrategy";
 
-    public DAG processDAG(DAG dag, String strategyName) {
+    public DAG transformDAGProperties(DAG dag, String strategyName) {
         DAGProcessStrategy strategy = strategies.get(strategyName);
         if (strategy == null) {
             log.warn("strategy {} not found on storage", strategyName);
             strategy = strategies.get(DEFAULT_STRATEGY);
         }
-        return strategy.processDAG(dag);
+        return strategy.transformDAGProperties(dag);
     }
 
     public String transformDescriptor(String descriptor, String strategyName) {

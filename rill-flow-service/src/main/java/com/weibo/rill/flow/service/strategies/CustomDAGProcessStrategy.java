@@ -50,7 +50,7 @@ public class CustomDAGProcessStrategy implements DAGProcessStrategy {
      * @param dag 待处理的DAG对象
      */
     @Override
-    public DAG processDAG(DAG dag) {
+    public DAG transformDAGProperties(DAG dag) {
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         // 1. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
         // 返回是否需要后续处理，不需要后续处理则直接返回

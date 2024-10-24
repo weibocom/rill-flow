@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Component(DAGProcessStrategyContext.DEFAULT_STRATEGY)
 public class DefaultDAGProcessStrategy implements DAGProcessStrategy {
     @Override
-    public DAG processDAG(DAG dag) {
+    public DAG transformDAGProperties(DAG dag) {
         return dag;
     }
 

@@ -24,7 +24,7 @@ public interface DAGProcessStrategy {
      * @param dag 工作流对象
      * @return 处理后的工作流对象
      */
-    DAG processDAG(DAG dag);
+    DAG transformDAGProperties(DAG dag);
 
     /**
      * 取回数据时处理 descriptor

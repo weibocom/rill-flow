@@ -500,7 +500,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
-        dag = dagProcessStrategyContext.processDAG(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
+        dag = dagProcessStrategyContext.transformDAGProperties(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
 
         createAlias(businessId, featureName, alias);
 
