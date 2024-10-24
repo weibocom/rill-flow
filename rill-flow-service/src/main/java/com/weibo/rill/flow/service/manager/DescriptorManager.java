@@ -170,6 +170,7 @@ public class DescriptorManager {
     public String getDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
         String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
+        // 在下发给用户展示和编辑之前，对工作流描述符的属性进行处理，去除系统运行所需的属性
         return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
     }
 
@@ -500,6 +501,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
+        // 在存储到 redis 之前，对 DAG 属性进行处理，增加系统运行所需的属性
         dag = dagProcessStrategyContext.transformDAGProperties(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
 
         createAlias(businessId, featureName, alias);
