@@ -20,14 +20,14 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 
 public interface DAGProcessStrategy {
     /**
-     * 存储数据时处理 dag
+     * 对 DAG 对象的某些属性进行增删和修改
      * @param dag 工作流对象
      * @return 处理后的工作流对象
      */
     DAG transformDAGProperties(DAG dag);
 
     /**
-     * 取回数据时处理 descriptor
+     * 对工作流描述符字符串进行处理，增删和修改某些属性
      * @param descriptor 工作流描述
      * @return 处理后的工作流描述
      */
