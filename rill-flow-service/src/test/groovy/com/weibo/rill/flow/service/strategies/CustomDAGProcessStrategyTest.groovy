@@ -199,7 +199,7 @@ class CustomDAGProcessStrategyTest extends Specification {
     /**
      * 测试下发时处理 descriptor 的情况
      */
-    def "test transformDescriptor"() {
+    def "testTransformDescriptor"() {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
