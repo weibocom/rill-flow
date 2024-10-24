@@ -220,9 +220,6 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         return JsonPath.using(conf).parse(map).set(path, value).json();
     }
 
-    /**
-     * 处理 List 类型的 jsonPath 元素
-     */
     private Object processListJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         List<Object> listCurrent = (List<Object>) current;
         int index = Integer.parseInt(part);
@@ -239,9 +236,6 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         return listCurrent.get(index);
     }
 
-    /**
-     * 处理 Map 类型的 jsonPath 元素
-     */
     private Object processMapJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         Map<String, Object> mapCurrent = (Map<String, Object>) current;
         Object currentValue = mapCurrent.get(part);

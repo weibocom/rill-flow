@@ -29,7 +29,9 @@ public class DAGProcessStrategyContext {
     @Resource
     private Map<String, DAGProcessStrategy> strategies;
 
+    // 默认处理策略，返回原数据
     public static final String DEFAULT_STRATEGY = "defaultDAGProcessStrategy";
+    // 供用户编辑使用的策略，上行时添加系统所需的额外属性，下行时去除相应的额外属性
     public static final String CUSTOM_STRATEGY = "customDAGProcessStrategy";
 
     public DAG onStorage(DAG dag, String strategyName) {
