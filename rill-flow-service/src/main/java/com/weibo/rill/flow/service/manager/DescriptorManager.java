@@ -504,10 +504,10 @@ public class DescriptorManager {
 
         createAlias(businessId, featureName, alias);
 
-        String descriptor = descriptorVO.getDescriptor();
+        DescriptorDO descriptorDO = dagDescriptorConverter.convertDAGToDescriptorDO(dag);
+        String descriptor = descriptorDO.getDescriptor();
         String md5 = DigestUtils.md5Hex(descriptor);
 
-        DescriptorDO descriptorDO = dagDescriptorConverter.convertDAGToDescriptorDO(dag);
         List<String> keys = Lists.newArrayList();
         List<String> argv = Lists.newArrayList();
         keys.add(buildVersionRedisKey(businessId, featureName, alias));
@@ -515,7 +515,7 @@ public class DescriptorManager {
         argv.add(String.valueOf(versionMaxCount));
         argv.add(String.valueOf(System.currentTimeMillis()));
         argv.add(md5);
-        argv.add(descriptorDO.getDescriptor());
+        argv.add(descriptor);
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
         return buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
