@@ -24,12 +24,12 @@ public interface DAGProcessStrategy {
      * @param dag 工作流对象
      * @return 处理后的工作流对象
      */
-    DAG onStorage(DAG dag);
+    DAG processDAG(DAG dag);
 
     /**
      * 取回数据时处理 descriptor
      * @param descriptor 工作流描述
      * @return 处理后的工作流描述
      */
-    String onRetrieval(String descriptor);
+    String transformDescriptor(String descriptor);
 }

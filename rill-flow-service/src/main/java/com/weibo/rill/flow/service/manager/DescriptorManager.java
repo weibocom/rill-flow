@@ -157,12 +157,12 @@ public class DescriptorManager {
     public String getDagDescriptor(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
         String descriptor = getDagDescriptorWithCache(uid, input, dagDescriptorId, false);
-        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
+        return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.DEFAULT_STRATEGY);
     }
 
-    public String getDagDescriptorForClient(Long uid, Map<String, Object> input, String dagDescriptorId) {
+    public String getDagDescriptorForCustom(Long uid, Map<String, Object> input, String dagDescriptorId) {
         String descriptor = getDagDescriptor(uid, input, dagDescriptorId);
-        return dagProcessStrategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
+        return dagProcessStrategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY);
     }
 
     /**
@@ -492,7 +492,7 @@ public class DescriptorManager {
                     businessId, dag.getWorkspace(), featureName, dag.getDagName());
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
-        dag = dagProcessStrategyContext.onStorage(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
+        dag = dagProcessStrategyContext.processDAG(dag, DAGProcessStrategyContext.CUSTOM_STRATEGY);
 
         createAlias(businessId, featureName, alias);
 

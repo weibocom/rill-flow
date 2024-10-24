@@ -35,55 +35,55 @@ class DAGProcessStrategyContextTest extends Specification {
         ]
     }
 
-    def "onStorage should use the specified strategy when it exists"() {
+    def "processDAG should use the specified strategy when it exists"() {
         given:
         DAG inputDag = new DAG()
         DAG outputDag = new DAG()
 
         when:
-        def result = strategyContext.onStorage(inputDag, DAGProcessStrategyContext.CUSTOM_STRATEGY)
+        def result = strategyContext.processDAG(inputDag, DAGProcessStrategyContext.CUSTOM_STRATEGY)
 
         then:
-        1 * customStrategy.onStorage(inputDag) >> outputDag
+        1 * customStrategy.processDAG(inputDag) >> outputDag
         result == outputDag
     }
 
-    def "onStorage should use the default strategy when specified strategy doesn't exist"() {
+    def "processDAG should use the default strategy when specified strategy doesn't exist"() {
         given:
         DAG inputDag = new DAG()
         DAG outputDag = new DAG()
 
         when:
-        def result = strategyContext.onStorage(inputDag, "nonExistentStrategy")
+        def result = strategyContext.processDAG(inputDag, "nonExistentStrategy")
 
         then:
-        1 * defaultStrategy.onStorage(inputDag) >> outputDag
+        1 * defaultStrategy.processDAG(inputDag) >> outputDag
         result == outputDag
     }
 
-    def "onRetrieval should use the specified strategy when it exists"() {
+    def "transformDescriptor should use the specified strategy when it exists"() {
         given:
         String descriptor = "testDescriptor"
         String processedDescriptor = "processedTestDescriptor"
 
         when:
-        def result = strategyContext.onRetrieval(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY)
+        def result = strategyContext.transformDescriptor(descriptor, DAGProcessStrategyContext.CUSTOM_STRATEGY)
 
         then:
-        1 * customStrategy.onRetrieval(descriptor) >> processedDescriptor
+        1 * customStrategy.transformDescriptor(descriptor) >> processedDescriptor
         result == processedDescriptor
     }
 
-    def "onRetrieval should use the default strategy when specified strategy doesn't exist"() {
+    def "transformDescriptor should use the default strategy when specified strategy doesn't exist"() {
         given:
         String descriptor = "testDescriptor"
         String processedDescriptor = "processedTestDescriptor"
 
         when:
-        def result = strategyContext.onRetrieval(descriptor, "nonExistentStrategy")
+        def result = strategyContext.transformDescriptor(descriptor, "nonExistentStrategy")
 
         then:
-        1 * defaultStrategy.onRetrieval(descriptor) >> processedDescriptor
+        1 * defaultStrategy.transformDescriptor(descriptor) >> processedDescriptor
         result == processedDescriptor
     }
 }

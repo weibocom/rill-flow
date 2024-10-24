@@ -23,23 +23,23 @@ class DefaultDAGProcessStrategyTest extends Specification {
     
     def defaultStrategy = new DefaultDAGProcessStrategy()
 
-    def "test onStorage method"() {
+    def 'test processDAG method'() {
         given:
         def inputDAG = Mock(DAG)
 
         when:
-        def result = defaultStrategy.onStorage(inputDAG)
+        def result = defaultStrategy.processDAG(inputDAG)
 
         then:
         result == inputDAG
     }
 
-    def "test onRetrieval method"() {
+    def 'test transformDescriptor method'() {
         given:
         def inputDescriptor = "test descriptor"
 
         when:
-        def result = defaultStrategy.onRetrieval(inputDescriptor)
+        def result = defaultStrategy.transformDescriptor(inputDescriptor)
 
         then:
         result == inputDescriptor

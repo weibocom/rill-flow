@@ -22,12 +22,12 @@ import org.springframework.stereotype.Component;
 @Component(DAGProcessStrategyContext.DEFAULT_STRATEGY)
 public class DefaultDAGProcessStrategy implements DAGProcessStrategy {
     @Override
-    public DAG onStorage(DAG dag) {
+    public DAG processDAG(DAG dag) {
         return dag;
     }
 
     @Override
-    public String onRetrieval(String descriptor) {
+    public String transformDescriptor(String descriptor) {
         return descriptor;
     }
 }

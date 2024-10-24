@@ -35,7 +35,7 @@ class CustomDAGProcessStrategyTest extends Specification {
     /**
      * 测试常规 input 的解析与 inputMappings 及 outputMappings 的生成
      */
-    def "test onStorage"() {
+    def "test transformDescriptor"() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -70,7 +70,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.onStorage(dag)
+        strategy.processDAG(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -102,7 +102,7 @@ class CustomDAGProcessStrategyTest extends Specification {
     /**
      * 生成 jsonpath 包含数组情况的 inputMappings 与 outputMappings 的生成
      */
-    def "test onRetrieval when include *"() {
+    def "test processDAG when include *"() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -129,7 +129,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.onStorage(dag)
+        strategy.processDAG(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -150,7 +150,7 @@ class CustomDAGProcessStrategyTest extends Specification {
     /**
      * 测试 outputMappings 已经存在指定项的情况
      */
-    def "test onRetrieval when target exists"() {
+    def 'test transformDescriptor when target exists'() {
         given:
         String descriptor = "workspace: default\n" +
                 "dagName: testGenerateOutputMappings\n" +
@@ -179,7 +179,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    pattern: task_sync\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.onStorage(dag)
+        strategy.processDAG(dag)
         then:
         assert dag.getTasks().size() == 2
         for (BaseTask task : dag.getTasks()) {
@@ -199,7 +199,7 @@ class CustomDAGProcessStrategyTest extends Specification {
     /**
      * 测试下发时处理 descriptor 的情况
      */
-    def testonRetrieval() {
+    def "test transformDescriptor"() {
         given:
         String descriptor = "workspace: \"default\"\n" +
                 "dagName: \"testGenerateOutputMappings\"\n" +
@@ -260,7 +260,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "    body.world:\n" +
                 "      transform: \"return \\\"hello world\\\";\"\n"
         when:
-        String newDescriptor = strategy.onRetrieval(descriptor)
+        String newDescriptor = strategy.transformDescriptor(descriptor)
         DAG newDag = dagParser.parse(newDescriptor)
         then:
         newDag.getTasks().forEach(it -> {
@@ -309,7 +309,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "  end.as: \$.functionA.objs.*\n"
         DAG dag = dagParser.parse(descriptor)
         when:
-        strategy.onStorage(dag)
+        strategy.processDAG(dag)
         then:
         assert dag.getTasks().size() == 3
         assert StringUtils.isNotBlank(dag.getEndTaskName())
@@ -439,7 +439,7 @@ class CustomDAGProcessStrategyTest extends Specification {
                 "  end.as: \"\$.functionA.objs.*\"\n" +
                 "end_task_name: \"endPassTask20241018\"\n"
         when:
-        String resultDescriptor = strategy.onRetrieval(descriptor)
+        String resultDescriptor = strategy.transformDescriptor(descriptor)
         DAG dag = dagParser.parse(resultDescriptor)
         then:
         assert dag.tasks.size() == 2
