@@ -22,7 +22,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorDO
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask
-import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser
 import com.weibo.rill.flow.olympicene.ddl.serialize.YAMLSerializer
 import com.weibo.rill.flow.olympicene.ddl.validation.dag.impl.FlowDAGValidator
@@ -33,7 +32,7 @@ import org.junit.platform.commons.util.StringUtils
 import spock.lang.Specification
 
 class CustomDAGProcessStrategyTest extends Specification {
-    DAGParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
+    DAGStringParser dagParser = new DAGStringParser(new YAMLSerializer(), [new FlowDAGValidator([new NotSupportedTaskValidator()])])
     DAGDescriptorConverter converter = new DAGDescriptorConverterImpl(dagParser: dagParser)
 
     /**
