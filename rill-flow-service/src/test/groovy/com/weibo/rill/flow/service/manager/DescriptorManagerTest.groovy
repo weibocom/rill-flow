@@ -45,7 +45,7 @@ class DescriptorManagerTest extends Specification {
     def "test getDagDescriptorPO with invalid dagDescriptorId"() {
         given:
         def uid = 123L
-        def input = [:]
+        Map<String, Object> input = [:]
         def dagDescriptorId = "invalid:id"
 
         when:
@@ -58,7 +58,7 @@ class DescriptorManagerTest extends Specification {
     def "test getDagDescriptorPO with empty descriptor"() {
         given:
         def uid = 123L
-        def input = [:]
+        Map<String, Object> input = [:]
         def dagDescriptorId = "business:feature:alias"
 
         when:
@@ -90,7 +90,7 @@ class DescriptorManagerTest extends Specification {
     def "test getDAG with invalid input"() {
         given:
         def uid = 123L
-        def input = [:]
+        Map<String, Object> input = [:]
         def dagDescriptorId = "invalid:id"
 
         when:
@@ -124,7 +124,7 @@ class DescriptorManagerTest extends Specification {
     def "test getDescriptorVO with invalid input"() {
         given:
         def uid = 123L
-        def input = [:]
+        Map<String, Object> input = [:]
         def dagDescriptorId = "invalid:id"
 
         when:
@@ -132,6 +132,65 @@ class DescriptorManagerTest extends Specification {
 
         then:
         thrown(TaskException)
+    }
+
+    def "test getDagDescriptorPO with dagDescriptorId having only one field"() {
+        given:
+        def uid = 123L
+        Map<String, Object> input = [:]
+        def dagDescriptorId = "business"
+
+        when:
+        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+
+        then:
+        thrown(TaskException)
+    }
+
+    def "test getDagDescriptorPO with invalid business or feature name"() {
+        given:
+        def uid = 123L
+        Map<String, Object> input = [:]
+        def dagDescriptorId = "business:feature!"
+
+        when:
+        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+
+        then:
+        thrown(TaskException)
+    }
+
+    def "test getDagDescriptorPO with empty third field"() {
+        given:
+        def uid = 123L
+        Map<String, Object> input = [:]
+        def dagDescriptorId = "business:feature"
+        def descriptorContent = "descriptor content"
+
+        when:
+        def result = descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+
+        then:
+        1 * redisClient.hgetAll(_, _) >> [release: "true"]
+        1 * redisClient.zrange(_, _, -1, -1) >> ["md5hash"]
+        1 * redisClient.get(_, _) >> descriptorContent
+        result.descriptor == descriptorContent
+    }
+
+    def "test getDagDescriptorPO with MD5 prefix in third field"() {
+        given:
+        long uid = 123L
+        Map<String, Object> input = [:]
+        String md5 = "1234567890abcdef"
+        String dagDescriptorId = "business:feature:md5_${md5}"
+        String descriptorContent = "descriptor content"
+
+        when:
+        def result = descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+
+        then:
+        1 * redisClient.get(_, _) >> descriptorContent
+        result.descriptor == descriptorContent
     }
 
     
