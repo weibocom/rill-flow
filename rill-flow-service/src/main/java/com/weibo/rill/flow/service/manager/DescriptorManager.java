@@ -30,7 +30,6 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
 import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
@@ -137,8 +136,6 @@ public class DescriptorManager {
     @Autowired
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
-    @Autowired
-    private DAGStringParser dagParser;
     @Autowired
     private AviatorCache aviatorCache;
     @Autowired
