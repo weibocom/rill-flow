@@ -303,7 +303,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
         endPassTask.setCategory("pass");
         // 由于图的 end 任务没有后续任务，所以需要生成它的 outputMappings 来实现将参数传递的信息放入到 context 中
         endPassTask.setOutputMappings(dag.getOutput().keySet().stream()
-                .map(key -> new Mapping(INPUT_PREFIX + key, CONTEXT_PREFIX + key)).toList());
+                .map(key -> new Mapping("$.output." + key, CONTEXT_PREFIX + key)).toList());
 
         taskMap.put(DAG_END_TASK_NAME, endPassTask);
         dag.getTasks().add(endPassTask);

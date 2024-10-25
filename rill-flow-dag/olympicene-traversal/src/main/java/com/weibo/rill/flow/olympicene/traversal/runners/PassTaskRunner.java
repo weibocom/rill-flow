@@ -31,6 +31,7 @@ import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -59,7 +60,7 @@ public class PassTaskRunner extends AbstractTaskRunner {
         log.info("pass task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         if (CollectionUtils.isNotEmpty(taskInfo.getTask().getOutputMappings())) {
             Map<String, Object> context = ContextHelper.getInstance().getContext(dagContextStorage, executionId, taskInfo);
-            outputMappings(context, input, input, taskInfo.getTask().getOutputMappings());
+            outputMappings(context, new HashMap<>(), input, taskInfo.getTask().getOutputMappings());
             saveContext(executionId, context, Sets.newHashSet(taskInfo));
         }
 
