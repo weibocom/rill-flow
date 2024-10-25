@@ -332,9 +332,9 @@ class DAGDescriptorConverterImplTest extends Specification {
                 assert inputMappings.contains(new Mapping("\$.context.functionB.output.y", "\$.input.end.y"))
                 assert inputMappings.contains(new Mapping("\$.context.functionA.objs.*", "\$.input.end.as"))
                 assert outputMappings.size() == 3
-                assert outputMappings.contains(new Mapping("\$.input.end.x", "\$.context.end.x"))
-                assert outputMappings.contains(new Mapping("\$.input.end.y", "\$.context.end.y"))
-                assert outputMappings.contains(new Mapping("\$.input.end.as", "\$.context.end.as"))
+                assert outputMappings.contains(new Mapping("\$.output.end.x", "\$.context.end.x"))
+                assert outputMappings.contains(new Mapping("\$.output.end.y", "\$.context.end.y"))
+                assert outputMappings.contains(new Mapping("\$.output.end.as", "\$.context.end.as"))
             }
         }}
     }
