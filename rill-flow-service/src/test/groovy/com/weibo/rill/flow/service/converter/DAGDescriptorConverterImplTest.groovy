@@ -19,6 +19,7 @@ package com.weibo.rill.flow.service.converter
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping
 import com.weibo.rill.flow.interfaces.model.task.BaseTask
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGType
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask
@@ -447,5 +448,92 @@ class DAGDescriptorConverterImplTest extends Specification {
             assert task.getInputMappings() == null
             assert task.getOutputMappings() == null
         }}
+    }
+
+    def "test convertDescriptorPOToDAG"() {
+        given:
+        String descriptor = """
+            workspace: default
+            dagName: testSubmit
+            alias: release
+            type: flow
+            tasks:
+              - next: pass1
+                name: pass
+                category: pass
+                inputMappings:
+                  - source: \$.context.id
+                    target: \$.input.id
+                outputMappings:
+                  - source: \$.input.id
+                    target: \$.context.pass.id
+              - next: pass2
+                name: pass1
+                category: pass
+                inputMappings:
+                  - source: \$.context.pass.id
+                    target: \$.input.pass.id
+                outputMappings:
+                  - target: \$.context.pass1.id
+                    transform: return input["pass"]["id"] + 1;
+              - name: pass2
+                category: pass
+        """
+        DescriptorPO descriptorPO = new DescriptorPO(descriptor)
+
+        when:
+        DAG dag = converter.convertDescriptorPOToDAG(descriptorPO)
+
+        then:
+        dag != null
+        dag.dagName == "testSubmit"
+        dag.type.getValue() == "flow"
+        dag.tasks.size() == 3
+        dag.getTasks().get(0).getName() == "pass"
+        dag.getTasks().get(0).getNext() == "pass1"
+        dag.getTasks().get(0).getInputMappings().size() == 1
+        dag.getTasks().get(0).getInputMappings().get(0).source == "\$.context.id"
+        dag.getTasks().get(0).getInputMappings().get(0).target == "\$.input.id"
+        dag.getTasks().get(0).getOutputMappings().size() == 1
+        dag.getTasks().get(0).getOutputMappings().get(0).source == "\$.input.id"
+        dag.getTasks().get(0).getOutputMappings().get(0).target == "\$.context.pass.id"
+        dag.getTasks().get(1).getName() == "pass1"
+        dag.getTasks().get(1).getNext() == "pass2"
+        dag.getTasks().get(1).getInputMappings().size() == 1
+        dag.getTasks().get(1).getInputMappings().get(0).source == "\$.context.pass.id"
+        dag.getTasks().get(1).getInputMappings().get(0).target == "\$.input.pass.id"
+        dag.getTasks().get(1).getOutputMappings().size() == 1
+        dag.getTasks().get(1).getOutputMappings().get(0).source == null
+        dag.getTasks().get(1).getOutputMappings().get(0).target == "\$.context.pass1.id"
+        dag.getTasks().get(1).getOutputMappings().get(0).transform == "return input[\"pass\"][\"id\"] + 1;"
+    }
+
+    def "test convertDAGToDescriptorPO"() {
+        given:
+        
+        BaseTask taskA = new PassTask()
+        taskA.setName("taskA")
+        taskA.setCategory("function")
+        taskA.setNext("taskB")
+        taskA.setInput(["body.param": "hello"])
+
+        BaseTask taskB = new PassTask()
+        taskB.setName("taskB")
+        taskB.setCategory("function")
+        taskB.setInput(["body.data": "\$.taskA.output.data"])
+        DAG dag = new DAG(dagName: "testConvertDAGToDescriptorPO", type: DAGType.FLOW, tasks:[taskA, taskB])
+
+        when:
+        DescriptorPO descriptorPO = converter.convertDAGToDescriptorPO(dag)
+
+        then:
+        descriptorPO != null
+        String descriptor = descriptorPO.getDescriptor()
+        descriptor.contains("dagName: \"testConvertDAGToDescriptorPO\"")
+        descriptor.contains("type: \"flow\"")
+        descriptor.contains("name: \"taskA\"")
+        descriptor.contains("next: \"taskB\"")
+        descriptor.contains("name: \"taskB\"")
+        descriptor.contains("body.data: \"\$.taskA.output.data\"")
     }
 }
