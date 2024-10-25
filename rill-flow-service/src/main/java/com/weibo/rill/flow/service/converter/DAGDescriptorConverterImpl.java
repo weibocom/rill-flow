@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.strategies;
+package com.weibo.rill.flow.service.converter;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.LinkedHashMultimap;
@@ -23,34 +23,43 @@ import com.jayway.jsonpath.JsonPath;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.model.task.PassTask;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component(DAGProcessStrategyContext.CUSTOM_STRATEGY)
-public class CustomDAGProcessStrategy implements DAGProcessStrategy {
-
+@Component
+public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
     private static final String CONTEXT_PREFIX = "$.context.";
     private static final String INPUT_PREFIX = "$.input.";
     private static final String DAG_END_TASK_NAME = "endPassTask";
 
-    @Resource
+    @Autowired
     private DAGStringParser dagParser;
 
-    /**
-     * 设置 DAG 时的处理
-     * @param dag 待处理的DAG对象
-     */
     @Override
-    public DAG transformDAGProperties(DAG dag) {
+    public DAG convertDescriptorPOToDAG(DescriptorPO descriptorPO) {
+        return dagParser.parse(descriptorPO.getDescriptor());
+    }
+
+    @Override
+    public DescriptorPO convertDAGToDescriptorPO(DAG dag) {
+        String descriptor = dagParser.serialize(dag);
+        return new DescriptorPO(descriptor);
+    }
+
+    @Override
+    public DAG convertDescriptorVOToDAG(DescriptorVO descriptorVO) {
+        DAG dag = dagParser.parse(descriptorVO.getDescriptor());
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         // 1. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
         // 返回是否需要后续处理，不需要后续处理则直接返回
@@ -64,6 +73,34 @@ public class CustomDAGProcessStrategy implements DAGProcessStrategy {
         // 4. 将生成的 outputMappings 设置到对应的 task
         generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
         return dag;
+    }
+
+    @Override
+    public DescriptorVO convertDAGToDescriptorVO(DAG dag) {
+        // 1. 解析 descriptor，获取 taskName 到 task 的映射 map，并判断是否需要后续处理
+        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
+        if (!needsPostProcessing(dag, taskMap)) {
+            return new DescriptorVO(dagParser.serialize(dag));
+        }
+
+        // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理，同时在任务列表中删除 DAG 结束节点
+        List<BaseTask> tasks = taskMap.values().stream().filter(task -> !task.getName().equals(dag.getEndTaskName()))
+                .map(task -> processTask(task, dag.getEndTaskName())).toList();
+
+        // 3. 重新序列化生成 descriptor
+        dag.setTasks(tasks);
+        dag.setEndTaskName(null);
+        return new DescriptorVO(dagParser.serialize(dag));
+    }
+
+    /**
+     * DAG获取任务名称到任务的映射
+     */
+    private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
+        if (CollectionUtils.isEmpty(dag.getTasks())) {
+            return Maps.newHashMap();
+        }
+        return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
     }
 
     /**
@@ -132,16 +169,6 @@ public class CustomDAGProcessStrategy implements DAGProcessStrategy {
             nextSet.add(taskName);
             task.setNext(String.join(",", nextSet));
         }
-    }
-
-    /**
-     * DAG获取任务名称到任务的映射
-     */
-    private Map<String, BaseTask> getTaskMapByDag(DAG dag) {
-        if (CollectionUtils.isEmpty(dag.getTasks())) {
-            return Maps.newHashMap();
-        }
-        return dag.getTasks().stream().collect(Collectors.toMap(BaseTask::getName, Function.identity()));
     }
 
     /**
@@ -281,28 +308,6 @@ public class CustomDAGProcessStrategy implements DAGProcessStrategy {
         taskMap.put(DAG_END_TASK_NAME, endPassTask);
         dag.getTasks().add(endPassTask);
         return endPassTask;
-    }
-
-    /**
-     * 处理获取描述符时的逻辑
-     */
-    @Override
-    public String transformDescriptor(String descriptor) {
-        // 1. 解析 descriptor，获取 taskName 到 task 的映射 map，并判断是否需要后续处理
-        DAG dag = dagParser.parse(descriptor);
-        Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        if (!needsPostProcessing(dag, taskMap)) {
-            return descriptor;
-        }
-
-        // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理，同时在任务列表中删除 DAG 结束节点
-        List<BaseTask> tasks = taskMap.values().stream().filter(task -> !task.getName().equals(dag.getEndTaskName()))
-                .map(task -> processTask(task, dag.getEndTaskName())).toList();
-
-        // 3. 重新序列化生成 descriptor
-        dag.setTasks(tasks);
-        dag.setEndTaskName(null);
-        return dagParser.serialize(dag);
     }
 
     /**

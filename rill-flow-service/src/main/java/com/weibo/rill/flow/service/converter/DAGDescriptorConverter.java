@@ -14,20 +14,15 @@
  *    limitations under the License.
  */
 
-package com.weibo.rill.flow.service.strategies;
+package com.weibo.rill.flow.service.converter;
 
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import org.springframework.stereotype.Component;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
+import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 
-@Component(DAGProcessStrategyContext.DEFAULT_STRATEGY)
-public class DefaultDAGProcessStrategy implements DAGProcessStrategy {
-    @Override
-    public DAG transformDAGProperties(DAG dag) {
-        return dag;
-    }
-
-    @Override
-    public String transformDescriptor(String descriptor) {
-        return descriptor;
-    }
+public interface DAGDescriptorConverter {
+    DAG convertDescriptorVOToDAG(DescriptorVO descriptorVO);
+    DAG convertDescriptorPOToDAG(DescriptorPO descriptorPO);
+    DescriptorVO convertDAGToDescriptorVO(DAG dag);
+    DescriptorPO convertDAGToDescriptorPO(DAG dag);
 }

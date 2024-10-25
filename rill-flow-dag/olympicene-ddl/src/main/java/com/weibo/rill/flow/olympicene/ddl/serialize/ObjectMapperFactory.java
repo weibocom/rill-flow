@@ -53,6 +53,7 @@ public class ObjectMapperFactory {
     }
 
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory()
+            .configure(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID, false)
             .configure(YAMLGenerator.Feature.WRITE_DOC_START_MARKER, false)
             .configure(YAMLGenerator.Feature.USE_NATIVE_OBJECT_ID, false);
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(YAML_FACTORY);
