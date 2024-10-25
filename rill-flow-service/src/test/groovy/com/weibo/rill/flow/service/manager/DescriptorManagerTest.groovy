@@ -7,6 +7,7 @@ import com.weibo.rill.flow.service.converter.DAGDescriptorConverter
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
+import org.apache.commons.codec.digest.DigestUtils
 import spock.lang.Specification
 
 class DescriptorManagerTest extends Specification {
@@ -193,5 +194,82 @@ class DescriptorManagerTest extends Specification {
         result.descriptor == descriptorContent
     }
 
-    
+    def "test createDAGDescriptor with valid input"() {
+        given:
+        def businessId = "testBusiness"
+        def featureName = "testFeature"
+        def alias = "testAlias"
+        def descriptorVO = new DescriptorVO()
+        def dag = new DAG(workspace: businessId, dagName: featureName)
+        def descriptorPO = new DescriptorPO("test descriptor content")
+        def md5 = DigestUtils.md5Hex(descriptorPO.getDescriptor())
+
+        when:
+        def result = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO)
+
+        then:
+        1 * dagDescriptorConverter.convertDescriptorVOToDAG(descriptorVO) >> dag
+        1 * dagDescriptorConverter.convertDAGToDescriptorPO(dag) >> descriptorPO
+        1 * redisClient.eval(_, businessId, _, _) >> "OK"
+        result == "${businessId}:${featureName}:md5_${md5}"
+    }
+
+    def "test createDAGDescriptor with null descriptorVO"() {
+        given:
+        def businessId = "testBusiness"
+        def featureName = "testFeature"
+        def alias = "testAlias"
+
+        when:
+        descriptorManager.createDAGDescriptor(businessId, featureName, alias, null)
+
+        then:
+        thrown(TaskException)
+    }
+
+    def "test createDAGDescriptor with invalid businessId"() {
+        given:
+        def businessId = "invalid business"
+        def featureName = "testFeature"
+        def alias = "testAlias"
+        def descriptorVO = new DescriptorVO()
+
+        when:
+        descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO)
+
+        then:
+        thrown(TaskException)
+    }
+
+    def "test createDAGDescriptor with mismatched businessId"() {
+        given:
+        def businessId = "testBusiness"
+        def featureName = "testFeature"
+        def alias = "testAlias"
+        def descriptorVO = new DescriptorVO()
+        def dag = new DAG(workspace: "differentBusiness", dagName: featureName)
+
+        when:
+        descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO)
+
+        then:
+        1 * dagDescriptorConverter.convertDescriptorVOToDAG(descriptorVO) >> dag
+        thrown(TaskException)
+    }
+
+    def "test createDAGDescriptor with mismatched featureName"() {
+        given:
+        def businessId = "testBusiness"
+        def featureName = "testFeature"
+        def alias = "testAlias"
+        def descriptorVO = new DescriptorVO()
+        def dag = new DAG(workspace: businessId, dagName: "differentFeature")
+
+        when:
+        descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO)
+
+        then:
+        1 * dagDescriptorConverter.convertDescriptorVOToDAG(descriptorVO) >> dag
+        thrown(TaskException)
+    }
 }
