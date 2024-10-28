@@ -143,7 +143,7 @@ public class DescriptorManager {
     @Autowired
     private DAGDescriptorConverter dagDescriptorConverter;
 
-    private final Cache<String, String> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()
+    private final Cache<String, DescriptorPO> descriptorRedisKeyToYamlCache = CacheBuilder.newBuilder()
             .maximumSize(300)
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build();
@@ -164,7 +164,7 @@ public class DescriptorManager {
     /**
      * 获取 DAG 描述符，用于提供用户编辑和展示
      */
-    public DescriptorVO getDescriptorVO(Long uid, Map<String, Object> input, String dagDescriptorId) {
+    public DescriptorVO getDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
         DAG dag = getDAG(uid, input, dagDescriptorId);
         // 在下发给用户展示和编辑之前，对工作流描述符的属性进行处理，去除系统运行所需的属性
@@ -191,7 +191,7 @@ public class DescriptorManager {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
             if (fields.length < 2 || nameInvalid(fields[0], fields[1])) {
-                log.info("getDescriptorVO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
+                log.info("getDagDescriptorPO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
 
@@ -201,7 +201,7 @@ public class DescriptorManager {
             String thirdField = fields.length > 2 ? fields[2] : null;
             if (StringUtils.isEmpty(thirdField)) {
                 thirdField = getDescriptorAliasByGrayRule(uid, input, businessId, featureName);
-                log.info("getDescriptorVO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
+                log.info("getDagDescriptorPO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
             if (thirdField.startsWith(MD5_PREFIX)) {
@@ -215,17 +215,17 @@ public class DescriptorManager {
             }
 
             // 根据redisKey获取文件内容
-            String descriptor = switcherManagerImpl.getSwitcherState("ENABLE_GET_DESCRIPTOR_FROM_CACHE") ?
-                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorVO(businessId, descriptorRedisKey)) :
-                    getDescriptorVO(businessId, descriptorRedisKey);
-            if (StringUtils.isEmpty(descriptor)) {
+            DescriptorPO descriptorPO = switcherManagerImpl.getSwitcherState("ENABLE_GET_DESCRIPTOR_FROM_CACHE") ?
+                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorPO(businessId, descriptorRedisKey)) :
+                    getDescriptorPO(businessId, descriptorRedisKey);
+            if (descriptorPO == null || StringUtils.isEmpty(descriptorPO.getDescriptor())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
-            return new DescriptorPO(descriptor);
+            return descriptorPO;
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
-            log.warn("getDescriptorVO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
+            log.warn("getDagDescriptorPO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
     }
@@ -259,8 +259,9 @@ public class DescriptorManager {
         }
     }
 
-    private String getDescriptorVO(String businessId, String descriptorRedisKey) {
-        return redisClient.get(businessId, descriptorRedisKey);
+    private DescriptorPO getDescriptorPO(String businessId, String descriptorRedisKey) {
+        String descriptor = redisClient.get(businessId, descriptorRedisKey);
+        return descriptor == null? null: new DescriptorPO(descriptor);
     }
 
     private String getDescriptorAliasByGrayRule(Long uid, Map<String, Object> input, String businessId, String featureName) {

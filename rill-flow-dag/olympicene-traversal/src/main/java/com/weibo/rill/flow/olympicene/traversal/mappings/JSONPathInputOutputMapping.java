@@ -239,11 +239,9 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         Map<String, Object> mapCurrent = (Map<String, Object>) current;
         Object currentValue = mapCurrent.get(part);
         if (jsonPathParts.get(i + 1).matches("\\d+")) {
-            // 1. 下一个元素是数字，也就是数组的索引，所以需要创建数组并且填充到索引位置
             List<Object> nextArray = createAndFillNextArrayPart(currentValue, jsonPathParts, i);
             mapCurrent.put(part, nextArray);
         } else if (i + 1 < jsonPathParts.size() && currentValue == null) {
-            // 2. 下一个元素不是数字，则创建 map
             mapCurrent.put(part, new HashMap<>());
         }
         return mapCurrent.get(part);
