@@ -20,6 +20,9 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 
+/**
+ * DAG Descriptor 转换器，用于在 DescriptorPO、DAG（DTO）、DescriptorVO 之间进行转换，分别用于存储、流程处理和展示
+ */
 public interface DAGDescriptorConverter {
     DAG convertDescriptorVOToDAG(DescriptorVO descriptorVO);
     DAG convertDescriptorPOToDAG(DescriptorPO descriptorPO);

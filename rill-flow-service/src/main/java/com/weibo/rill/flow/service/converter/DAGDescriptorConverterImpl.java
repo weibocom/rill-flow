@@ -39,9 +39,9 @@ import java.util.stream.Collectors;
 
 @Component
 public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
-    private static final String CONTEXT_PREFIX = "$.context.";
+    private static final String CONTEXT_PREFIX = "$.context";
     private static final String INPUT_PREFIX = "$.input.";
-    private static final String DAG_END_TASK_NAME = "endPassTask";
+    private static final String DAG_END_TASK_NAME = "endTask";
 
     @Autowired
     private DAGStringParser dagParser;
@@ -61,15 +61,16 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
     public DAG convertDescriptorVOToDAG(DescriptorVO descriptorVO) {
         DAG dag = dagParser.parse(descriptorVO.getDescriptor());
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
-        // 1. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
-        boolean needProcess = processInputToGenerateInputMappings(dag, taskMap);
+        // 1. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings
+        // 将 input 中的来源直接作为 source，如 $.functionA.data.id
+        boolean needProcess = generateOriginInputMappingsByInput(dag, taskMap);
         if (!needProcess) {
             return dag;
         }
-        // 2. 处理任务的 inputMappings，返回各任务 inputMappings 的 source 对应的元素列表的列表
+        // 2. 处理任务的 inputMappings，返回各任务 inputMappings 的 source 对应的元素列表
         // task_name => [["functionA", "data", "id"], ["functionB", "data", "id"]]
-        LinkedHashMultimap<String, List<String>> taskPathsMap = processTaskInputMappings(dag, taskMap);
-        // 3. 通过各个任务 inputMappings 对应的元素列表的列表，生成任务的 outputMappings
+        LinkedHashMultimap<String, List<String>> taskPathsMap = updateInputMappings(dag, taskMap);
+        // 3. 通过各个任务 inputMappings 对应的元素列表，生成任务的 outputMappings
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
         // 4. 将生成的 outputMappings 设置到对应的 task
         generateOutputMappingsIntoTasks(outputMappingsMultimap, taskMap);
@@ -84,11 +85,11 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
             return new DescriptorVO(dagParser.serialize(dag));
         }
 
-        // 2. 对非结束节点的任务进行处理，包括 inputMappings、outputMappings 等的处理，同时在任务列表中删除 DAG 结束节点
+        // 2. 对非结束任务的 inputMappings、outputMappings 等进行处理，同时在任务列表中删除 DAG 结束节点
         List<BaseTask> tasks = taskMap.values().stream().filter(task -> !task.getName().equals(dag.getEndTaskName()))
                 .map(task -> processTask(task, dag.getEndTaskName())).toList();
 
-        // 3. 重新序列化生成 descriptor
+        // 3. 重新序列化生成 DescriptorVO 对象，用于展示
         dag.setTasks(tasks);
         dag.setEndTaskName(null);
         return new DescriptorVO(dagParser.serialize(dag));
@@ -110,26 +111,26 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      * @param taskMap 任务映射
      * @return 任务路径映射，如 functionB 任务的 inputMappings 包含两条，source 分别为：
      *         $["functionA"]["data"][0]["id"] 和 $["functionA"]["data"][0]["name"]
-     *         则返回： ["functionB": [["data", "0", "id"], ["data", "1", "id"]]]
+     *         则返回： ["functionB": [["data", "0", "id"], ["data", "0", "name"]]]
      */
-    private LinkedHashMultimap<String, List<String>> processTaskInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
+    private LinkedHashMultimap<String, List<String>> updateInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
         LinkedHashMultimap<String, List<String>> taskPathsMap = LinkedHashMultimap.create();
-        dag.getTasks().forEach(task -> processTaskInputMapping(task, taskMap, taskPathsMap, dag.getEndTaskName()));
+        dag.getTasks().forEach(task -> updateInputMappingAndFillPathMap(task, taskMap, taskPathsMap, dag.getEndTaskName()));
         return taskPathsMap;
     }
 
     /**
-     * 分析和处理任务的 inputMappings，并将结果填充到 taskPathsMap
+     * 分析和处理任务的原始 inputMappings，并将结果填充到 taskPathsMap
      * @param task 待处理的任务
      * @param taskMap 任务映射
      * @param taskPathsMap 任务路径映射
      * @param endTaskName 结束任务名称
      */
-    private void processTaskInputMapping(BaseTask task, Map<String, BaseTask> taskMap,
-                                         LinkedHashMultimap<String, List<String>> taskPathsMap, String endTaskName) {
+    private void updateInputMappingAndFillPathMap(BaseTask task, Map<String, BaseTask> taskMap,
+                                                  LinkedHashMultimap<String, List<String>> taskPathsMap, String endTaskName) {
         for (Mapping inputMapping : task.getInputMappings()) {
             List<String> elements = getSourcePathElementsByMapping(inputMapping);
-            if (elements.size() < 2) {
+            if (elements.size() <= 1) {
                 continue;
             }
             String outputTaskName = elements.get(1);
@@ -153,7 +154,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      */
     private void updateInputMapping(Mapping inputMapping, String outputTaskName, List<String> elements,
                                     LinkedHashMultimap<String, List<String>> taskPathsMap) {
-        inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
+        inputMapping.setSource(CONTEXT_PREFIX + inputMapping.getSource().substring(1));
         taskPathsMap.put(outputTaskName, elements.subList(2, elements.size()));
     }
 
@@ -172,7 +173,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
     }
 
     /**
-     * 将 inputMapping 中的 source 解析为 element 数组，如 $["functionA"]["data"]["ids"], 则返回 ["functionA", "data", "ids"]
+     * 将 inputMapping 中的 source 解析为 element 数组，如 $["functionA"]["data"]["ids"], 则返回 ["$", "functionA", "data", "ids"]
      */
     private List<String> getSourcePathElementsByMapping(Mapping inputMapping) {
         if (inputMapping.getSource() == null || !inputMapping.getSource().startsWith("$.")) {
@@ -204,7 +205,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
             if (task != null) {
                 List<Mapping> outputMappings = Optional.ofNullable(task.getOutputMappings()).orElse(new ArrayList<>());
                 Set<String> targets = outputMappings.stream().map(Mapping::getTarget).collect(Collectors.toSet());
-                String target = CONTEXT_PREFIX + taskName + path;
+                String target = CONTEXT_PREFIX + "." + taskName + path;
                 if (!targets.contains(target)) {
                     outputMappings.add(new Mapping("$.output" + path, target));
                     task.setOutputMappings(outputMappings);
@@ -250,15 +251,15 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
 
     /**
      * 根据 task 的 input 以及 dag 的 output，生成任务的 inputMappings
-     * @return 是否通过新版本的任务 input 或 DAG output 配置，意即是否需要后续处理
+     * @return 是否通过任务 input 或 DAG output 配置，也就是是否需要后续处理
      */
-    private boolean processInputToGenerateInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
+    private boolean generateOriginInputMappingsByInput(DAG dag, Map<String, BaseTask> taskMap) {
         if (CollectionUtils.isEmpty(dag.getTasks())) {
             return false;
         }
-        // 1. 根据 dag 的 output 生成图的 end 任务
+        // 1. 根据 dag 的 output 生成图的 end 任务，用于设置图的最终输出信息
         PassTask endPassTask = generateEndPassTask(dag, taskMap);
-        boolean needPostProcess = endPassTask != null;
+        boolean existInput = false;
         // 2. 生成各个任务原始的 inputMappings，此时 source 内容仍然为 input 中的原始配置
         // 如 input 为 "id: $.functionA.id" 则生成的 inputMapping 的 source 为 $.functionA.id，target 为 $.input.id
         for (BaseTask task : dag.getTasks()) {
@@ -266,7 +267,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
             if (MapUtils.isEmpty(taskInput)) {
                 continue;
             } else {
-                needPostProcess = true;
+                existInput = true;
             }
             List<Mapping> inputMappings = task.getInputMappings() == null ? new ArrayList<>() : task.getInputMappings();
             taskInput.entrySet().stream().filter(entry -> entry.getKey() != null && entry.getValue() != null).forEach(entry -> {
@@ -284,7 +285,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
             });
             task.setInputMappings(inputMappings);
         }
-        return needPostProcess;
+        return endPassTask != null || existInput;
     }
 
     /**
@@ -294,14 +295,17 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
         if (MapUtils.isEmpty(dag.getOutput())) {
             return null;
         }
+        if (taskMap.get(DAG_END_TASK_NAME) != null) {
+            throw new IllegalArgumentException(DAG_END_TASK_NAME + " exists, please rename the task");
+        }
         dag.setEndTaskName(DAG_END_TASK_NAME);
         PassTask endPassTask = new PassTask();
         endPassTask.setName(DAG_END_TASK_NAME);
         endPassTask.setInput(dag.getOutput());
         endPassTask.setCategory("pass");
-        // 由于图的 end 任务没有后续任务，所以需要生成它的 outputMappings 来实现将参数传递的信息放入到 context 中
+        // 生成 end 任务的 outputMappings 来实现将参数传递的信息放入到 context 中
         endPassTask.setOutputMappings(dag.getOutput().keySet().stream()
-                .map(key -> new Mapping("$.output." + key, CONTEXT_PREFIX + key)).toList());
+                .map(key -> new Mapping("$.output." + key, CONTEXT_PREFIX + "." + key)).toList());
 
         taskMap.put(DAG_END_TASK_NAME, endPassTask);
         dag.getTasks().add(endPassTask);
@@ -351,7 +355,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
             return;
         }
         List<Mapping> newOutputMappings = outputMappings.stream()
-                .filter(mapping -> !mapping.getTarget().startsWith(CONTEXT_PREFIX + task.getName() + ".")).toList();
+                .filter(mapping -> !mapping.getTarget().startsWith(CONTEXT_PREFIX + "." + task.getName() + ".")).toList();
         task.setOutputMappings(CollectionUtils.isEmpty(newOutputMappings)? null: newOutputMappings);
     }
 
