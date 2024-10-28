@@ -104,10 +104,11 @@ class JSONPathTest extends Specification {
         mapping.getValue(map, path) == value
 
         where:
-        map                        | _
-        [:]                        | _
-        ['context': 123]           | _
-        ['input': ['type': 'gif']] | _
+        map                                        | _
+        [:]                                        | _
+        ['context': 123]                           | _
+        ['input': ['type': 'gif']]                 | _
+        ['input': ['meta': ['user': [['id': 1]]]]] | _
     }
 
     def "set value intermediate route test contains dot"() {
