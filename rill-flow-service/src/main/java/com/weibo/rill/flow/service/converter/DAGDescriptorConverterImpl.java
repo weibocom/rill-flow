@@ -62,12 +62,13 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
         DAG dag = dagParser.parse(descriptorVO.getDescriptor());
         Map<String, BaseTask> taskMap = getTaskMapByDag(dag);
         // 1. 处理 task 的 input 以及 dag 的 output，为任务生成原始的 inputMappings（input 中的来源直接作为 source，如 $.functionA.data.id）
-        // 返回是否需要后续处理，不需要后续处理则直接返回
-        if (!processInputToGenerateInputMappings(dag, taskMap)) {
+        boolean needProcess = processInputToGenerateInputMappings(dag, taskMap);
+        if (!needProcess) {
             return dag;
         }
         // 2. 处理任务的 inputMappings，返回各任务 inputMappings 的 source 对应的元素列表的列表
-        Map<String, List<List<String>>> taskPathsMap = processTaskInputMappings(dag, taskMap);
+        // task_name => [["functionA", "data", "id"], ["functionB", "data", "id"]]
+        LinkedHashMultimap<String, List<String>> taskPathsMap = processTaskInputMappings(dag, taskMap);
         // 3. 通过各个任务 inputMappings 对应的元素列表的列表，生成任务的 outputMappings
         LinkedHashMultimap<String, String> outputMappingsMultimap = getOutputMappingsByPaths(taskPathsMap);
         // 4. 将生成的 outputMappings 设置到对应的 task
@@ -111,8 +112,8 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      *         $["functionA"]["data"][0]["id"] 和 $["functionA"]["data"][0]["name"]
      *         则返回： ["functionB": [["data", "0", "id"], ["data", "1", "id"]]]
      */
-    private Map<String, List<List<String>>> processTaskInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
-        Map<String, List<List<String>>> taskPathsMap = new HashMap<>();
+    private LinkedHashMultimap<String, List<String>> processTaskInputMappings(DAG dag, Map<String, BaseTask> taskMap) {
+        LinkedHashMultimap<String, List<String>> taskPathsMap = LinkedHashMultimap.create();
         dag.getTasks().forEach(task -> processTaskInputMapping(task, taskMap, taskPathsMap, dag.getEndTaskName()));
         return taskPathsMap;
     }
@@ -125,7 +126,7 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      * @param endTaskName 结束任务名称
      */
     private void processTaskInputMapping(BaseTask task, Map<String, BaseTask> taskMap,
-                                         Map<String, List<List<String>>> taskPathsMap, String endTaskName) {
+                                         LinkedHashMultimap<String, List<String>> taskPathsMap, String endTaskName) {
         for (Mapping inputMapping : task.getInputMappings()) {
             List<String> elements = getSourcePathElementsByMapping(inputMapping);
             if (elements.size() < 2) {
@@ -151,10 +152,9 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      * @param taskPathsMap 任务路径映射
      */
     private void updateInputMapping(Mapping inputMapping, String outputTaskName, List<String> elements,
-                                    Map<String, List<List<String>>> taskPathsMap) {
+                                    LinkedHashMultimap<String, List<String>> taskPathsMap) {
         inputMapping.setSource("$.context" + inputMapping.getSource().substring(1));
-        taskPathsMap.computeIfAbsent(outputTaskName, k -> new ArrayList<>())
-                .add(elements.subList(2, elements.size()));
+        taskPathsMap.put(outputTaskName, elements.subList(2, elements.size()));
     }
 
     /**
@@ -216,15 +216,13 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
     /**
      * 根据 path 元素列表，生成任务的 outputMappings
      */
-    private LinkedHashMultimap<String, String> getOutputMappingsByPaths(Map<String, List<List<String>>> taskPathsMap) {
+    private LinkedHashMultimap<String, String> getOutputMappingsByPaths(LinkedHashMultimap<String, List<String>> taskPathsMap) {
         LinkedHashMultimap<String, String> result = LinkedHashMultimap.create();
 
-        for (Map.Entry<String, List<List<String>>> taskPathElementsEntry: taskPathsMap.entrySet()) {
+        for (Map.Entry<String, List<String>> taskPathElementsEntry: taskPathsMap.entries()) {
             String taskName = taskPathElementsEntry.getKey();
-            List<List<String>> elementsList = taskPathElementsEntry.getValue();
-            for (List<String> elements: elementsList) {
-                processPathElements(elements, result, taskName);
-            }
+            List<String> elementsList = taskPathElementsEntry.getValue();
+            processPathElements(elementsList, result, taskName);
         }
         return result;
     }
