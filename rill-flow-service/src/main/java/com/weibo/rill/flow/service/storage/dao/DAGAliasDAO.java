@@ -40,8 +40,6 @@ public class DAGAliasDAO {
     @Autowired
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
-    @Autowired
-    private DAGFeatureDAO dagFeatureDAO;
 
     public boolean createAlias(String businessId, String featureName, String alias) {
         if (DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
@@ -50,7 +48,6 @@ public class DAGAliasDAO {
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
 
-        dagFeatureDAO.createFeature(businessId, featureName);
         redisClient.sadd(businessId, DAGDescriptorUtil.buildAliasRedisKey(businessId, featureName), Lists.newArrayList(alias));
         return true;
     }

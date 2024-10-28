@@ -29,10 +29,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.manager.AviatorCache;
-import com.weibo.rill.flow.service.storage.dao.DAGABTestDAO;
-import com.weibo.rill.flow.service.storage.dao.DAGAliasDAO;
-import com.weibo.rill.flow.service.storage.dao.DAGDescriptorDAO;
-import com.weibo.rill.flow.service.storage.dao.DAGGrayDAO;
+import com.weibo.rill.flow.service.storage.dao.*;
 import com.weibo.rill.flow.service.util.DAGDescriptorUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -59,11 +56,15 @@ public class DAGDescriptorService {
     @Autowired
     private DAGAliasDAO dagAliasDAO;
     @Autowired
+    private DAGFeatureDAO dagFeatureDAO;
+    @Autowired
     private DAGDescriptorDAO dagDescriptorDAO;
     @Autowired
     private DAGDescriptorConverter dagDescriptorConverter;
     @Autowired
     private DAGGrayDAO dagGrayDAO;
+    @Autowired
+    private DAGBusinessDAO dagBusinessDAO;
     @Autowired
     private AviatorCache aviatorCache;
     @Autowired
@@ -93,6 +94,8 @@ public class DAGDescriptorService {
             throw new TaskException(BizError.ERROR_DATA_FORMAT, "name not match");
         }
 
+        dagBusinessDAO.createBusiness(businessId);
+        dagFeatureDAO.createFeature(businessId, featureName);
         dagAliasDAO.createAlias(businessId, featureName, alias);
 
         DescriptorPO descriptorPO = dagDescriptorConverter.convertDAGToDescriptorPO(dag);

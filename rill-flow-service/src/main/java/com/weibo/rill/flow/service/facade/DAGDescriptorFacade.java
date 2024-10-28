@@ -91,8 +91,13 @@ public class DAGDescriptorFacade {
     }
 
     public Map<String, Object> modifyFeature(boolean add, String businessId, String featureName) {
-        boolean ret = add ?
-                dagFeatureDAO.createFeature(businessId, featureName) : dagFeatureDAO.remFeature(businessId, featureName);
+        boolean ret;
+        if (add) {
+            dagBusinessDAO.createBusiness(businessId);
+            ret = dagFeatureDAO.createFeature(businessId, featureName);
+        } else {
+            ret = dagFeatureDAO.remFeature(businessId, featureName);
+        }
         return ImmutableMap.of(RET, ret);
     }
 
@@ -101,8 +106,14 @@ public class DAGDescriptorFacade {
     }
 
     public Map<String, Object> modifyAlias(boolean add, String businessId, String featureName, String alias) {
-        boolean ret = add ?
-                dagAliasDAO.createAlias(businessId, featureName, alias) : dagAliasDAO.remAlias(businessId, featureName, alias);
+        boolean ret;
+        if (add) {
+            dagBusinessDAO.createBusiness(businessId);
+            dagFeatureDAO.createFeature(businessId, featureName);
+            ret = dagAliasDAO.createAlias(businessId, featureName, alias);
+        } else {
+            ret = dagAliasDAO.remAlias(businessId, featureName, alias);
+        }
         return ImmutableMap.of(RET, ret);
     }
 
@@ -113,9 +124,15 @@ public class DAGDescriptorFacade {
     }
 
     public Map<String, Object> modifyGray(String identity, boolean add, String businessId, String featureName, String alias, String grayRule) {
-        boolean ret = add ?
-                dagGrayDAO.createGray(businessId, featureName, alias, grayRule) :
-                dagGrayDAO.remGray(businessId, featureName, alias);
+        boolean ret;
+        if (add) {
+            dagBusinessDAO.createBusiness(businessId);
+            dagFeatureDAO.createFeature(businessId, featureName);
+            dagAliasDAO.createAlias(businessId, featureName, alias);
+            ret = dagGrayDAO.createGray(businessId, featureName, alias, grayRule);
+        } else {
+            ret = dagGrayDAO.remGray(businessId, featureName, alias);
+        }
 
         DAGDescriptorEvent.DAGDescriptorOperation operation = DAGDescriptorEvent.DAGDescriptorOperation.builder().add(add)
                 .identity(identity)

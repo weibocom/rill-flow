@@ -34,16 +34,12 @@ public class DAGFeatureDAO {
     @Autowired
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
-    @Autowired
-    private DAGBusinessDAO dagBusinessDAO;
 
     public boolean createFeature(String businessId, String featureName) {
         if (DAGDescriptorUtil.nameInvalid(businessId, featureName)) {
             log.info("createFeature params invalid, businessId:{}, serviceName:{}", businessId, featureName);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
-
-        dagBusinessDAO.createBusiness(businessId);
         redisClient.sadd(businessId, DAGDescriptorUtil.buildFeatureRedisKey(businessId), Lists.newArrayList(featureName));
         return true;
     }

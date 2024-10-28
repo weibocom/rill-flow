@@ -36,8 +36,6 @@ public class DAGGrayDAO {
     @Autowired
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
-    @Autowired
-    private DAGAliasDAO dagAliasDAO;
 
     public boolean createGray(String businessId, String featureName, String alias, String grayRule) {
         if (StringUtils.isEmpty(grayRule) || DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
@@ -45,8 +43,6 @@ public class DAGGrayDAO {
                     businessId, featureName, alias, grayRule);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
-
-        dagAliasDAO.createAlias(businessId, featureName, alias);
         redisClient.hmset(businessId, DAGDescriptorUtil.buildGrayRedisKey(businessId, featureName), ImmutableMap.of(alias, grayRule));
         return true;
     }
