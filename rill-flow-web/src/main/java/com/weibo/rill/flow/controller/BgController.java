@@ -20,11 +20,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableMap;
 import com.weibo.rill.flow.common.model.DAGRecord;
-import com.weibo.rill.flow.common.model.User;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.service.trace.TraceableContextWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,7 +56,7 @@ public class BgController {
     private String traceQueryHost;
 
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
 
     @Autowired
     private DAGDescriptorFacade dagDescriptorFacade;
@@ -96,10 +95,10 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
-            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
-                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
-                    List<Map> versions = descriptorManager.getVersion(bussinessId, featureId, alia);
+        dagDescriptorManager.getBusiness().stream().forEach(bussinessId -> {
+            dagDescriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
+                dagDescriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
+                    List<Map> versions = dagDescriptorManager.getVersion(bussinessId, featureId, alia);
                     if (CollectionUtils.isNotEmpty(versions)) {
                         DAGRecord record = DAGRecord.builder()
                                 .businessId(bussinessId)

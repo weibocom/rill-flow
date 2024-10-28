@@ -34,7 +34,7 @@ import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -68,7 +68,7 @@ public class DAGDescriptorFacade {
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
     @Autowired
     @Qualifier("descriptorRedisClient")
     private RedisClient redisClient;
@@ -78,40 +78,40 @@ public class DAGDescriptorFacade {
     private DAGSubmitChecker dagSubmitChecker;
 
     public Map<String, Object> modifyBusiness(boolean add, String businessId) {
-        boolean ret = add ? descriptorManager.createBusiness(businessId) : descriptorManager.remBusiness(businessId);
+        boolean ret = add ? dagDescriptorManager.createBusiness(businessId) : dagDescriptorManager.remBusiness(businessId);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getBusiness() {
-        return ImmutableMap.of(BUSINESS_IDS, descriptorManager.getBusiness());
+        return ImmutableMap.of(BUSINESS_IDS, dagDescriptorManager.getBusiness());
     }
 
     public Map<String, Object> modifyFeature(boolean add, String businessId, String featureName) {
         boolean ret = add ?
-                descriptorManager.createFeature(businessId, featureName) : descriptorManager.remFeature(businessId, featureName);
+                dagDescriptorManager.createFeature(businessId, featureName) : dagDescriptorManager.remFeature(businessId, featureName);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getFeature(String businessId) {
-        return ImmutableMap.of(BUSINESS_ID, businessId, FEATURES, descriptorManager.getFeature(businessId));
+        return ImmutableMap.of(BUSINESS_ID, businessId, FEATURES, dagDescriptorManager.getFeature(businessId));
     }
 
     public Map<String, Object> modifyAlias(boolean add, String businessId, String featureName, String alias) {
         boolean ret = add ?
-                descriptorManager.createAlias(businessId, featureName, alias) : descriptorManager.remAlias(businessId, featureName, alias);
+                dagDescriptorManager.createAlias(businessId, featureName, alias) : dagDescriptorManager.remAlias(businessId, featureName, alias);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getAlias(String businessId, String featureName) {
         return ImmutableMap.of(BUSINESS_ID, businessId,
                 FEATURE, featureName,
-                ALIASES, descriptorManager.getAlias(businessId, featureName));
+                ALIASES, dagDescriptorManager.getAlias(businessId, featureName));
     }
 
     public Map<String, Object> modifyGray(String identity, boolean add, String businessId, String featureName, String alias, String grayRule) {
         boolean ret = add ?
-                descriptorManager.createGray(businessId, featureName, alias, grayRule) :
-                descriptorManager.remGray(businessId, featureName, alias);
+                dagDescriptorManager.createGray(businessId, featureName, alias, grayRule) :
+                dagDescriptorManager.remGray(businessId, featureName, alias);
 
         DAGDescriptorEvent.DAGDescriptorOperation operation = DAGDescriptorEvent.DAGDescriptorOperation.builder().add(add)
                 .identity(identity)
@@ -129,16 +129,16 @@ public class DAGDescriptorFacade {
     public Map<String, Object> getGray(String businessId, String featureName) {
         return ImmutableMap.of(BUSINESS_ID, businessId,
                 FEATURE, featureName,
-                GRAY, descriptorManager.getGray(businessId, featureName));
+                GRAY, dagDescriptorManager.getGray(businessId, featureName));
     }
 
     public Map<String, Object> getABConfigKey(String businessId) {
-        return ImmutableMap.of(BUSINESS_ID, businessId, "config_keys", descriptorManager.getABConfigKey(businessId));
+        return ImmutableMap.of(BUSINESS_ID, businessId, "config_keys", dagDescriptorManager.getABConfigKey(businessId));
     }
 
     public Map<String, Object> modifyFunctionAB(String identity, boolean add, String businessId, String configKey, String resourceName, String abRule) {
-        boolean ret = add ? descriptorManager.createFunctionAB(businessId, configKey, resourceName, abRule) :
-                descriptorManager.remFunctionAB(businessId, configKey, resourceName);
+        boolean ret = add ? dagDescriptorManager.createFunctionAB(businessId, configKey, resourceName, abRule) :
+                dagDescriptorManager.remFunctionAB(businessId, configKey, resourceName);
 
         DAGDescriptorEvent.DAGDescriptorOperation operation = DAGDescriptorEvent.DAGDescriptorOperation.builder().add(add)
                 .identity(identity)
@@ -155,7 +155,7 @@ public class DAGDescriptorFacade {
     }
 
     public Map<String, Object> getFunctionAB(String businessId, String configKey) {
-        Pair<String, Map<String, String>> functionAB = descriptorManager.getFunctionAB(businessId, configKey);
+        Pair<String, Map<String, String>> functionAB = dagDescriptorManager.getFunctionAB(businessId, configKey);
         Map<String, Object> ab = Maps.newHashMap();
         ab.put("default_resource_name", functionAB.getLeft());
         ab.put("rules", functionAB.getRight().entrySet().stream()
@@ -170,7 +170,7 @@ public class DAGDescriptorFacade {
                 BUSINESS_ID, businessId,
                 FEATURE, featureName,
                 ALIAS, alias,
-                VERSIONS, descriptorManager.getVersion(businessId, featureName, alias));
+                VERSIONS, dagDescriptorManager.getVersion(businessId, featureName, alias));
     }
 
     public Map<String, Object> addDescriptor(String identity, String businessId, String featureName, String alias, String descriptor) {
@@ -179,7 +179,7 @@ public class DAGDescriptorFacade {
                 dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
             }
             DescriptorVO descriptorVO = new DescriptorVO(descriptor);
-            String descriptorId = descriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO);
+            String descriptorId = dagDescriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO);
 
             Map<String, String> attachments = Maps.newHashMap();
             String attachmentName = String.format("descriptor-%s_%s_%s.txt", businessId, featureName, alias);
@@ -208,14 +208,14 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
-        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(uid, input, descriptorId);
+        DescriptorVO descriptorVO = dagDescriptorManager.getDescriptorVO(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
                 DESCRIPTOR, descriptorVO.getDescriptor());
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(null, null, descriptorId);
+        DescriptorVO descriptorVO = dagDescriptorManager.getDescriptorVO(null, null, descriptorId);
         JSONObject descriptorObject = yamlToJson(descriptorVO.getDescriptor());
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);

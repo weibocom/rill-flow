@@ -18,7 +18,7 @@ package com.weibo.rill.flow.service.dispatcher;
 
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
@@ -35,7 +35,7 @@ import java.util.Optional;
 @Service("resourceRefDispatcher")
 public class ResourceRefProtocolDispatcher implements DispatcherExtension {
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
     @Autowired
     private ResourceProtocolDispatcher resourceProtocolDispatcher;
 
@@ -43,7 +43,7 @@ public class ResourceRefProtocolDispatcher implements DispatcherExtension {
     public String handle(Resource resource, DispatchInfo dispatchInfo) {
         Map<String, Object> data =Optional.ofNullable(dispatchInfo.getInput()).orElse(Maps.newHashMap());
         Long uid = Optional.ofNullable(data.get("uid")).map(it -> Long.parseLong(String.valueOf(it))).orElse(0L);
-        BaseResource baseResource = descriptorManager.getTaskResource(uid, data, resource.getScheme());
+        BaseResource baseResource = dagDescriptorManager.getTaskResource(uid, data, resource.getScheme());
 
         ((FunctionTask) dispatchInfo.getTaskInfo().getTask()).setResource(baseResource);
         log.info("handle invoke super method logic, executionId:{} taskName:{}", dispatchInfo.getExecutionId(), dispatchInfo.getTaskInfo().getName());

@@ -26,7 +26,7 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
 import com.weibo.rill.flow.olympicene.traversal.dispatcher.DAGDispatcher;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class FunctionTaskDispatcher implements DAGDispatcher {
-    private final DescriptorManager descriptorManager;
+    private final DAGDescriptorManager dagDescriptorManager;
     private final HttpInvokeHelper httpInvokeHelper;
     public static final Map<String, DispatcherExtension> protocolDispatcherMap = new ConcurrentHashMap<>();
     public FunctionTaskDispatcher(@Autowired @Qualifier("functionDispatcher") FunctionProtocolDispatcher functionDispatcher,
@@ -51,7 +51,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
                                   @Autowired @Qualifier("httpDispatcher") HttpProtocolDispatcher httpDispatcher,
                                   @Autowired @Qualifier("resourceDispatcher") ResourceProtocolDispatcher resourceDispatcher,
                                   @Autowired @Qualifier("resourceRefDispatcher") ResourceRefProtocolDispatcher resourceRefDispatcher,
-                                  @Autowired DescriptorManager descriptorManager,
+                                  @Autowired DAGDescriptorManager dagDescriptorManager,
                                   @Autowired HttpInvokeHelper httpInvokeHelper) {
         protocolDispatcherMap.put("function", functionDispatcher);
         protocolDispatcherMap.put("http", httpDispatcher);
@@ -59,7 +59,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
         protocolDispatcherMap.put("rillflow", flowDispatcher);
         protocolDispatcherMap.put("resource", resourceDispatcher);
         protocolDispatcherMap.put("resourceRef", resourceRefDispatcher);
-        this.descriptorManager = descriptorManager;
+        this.dagDescriptorManager = dagDescriptorManager;
         this.httpInvokeHelper = httpInvokeHelper;
     }
 
@@ -109,7 +109,7 @@ public class FunctionTaskDispatcher implements DAGDispatcher {
             Long uid = Optional.ofNullable(input.get("uid"))
                     .map(it -> Long.parseLong(String.valueOf(it)))
                     .orElse(0L);
-            String calculatedResourceName = descriptorManager.calculateResourceName(uid, input, executionId, resource.getSchemeValue());
+            String calculatedResourceName = dagDescriptorManager.calculateResourceName(uid, input, executionId, resource.getSchemeValue());
             resource = new Resource(calculatedResourceName);
             updateResourceName(executionId, calculatedResourceName, dispatchInfo.getTaskInfo());
         }

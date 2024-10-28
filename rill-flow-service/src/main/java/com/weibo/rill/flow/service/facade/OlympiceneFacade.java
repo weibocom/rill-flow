@@ -38,14 +38,13 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
 import com.weibo.rill.flow.olympicene.traversal.Olympicene;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
@@ -77,11 +76,9 @@ public class OlympiceneFacade {
     private static final String CODE = "code";
 
     @Autowired
-    private DAGStringParser dagStringParser;
-    @Autowired
     private Olympicene olympicene;
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
     @Autowired
     private SystemMonitorStatistic systemMonitorStatistic;
     @Autowired
@@ -119,7 +116,7 @@ public class OlympiceneFacade {
     }
 
     public Map<String, Object> submit(Long uid, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
-        DAG dag = descriptorManager.getDAG(uid, context, descriptorId);
+        DAG dag = dagDescriptorManager.getDAG(uid, context, descriptorId);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
         dagSubmitChecker.check(executionId, resourceCheckConfig);

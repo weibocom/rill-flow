@@ -45,7 +45,7 @@ import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapp
 import com.weibo.rill.flow.service.component.DAGToolConverter;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.manager.AviatorCache;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
@@ -80,7 +80,7 @@ public class DAGRuntimeFacade {
     @Autowired
     private LongTermStorage longTermStorage;
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
     @Autowired
     private DAGResourceStatistic dagResourceStatistic;
     @Autowired
@@ -378,7 +378,7 @@ public class DAGRuntimeFacade {
 
     public Map<String, Object> dependencyCheck(String descriptorId, String descriptor) {
         DAG dag = StringUtils.isNotBlank(descriptorId) ?
-                descriptorManager.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
+                dagDescriptorManager.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
         Map<String, List<String>> dependencies = dagWalkHelper.getDependedResources(dag);
         List<Map<String, Object>> resourceToNames = dependencies.entrySet().stream()
                 .map(entry -> ImmutableMap.of("resource_name", entry.getKey(), "names", entry.getValue()))
@@ -433,7 +433,7 @@ public class DAGRuntimeFacade {
                     .featureId(feature)
                     .build());
         } else if (StringUtils.isNotEmpty(business) && StringUtils.isEmpty(feature)) {
-            descriptorManager.getFeature(business).forEach(featureId -> {
+            dagDescriptorManager.getFeature(business).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(business)
                         .featureId(featureId)
@@ -441,7 +441,7 @@ public class DAGRuntimeFacade {
                 dagRecordList.add(record);
             });
         } else {
-            descriptorManager.getBusiness().forEach(businessId -> descriptorManager.getFeature(businessId).forEach(featureId -> {
+            dagDescriptorManager.getBusiness().forEach(businessId -> dagDescriptorManager.getFeature(businessId).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(businessId)
                         .featureId(featureId)

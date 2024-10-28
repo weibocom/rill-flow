@@ -10,8 +10,8 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
 import org.apache.commons.codec.digest.DigestUtils
 import spock.lang.Specification
 
-class DescriptorManagerTest extends Specification {
-    DescriptorManager descriptorManager
+class DAGDescriptorManagerTest extends Specification {
+    DAGDescriptorManager descriptorManager
     RedisClient redisClient
     SwitcherManager switcherManager
     DAGDescriptorConverter dagDescriptorConverter
@@ -20,14 +20,14 @@ class DescriptorManagerTest extends Specification {
         redisClient = Mock(RedisClient)
         switcherManager = Mock(SwitcherManager)
         dagDescriptorConverter = Mock(DAGDescriptorConverter)
-        descriptorManager = new DescriptorManager(
+        descriptorManager = new DAGDescriptorManager(
                 redisClient: redisClient,
                 switcherManagerImpl: switcherManager,
                 dagDescriptorConverter: dagDescriptorConverter
         )
     }
 
-    def "test getDagDescriptorPO with valid input"() {
+    def 'test getDescriptorPO with valid input'() {
         given:
         def uid = 123L
         def input = [key: "value"]
@@ -35,7 +35,7 @@ class DescriptorManagerTest extends Specification {
         def descriptorContent = "descriptor content"
 
         when:
-        def result = descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        def result = descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         1 * redisClient.zrange(_, _, -1, -1) >> ["md5hash"]
@@ -43,14 +43,14 @@ class DescriptorManagerTest extends Specification {
         result.descriptor == descriptorContent
     }
 
-    def "test getDagDescriptorPO with invalid dagDescriptorId"() {
+    def 'test getDagDescriptorPO with invalid DescriptorId'() {
         given:
         def uid = 123L
         Map<String, Object> input = [:]
         def dagDescriptorId = "invalid:id"
 
         when:
-        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         thrown(TaskException)
@@ -63,7 +63,7 @@ class DescriptorManagerTest extends Specification {
         def dagDescriptorId = "business:feature:alias"
 
         when:
-        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         thrown(TaskException)
@@ -142,7 +142,7 @@ class DescriptorManagerTest extends Specification {
         def dagDescriptorId = "business"
 
         when:
-        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         thrown(TaskException)
@@ -155,7 +155,7 @@ class DescriptorManagerTest extends Specification {
         def dagDescriptorId = "business:feature!"
 
         when:
-        descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         thrown(TaskException)
@@ -169,7 +169,7 @@ class DescriptorManagerTest extends Specification {
         def descriptorContent = "descriptor content"
 
         when:
-        def result = descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        def result = descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         1 * redisClient.hgetAll(_, _) >> [release: "true"]
@@ -187,7 +187,7 @@ class DescriptorManagerTest extends Specification {
         String descriptorContent = "descriptor content"
 
         when:
-        def result = descriptorManager.getDagDescriptorPO(uid, input, dagDescriptorId, false)
+        def result = descriptorManager.getDescriptorPO(uid, input, dagDescriptorId, false)
 
         then:
         1 * redisClient.get(_, _) >> descriptorContent

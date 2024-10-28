@@ -3,19 +3,19 @@ package com.weibo.rill.flow.service.facade
 import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException
-import com.weibo.rill.flow.service.manager.DescriptorManager
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker
 import org.springframework.context.ApplicationEventPublisher
 import spock.lang.Specification
 
 class DAGDescriptorFacadeTest extends Specification {
     DAGSubmitChecker dagSubmitChecker = Mock(DAGSubmitChecker)
-    DescriptorManager descriptorManager = Mock(DescriptorManager)
+    DAGDescriptorManager descriptorManager = Mock(DAGDescriptorManager)
     ApplicationEventPublisher applicationEventPublisher = Mock(ApplicationEventPublisher)
     DAGDescriptorFacade facade = new DAGDescriptorFacade(
             dagSubmitChecker: dagSubmitChecker,
             applicationEventPublisher: applicationEventPublisher,
-            descriptorManager: descriptorManager
+            dagDescriptorManager: descriptorManager
     )
 
     def "test addDescriptor"() {

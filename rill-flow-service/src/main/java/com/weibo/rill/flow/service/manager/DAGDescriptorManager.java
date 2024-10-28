@@ -100,7 +100,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class DescriptorManager {
+public class DAGDescriptorManager {
     private final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+$");
 
     private static final String BUSINESS_ID = "business_id";
@@ -157,7 +157,7 @@ public class DescriptorManager {
      */
     public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        DescriptorPO descriptorPO = getDagDescriptorPO(uid, input, dagDescriptorId, false);
+        DescriptorPO descriptorPO = getDescriptorPO(uid, input, dagDescriptorId, false);
         return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
     }
 
@@ -186,12 +186,12 @@ public class DescriptorManager {
      *
      * </pre>
      */
-    public DescriptorPO getDagDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    private DescriptorPO getDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
             if (fields.length < 2 || nameInvalid(fields[0], fields[1])) {
-                log.info("getDagDescriptorPO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
+                log.info("getDescriptorPO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
 
@@ -201,7 +201,7 @@ public class DescriptorManager {
             String thirdField = fields.length > 2 ? fields[2] : null;
             if (StringUtils.isEmpty(thirdField)) {
                 thirdField = getDescriptorAliasByGrayRule(uid, input, businessId, featureName);
-                log.info("getDagDescriptorPO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
+                log.info("getDescriptorPO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
             if (thirdField.startsWith(MD5_PREFIX)) {
@@ -225,7 +225,7 @@ public class DescriptorManager {
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
-            log.warn("getDagDescriptorPO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
+            log.warn("getDescriptorPO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
     }
@@ -236,7 +236,7 @@ public class DescriptorManager {
 
             String dagDescriptorId = uri.getAuthority();
             // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorPO dagDescriptorPO = getDagDescriptorPO(uid, input, dagDescriptorId, true);
+            DescriptorPO dagDescriptorPO = getDescriptorPO(uid, input, dagDescriptorId, true);
             DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
             if (CollectionUtils.isEmpty(dag.getResources())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");

@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import com.weibo.rill.flow.service.util.ProfileActions;
@@ -47,7 +47,7 @@ import java.util.Optional;
 @Service
 public class FlowProtocolDispatcher implements DispatcherExtension {
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorManager dagDescriptorManager;
     @Autowired
     private DAGStringParser dagBuilder;
     @Autowired
@@ -70,7 +70,7 @@ public class FlowProtocolDispatcher implements DispatcherExtension {
         Map<String, Object> data = Maps.newHashMap();
         Optional.ofNullable(dispatchInfo.getInput()).ifPresent(data::putAll);
         Long uid = Optional.ofNullable(data.get("uid")).map(it -> Long.parseLong(String.valueOf(it))).orElse(0L);
-        DAG dag = descriptorManager.getDAG(uid, data, resource.getSchemeValue());
+        DAG dag = dagDescriptorManager.getDAG(uid, data, resource.getSchemeValue());
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
         data.put("flow_execution_id", executionId);
         DAGSettings dagSettings = DAGSettings.builder()

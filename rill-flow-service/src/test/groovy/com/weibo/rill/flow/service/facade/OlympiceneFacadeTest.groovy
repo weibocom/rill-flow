@@ -17,7 +17,7 @@ import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException
 import com.weibo.rill.flow.service.context.DAGContextInitializer
 import com.weibo.rill.flow.service.dconfs.BizDConfs
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo
-import com.weibo.rill.flow.service.manager.DescriptorManager
+import com.weibo.rill.flow.service.manager.DAGDescriptorManager
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker
 import com.weibo.rill.flow.service.statistic.ProfileRecordService
@@ -37,7 +37,7 @@ class OlympiceneFacadeTest extends Specification {
     Olympicene olympicene = Mock(Olympicene)
     BizDConfs bizDConfs = Mock(BizDConfs)
     DAGStringParser dagStringParser = Mock(DAGStringParser)
-    DescriptorManager descriptorManager = Mock(DescriptorManager)
+    DAGDescriptorManager descriptorManager = Mock(DAGDescriptorManager)
     DAGResourceStatistic dagResourceStatistic = Mock(DAGResourceStatistic)
     RuntimeStorage runtimeStorage = Mock(RuntimeStorage)
     LongTermStorage longTermStorage = Mock(LongTermStorage)
@@ -51,8 +51,7 @@ class OlympiceneFacadeTest extends Specification {
         facade.dagSubmitChecker = dagSubmitChecker
         facade.dagContextInitializer = dagContextInitializer
         facade.olympicene = olympicene
-        facade.dagStringParser = dagStringParser
-        facade.descriptorManager = descriptorManager
+        facade.dagDescriptorManager = descriptorManager
         facade.dagResourceStatistic = dagResourceStatistic
         facade.runtimeStorage = runtimeStorage
         facade.longTermStorage = longTermStorage
@@ -64,7 +63,6 @@ class OlympiceneFacadeTest extends Specification {
         dagSubmitChecker.getCheckConfig(_) >> null
         dagSubmitChecker.check(*_) >> null
         descriptorManager.getDAG(*_) >> dag
-        descriptorManager.getDescriptorVO(*_) >> null
         dagStringParser.parse(_) >> dag
     }
 
