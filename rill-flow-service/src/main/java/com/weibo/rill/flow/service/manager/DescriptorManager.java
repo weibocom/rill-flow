@@ -218,7 +218,7 @@ public class DescriptorManager {
             DescriptorPO descriptorPO = switcherManagerImpl.getSwitcherState("ENABLE_GET_DESCRIPTOR_FROM_CACHE") ?
                     descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorPO(businessId, descriptorRedisKey)) :
                     getDescriptorPO(businessId, descriptorRedisKey);
-            if (StringUtils.isEmpty(descriptorPO.getDescriptor())) {
+            if (descriptorPO == null || StringUtils.isEmpty(descriptorPO.getDescriptor())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
             return descriptorPO;
@@ -261,7 +261,7 @@ public class DescriptorManager {
 
     private DescriptorPO getDescriptorPO(String businessId, String descriptorRedisKey) {
         String descriptor = redisClient.get(businessId, descriptorRedisKey);
-        return new DescriptorPO(descriptor);
+        return descriptor == null? null: new DescriptorPO(descriptor);
     }
 
     private String getDescriptorAliasByGrayRule(Long uid, Map<String, Object> input, String businessId, String featureName) {
