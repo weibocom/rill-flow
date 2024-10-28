@@ -19,11 +19,7 @@ package com.weibo.rill.flow.service.facade;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -31,24 +27,23 @@ import com.google.common.collect.Maps;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.interfaces.model.resource.Resource;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.olympicene.core.model.event.DAGDescriptorEvent;
-import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
+import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
+import com.weibo.rill.flow.service.service.DAGDescriptorService;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
+import com.weibo.rill.flow.service.storage.dao.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -68,50 +63,59 @@ public class DAGDescriptorFacade {
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
     @Autowired
-    private DAGDescriptorManager dagDescriptorManager;
-    @Autowired
-    @Qualifier("descriptorRedisClient")
-    private RedisClient redisClient;
+    private DAGDescriptorService dagDescriptorService;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private DAGSubmitChecker dagSubmitChecker;
+    @Autowired
+    private DAGGrayDAO dagGrayDAO;
+    @Autowired
+    private DAGBusinessDAO dagBusinessDAO;
+    @Autowired
+    private DAGFeatureDAO dagFeatureDAO;
+    @Autowired
+    private DAGAliasDAO dagAliasDAO;
+    @Autowired
+    private DAGABTestDAO dagabTestDAO;
+    @Autowired
+    private DAGDescriptorConverter dagDescriptorConverter;
 
     public Map<String, Object> modifyBusiness(boolean add, String businessId) {
-        boolean ret = add ? dagDescriptorManager.createBusiness(businessId) : dagDescriptorManager.remBusiness(businessId);
+        boolean ret = add ? dagBusinessDAO.createBusiness(businessId) : dagBusinessDAO.remBusiness(businessId);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getBusiness() {
-        return ImmutableMap.of(BUSINESS_IDS, dagDescriptorManager.getBusiness());
+        return ImmutableMap.of(BUSINESS_IDS, dagBusinessDAO.getBusiness());
     }
 
     public Map<String, Object> modifyFeature(boolean add, String businessId, String featureName) {
         boolean ret = add ?
-                dagDescriptorManager.createFeature(businessId, featureName) : dagDescriptorManager.remFeature(businessId, featureName);
+                dagFeatureDAO.createFeature(businessId, featureName) : dagFeatureDAO.remFeature(businessId, featureName);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getFeature(String businessId) {
-        return ImmutableMap.of(BUSINESS_ID, businessId, FEATURES, dagDescriptorManager.getFeature(businessId));
+        return ImmutableMap.of(BUSINESS_ID, businessId, FEATURES, dagFeatureDAO.getFeature(businessId));
     }
 
     public Map<String, Object> modifyAlias(boolean add, String businessId, String featureName, String alias) {
         boolean ret = add ?
-                dagDescriptorManager.createAlias(businessId, featureName, alias) : dagDescriptorManager.remAlias(businessId, featureName, alias);
+                dagAliasDAO.createAlias(businessId, featureName, alias) : dagAliasDAO.remAlias(businessId, featureName, alias);
         return ImmutableMap.of(RET, ret);
     }
 
     public Map<String, Object> getAlias(String businessId, String featureName) {
         return ImmutableMap.of(BUSINESS_ID, businessId,
                 FEATURE, featureName,
-                ALIASES, dagDescriptorManager.getAlias(businessId, featureName));
+                ALIASES, dagAliasDAO.getAlias(businessId, featureName));
     }
 
     public Map<String, Object> modifyGray(String identity, boolean add, String businessId, String featureName, String alias, String grayRule) {
         boolean ret = add ?
-                dagDescriptorManager.createGray(businessId, featureName, alias, grayRule) :
-                dagDescriptorManager.remGray(businessId, featureName, alias);
+                dagGrayDAO.createGray(businessId, featureName, alias, grayRule) :
+                dagGrayDAO.remGray(businessId, featureName, alias);
 
         DAGDescriptorEvent.DAGDescriptorOperation operation = DAGDescriptorEvent.DAGDescriptorOperation.builder().add(add)
                 .identity(identity)
@@ -129,16 +133,16 @@ public class DAGDescriptorFacade {
     public Map<String, Object> getGray(String businessId, String featureName) {
         return ImmutableMap.of(BUSINESS_ID, businessId,
                 FEATURE, featureName,
-                GRAY, dagDescriptorManager.getGray(businessId, featureName));
+                GRAY, dagGrayDAO.getGray(businessId, featureName));
     }
 
     public Map<String, Object> getABConfigKey(String businessId) {
-        return ImmutableMap.of(BUSINESS_ID, businessId, "config_keys", dagDescriptorManager.getABConfigKey(businessId));
+        return ImmutableMap.of(BUSINESS_ID, businessId, "config_keys", dagabTestDAO.getABConfigKey(businessId));
     }
 
     public Map<String, Object> modifyFunctionAB(String identity, boolean add, String businessId, String configKey, String resourceName, String abRule) {
-        boolean ret = add ? dagDescriptorManager.createFunctionAB(businessId, configKey, resourceName, abRule) :
-                dagDescriptorManager.remFunctionAB(businessId, configKey, resourceName);
+        boolean ret = add ? dagabTestDAO.createFunctionAB(businessId, configKey, resourceName, abRule) :
+                dagabTestDAO.remFunctionAB(businessId, configKey, resourceName);
 
         DAGDescriptorEvent.DAGDescriptorOperation operation = DAGDescriptorEvent.DAGDescriptorOperation.builder().add(add)
                 .identity(identity)
@@ -155,7 +159,7 @@ public class DAGDescriptorFacade {
     }
 
     public Map<String, Object> getFunctionAB(String businessId, String configKey) {
-        Pair<String, Map<String, String>> functionAB = dagDescriptorManager.getFunctionAB(businessId, configKey);
+        Pair<String, Map<String, String>> functionAB = dagabTestDAO.getFunctionAB(businessId, configKey);
         Map<String, Object> ab = Maps.newHashMap();
         ab.put("default_resource_name", functionAB.getLeft());
         ab.put("rules", functionAB.getRight().entrySet().stream()
@@ -170,7 +174,7 @@ public class DAGDescriptorFacade {
                 BUSINESS_ID, businessId,
                 FEATURE, featureName,
                 ALIAS, alias,
-                VERSIONS, dagDescriptorManager.getVersion(businessId, featureName, alias));
+                VERSIONS, dagAliasDAO.getVersion(businessId, featureName, alias));
     }
 
     public Map<String, Object> addDescriptor(String identity, String businessId, String featureName, String alias, String descriptor) {
@@ -179,7 +183,7 @@ public class DAGDescriptorFacade {
                 dagSubmitChecker.checkDAGInfoLengthByBusinessId(businessId, List.of(descriptor.getBytes(StandardCharsets.UTF_8)));
             }
             DescriptorVO descriptorVO = new DescriptorVO(descriptor);
-            String descriptorId = dagDescriptorManager.createDAGDescriptor(businessId, featureName, alias, descriptorVO);
+            String descriptorId = dagDescriptorService.saveDescriptorVO(businessId, featureName, alias, descriptorVO);
 
             Map<String, String> attachments = Maps.newHashMap();
             String attachmentName = String.format("descriptor-%s_%s_%s.txt", businessId, featureName, alias);
@@ -208,14 +212,16 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
-        DescriptorVO descriptorVO = dagDescriptorManager.getDescriptorVO(uid, input, descriptorId);
+        DAG dag = dagDescriptorService.getDAG(uid, input, descriptorId);
+        DescriptorVO descriptorVO = dagDescriptorConverter.convertDAGToDescriptorVO(dag);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
                 DESCRIPTOR, descriptorVO.getDescriptor());
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        DescriptorVO descriptorVO = dagDescriptorManager.getDescriptorVO(null, null, descriptorId);
+        DAG dag = dagDescriptorService.getDAG(null, null, descriptorId);
+        DescriptorVO descriptorVO = dagDescriptorConverter.convertDAGToDescriptorVO(dag);
         JSONObject descriptorObject = yamlToJson(descriptorVO.getDescriptor());
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);
@@ -253,96 +259,6 @@ public class DAGDescriptorFacade {
         }
     }
 
-    public Map<String, Object> addDescriptorForJson(String descriptor) {
-
-        JsonNode descriptorJson = transToJSON(descriptor);
-
-        String identity = descriptorJson.path("meta").path("identity").asText();
-        String businessId = descriptorJson.path("meta").path("workspace").asText();
-        String featureName = descriptorJson.path("meta").path("dagName").asText();
-        String alias = descriptorJson.path("meta").path("alias").asText();
-
-        JsonNode descriptorJsonNode = formatToFlowDescriptor(descriptorJson);
-        String descriptorFormat = JsonToYaml(descriptorJsonNode);
-
-        String md5 = DigestUtils.md5Hex(descriptorFormat);
-        String descriptorId = businessId + ":" + featureName + ":" + "md5_" + md5;
-        redisClient.set(descriptorId, descriptor);
-
-        return addDescriptor(identity, businessId, featureName, alias, descriptorFormat);
-    }
-
-    private JsonNode formatToFlowDescriptor(JsonNode descriptorNode) {
-        try {
-            // output
-            ObjectNode descriptorFormatNode = new ObjectMapper().createObjectNode();
-
-            // handle nodes
-            JsonNode nodes = descriptorNode.get("nodes");
-            Map<String, ObjectNode> nodeMap = Maps.newHashMap();
-            for (JsonNode node : nodes) {
-                nodeMap.put(node.get("id").asText(), (ObjectNode) node);
-            }
-
-            // handle edges
-            JsonNode edges = descriptorNode.get("edges");
-            for (JsonNode edge : edges) {
-                ObjectNode sourceNode = nodeMap.get(edge.get("source").asText());
-                ObjectNode targetNode = nodeMap.get(edge.get("target").asText());
-                if (Objects.isNull(sourceNode.get("next"))) {
-                    sourceNode.put("next", targetNode.get("label").asText());
-                } else {
-                    sourceNode.put("next", sourceNode.get("next").asText() + "," + targetNode.get("label").asText());
-                }
-            }
-
-            //tasks
-            ArrayNode tasks = JsonNodeFactory.instance.arrayNode();
-            for (JsonNode node : nodes) {
-                //task
-                ObjectNode task = new ObjectMapper().createObjectNode();
-                task.set("category", node.path("nodeDetails").path("category"));
-                task.set("name", node.get("label"));
-                task.set("resourceName", node.path("nodeDetails").path("resource_name"));
-                task.set("pattern", node.path("nodeDetails").path("pattern"));
-                task.set("inputMappings", node.path("nodeDetails").path("input_mappings"));
-                task.set("outputMappings", node.path("nodeDetails").path("output_mappings"));
-                task.set("resourceProtocol", node.path("nodeDetails").path("resource_protocol"));
-                task.set("parameters", node.path("nodeDetails").path("parameters"));
-                task.set("next", node.get("next"));
-                tasks.add(task);
-            }
-
-            // handle output
-            descriptorFormatNode.set("version", descriptorNode.path("meta").path("version"));
-            descriptorFormatNode.set("workspace", descriptorNode.path("meta").path("workspace"));
-            descriptorFormatNode.set("dagName", descriptorNode.path("meta").path("dagName"));
-            descriptorFormatNode.put("type", "flow");
-            descriptorFormatNode.set("defaultContext", descriptorNode.path("meta").path("defaultContext"));
-            descriptorFormatNode.set("commonMapping", descriptorNode.path("meta").path("commonMapping"));
-            descriptorFormatNode.set("callback", descriptorNode.path("meta").path("callback"));
-            descriptorFormatNode.set("tasks", tasks);
-
-            return descriptorFormatNode;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String JsonToYaml(JsonNode jsonData) {
-        try {
-            // 创建 ObjectMapper 和 YAMLFactory
-            ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-            // 将 Java 对象转换为 YAML 字符串
-            String yamlData = yamlMapper.writeValueAsString(jsonData);
-            // 输出 YAML 数据
-            return yamlData;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return null;
-    }
-
     private JSONObject yamlToJson(String yamlString) {
         try {
             // Create an ObjectMapper for YAML
@@ -364,14 +280,4 @@ public class DAGDescriptorFacade {
         return null;
     }
 
-    private JsonNode transToJSON(String descriptor) {
-        if (StringUtils.isEmpty(descriptor)) {
-            throw new RuntimeException();
-        }
-        try {
-            return new ObjectMapper().readTree(descriptor);
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
-    }
 }

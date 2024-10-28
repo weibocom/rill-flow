@@ -45,11 +45,13 @@ import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapp
 import com.weibo.rill.flow.service.component.DAGToolConverter;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.manager.AviatorCache;
-import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
+import com.weibo.rill.flow.service.service.DAGDescriptorService;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeStorage;
+import com.weibo.rill.flow.service.storage.dao.DAGBusinessDAO;
+import com.weibo.rill.flow.service.storage.dao.DAGFeatureDAO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -80,7 +82,7 @@ public class DAGRuntimeFacade {
     @Autowired
     private LongTermStorage longTermStorage;
     @Autowired
-    private DAGDescriptorManager dagDescriptorManager;
+    private DAGDescriptorService dagDescriptorService;
     @Autowired
     private DAGResourceStatistic dagResourceStatistic;
     @Autowired
@@ -91,6 +93,10 @@ public class DAGRuntimeFacade {
     private AviatorCache aviatorCache;
     @Autowired
     private OlympiceneFacade olympiceneFacade;
+    @Autowired
+    private DAGBusinessDAO dagBusinessDAO;
+    @Autowired
+    private DAGFeatureDAO dagFeatureDAO;
 
     public boolean updateDagStatus(String executionId, DAGStatus status) {
         if (StringUtils.isBlank(executionId) || status == null) {
@@ -378,7 +384,7 @@ public class DAGRuntimeFacade {
 
     public Map<String, Object> dependencyCheck(String descriptorId, String descriptor) {
         DAG dag = StringUtils.isNotBlank(descriptorId) ?
-                dagDescriptorManager.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
+                dagDescriptorService.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
         Map<String, List<String>> dependencies = dagWalkHelper.getDependedResources(dag);
         List<Map<String, Object>> resourceToNames = dependencies.entrySet().stream()
                 .map(entry -> ImmutableMap.of("resource_name", entry.getKey(), "names", entry.getValue()))
@@ -433,7 +439,7 @@ public class DAGRuntimeFacade {
                     .featureId(feature)
                     .build());
         } else if (StringUtils.isNotEmpty(business) && StringUtils.isEmpty(feature)) {
-            dagDescriptorManager.getFeature(business).forEach(featureId -> {
+            dagFeatureDAO.getFeature(business).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(business)
                         .featureId(featureId)
@@ -441,7 +447,7 @@ public class DAGRuntimeFacade {
                 dagRecordList.add(record);
             });
         } else {
-            dagDescriptorManager.getBusiness().forEach(businessId -> dagDescriptorManager.getFeature(businessId).forEach(featureId -> {
+            dagBusinessDAO.getBusiness().forEach(businessId -> dagFeatureDAO.getFeature(businessId).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(businessId)
                         .featureId(featureId)

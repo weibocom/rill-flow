@@ -44,7 +44,7 @@ import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.serialize.DAGTraversalSerializer;
 import com.weibo.rill.flow.service.context.DAGContextInitializer;
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo;
-import com.weibo.rill.flow.service.manager.DAGDescriptorManager;
+import com.weibo.rill.flow.service.service.DAGDescriptorService;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker;
 import com.weibo.rill.flow.service.statistic.ProfileRecordService;
@@ -78,7 +78,7 @@ public class OlympiceneFacade {
     @Autowired
     private Olympicene olympicene;
     @Autowired
-    private DAGDescriptorManager dagDescriptorManager;
+    private DAGDescriptorService dagDescriptorService;
     @Autowired
     private SystemMonitorStatistic systemMonitorStatistic;
     @Autowired
@@ -116,7 +116,7 @@ public class OlympiceneFacade {
     }
 
     public Map<String, Object> submit(Long uid, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
-        DAG dag = dagDescriptorManager.getDAG(uid, context, descriptorId);
+        DAG dag = dagDescriptorService.getDAG(uid, context, descriptorId);
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
         dagSubmitChecker.check(executionId, resourceCheckConfig);

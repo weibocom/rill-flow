@@ -3,19 +3,19 @@ package com.weibo.rill.flow.service.facade
 import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.olympicene.storage.constant.StorageErrorCode
 import com.weibo.rill.flow.olympicene.storage.exception.StorageException
-import com.weibo.rill.flow.service.manager.DAGDescriptorManager
+import com.weibo.rill.flow.service.service.DAGDescriptorService
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker
 import org.springframework.context.ApplicationEventPublisher
 import spock.lang.Specification
 
 class DAGDescriptorFacadeTest extends Specification {
     DAGSubmitChecker dagSubmitChecker = Mock(DAGSubmitChecker)
-    DAGDescriptorManager descriptorManager = Mock(DAGDescriptorManager)
+    DAGDescriptorService dagDescriptorService = Mock(DAGDescriptorService)
     ApplicationEventPublisher applicationEventPublisher = Mock(ApplicationEventPublisher)
     DAGDescriptorFacade facade = new DAGDescriptorFacade(
             dagSubmitChecker: dagSubmitChecker,
             applicationEventPublisher: applicationEventPublisher,
-            dagDescriptorManager: descriptorManager
+            dagDescriptorService: dagDescriptorService
     )
 
     def "test addDescriptor"() {
@@ -23,7 +23,7 @@ class DAGDescriptorFacadeTest extends Specification {
         var descriptor_id = "testBusiness:testFeatureName_c_8921a32f"
         applicationEventPublisher.publishEvent(*_) >> null
         dagSubmitChecker.checkDAGInfoLengthByBusinessId(*_) >> null
-        descriptorManager.createDAGDescriptor(*_) >> descriptor_id
+        dagDescriptorService.saveDescriptorVO(*_) >> descriptor_id
         expect:
         facade.addDescriptor(null, "testBusiness", "testFeatureName", "release", "hello world") == [ret: true, descriptor_id: descriptor_id]
         facade.addDescriptor(null, "testBusiness", "testFeatureName", "release", "") == [ret: true, descriptor_id: descriptor_id]
@@ -34,7 +34,7 @@ class DAGDescriptorFacadeTest extends Specification {
         var descriptor_id = "testBusiness:testFeatureName_c_8921a32f"
         applicationEventPublisher.publishEvent(*_) >> null
         dagSubmitChecker.checkDAGInfoLengthByBusinessId(*_) >> {throw new StorageException(StorageErrorCode.DAG_LENGTH_LIMITATION.getCode(), "DAG length limitation")}
-        descriptorManager.createDAGDescriptor(*_) >> descriptor_id
+        dagDescriptorService.saveDescriptorVO(*_) >> descriptor_id
         when:
         facade.addDescriptor(null, "testBusiness", "testFeatureName", "release", "hello world")
         then:
