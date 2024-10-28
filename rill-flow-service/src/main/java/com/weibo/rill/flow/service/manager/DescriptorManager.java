@@ -216,8 +216,8 @@ public class DescriptorManager {
 
             // 根据redisKey获取文件内容
             DescriptorPO descriptorPO = switcherManagerImpl.getSwitcherState("ENABLE_GET_DESCRIPTOR_FROM_CACHE") ?
-                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorVO(businessId, descriptorRedisKey)) :
-                    getDescriptorVO(businessId, descriptorRedisKey);
+                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorPO(businessId, descriptorRedisKey)) :
+                    getDescriptorPO(businessId, descriptorRedisKey);
             if (descriptorPO == null || StringUtils.isEmpty(descriptorPO.getDescriptor())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
@@ -259,7 +259,7 @@ public class DescriptorManager {
         }
     }
 
-    private DescriptorPO getDescriptorVO(String businessId, String descriptorRedisKey) {
+    private DescriptorPO getDescriptorPO(String businessId, String descriptorRedisKey) {
         String descriptor = redisClient.get(businessId, descriptorRedisKey);
         return descriptor == null? null: new DescriptorPO(descriptor);
     }
