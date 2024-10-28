@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.util.DAGDescriptorUtil;
+import com.weibo.rill.flow.service.util.DAGStorageKeysUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,25 +36,25 @@ public class DAGFeatureDAO {
     private RedisClient redisClient;
 
     public boolean createFeature(String businessId, String featureName) {
-        if (DAGDescriptorUtil.nameInvalid(businessId, featureName)) {
+        if (DAGStorageKeysUtil.nameInvalid(businessId, featureName)) {
             log.info("createFeature params invalid, businessId:{}, serviceName:{}", businessId, featureName);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
-        redisClient.sadd(businessId, DAGDescriptorUtil.buildFeatureRedisKey(businessId), Lists.newArrayList(featureName));
+        redisClient.sadd(businessId, DAGStorageKeysUtil.buildFeatureRedisKey(businessId), Lists.newArrayList(featureName));
         return true;
     }
 
     public boolean remFeature(String businessId, String featureName) {
-        if (DAGDescriptorUtil.nameInvalid(businessId, featureName)) {
+        if (DAGStorageKeysUtil.nameInvalid(businessId, featureName)) {
             log.info("remFeature params invalid, businessId:{}, featureName:{}", businessId, featureName);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
 
-        redisClient.srem(businessId, DAGDescriptorUtil.buildFeatureRedisKey(businessId), Lists.newArrayList(featureName));
+        redisClient.srem(businessId, DAGStorageKeysUtil.buildFeatureRedisKey(businessId), Lists.newArrayList(featureName));
         return true;
     }
 
     public Set<String> getFeature(String businessId) {
-        return redisClient.smembers(businessId, DAGDescriptorUtil.buildFeatureRedisKey(businessId));
+        return redisClient.smembers(businessId, DAGStorageKeysUtil.buildFeatureRedisKey(businessId));
     }
 }

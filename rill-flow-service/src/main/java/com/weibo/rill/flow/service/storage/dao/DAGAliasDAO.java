@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.util.DAGDescriptorUtil;
+import com.weibo.rill.flow.service.util.DAGStorageKeysUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,37 +42,37 @@ public class DAGAliasDAO {
     private RedisClient redisClient;
 
     public boolean createAlias(String businessId, String featureName, String alias) {
-        if (DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
+        if (DAGStorageKeysUtil.nameInvalid(businessId, featureName, alias)) {
             log.info("createAlias params invalid, businessId:{}, featureName:{}, alias:{}",
                     businessId, featureName, alias);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
 
-        redisClient.sadd(businessId, DAGDescriptorUtil.buildAliasRedisKey(businessId, featureName), Lists.newArrayList(alias));
+        redisClient.sadd(businessId, DAGStorageKeysUtil.buildAliasRedisKey(businessId, featureName), Lists.newArrayList(alias));
         return true;
     }
 
     public boolean remAlias(String businessId, String featureName, String alias) {
-        if (DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
+        if (DAGStorageKeysUtil.nameInvalid(businessId, featureName, alias)) {
             log.info("remAlias params invalid, businessId:{}, featureName:{}, alias:{}", businessId, featureName, alias);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
 
-        redisClient.srem(businessId, DAGDescriptorUtil.buildAliasRedisKey(businessId, featureName), Lists.newArrayList(alias));
+        redisClient.srem(businessId, DAGStorageKeysUtil.buildAliasRedisKey(businessId, featureName), Lists.newArrayList(alias));
         return true;
     }
 
     public Set<String> getAlias(String businessId, String featureName) {
-        return redisClient.smembers(businessId, DAGDescriptorUtil.buildAliasRedisKey(businessId, featureName));
+        return redisClient.smembers(businessId, DAGStorageKeysUtil.buildAliasRedisKey(businessId, featureName));
     }
 
     public String getDescriptorRedisKeyByAlias(String businessId, String featureName, String alias) {
-        if (DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
+        if (DAGStorageKeysUtil.nameInvalid(businessId, featureName, alias)) {
             log.info("getDescriptorRedisKeyByAlias param invalid, businessId:{}, featureName:{}, alias:{}", businessId, featureName, alias);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
 
-        Set<String> redisRet = redisClient.zrange(businessId, DAGDescriptorUtil.buildVersionRedisKey(businessId, featureName, alias), -1, -1);
+        Set<String> redisRet = redisClient.zrange(businessId, DAGStorageKeysUtil.buildVersionRedisKey(businessId, featureName, alias), -1, -1);
         if (CollectionUtils.isEmpty(redisRet)) {
             log.info("getDescriptorRedisKeyByAlias redisRet empty");
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("cannot find descriptor: %s:%s:%s", businessId, featureName, alias));
@@ -80,16 +80,16 @@ public class DAGAliasDAO {
 
         String md5 = redisRet.iterator().next();
         log.info("getDescriptorRedisKeyByAlias md5:{}", md5);
-        return DAGDescriptorUtil.buildDescriptorRedisKey(businessId, featureName, md5);
+        return DAGStorageKeysUtil.buildDescriptorRedisKey(businessId, featureName, md5);
     }
 
     public List<Map> getVersion(String businessId, String featureName, String alias) {
-        Set<Pair<String, Double>> redisRet = redisClient.zrangeWithScores(businessId, DAGDescriptorUtil.buildVersionRedisKey(businessId, featureName, alias), 0, -1);
+        Set<Pair<String, Double>> redisRet = redisClient.zrangeWithScores(businessId, DAGStorageKeysUtil.buildVersionRedisKey(businessId, featureName, alias), 0, -1);
         return redisRet.stream()
                 .map(memberToScore -> {
                     String md5 = memberToScore.getKey();
                     Long createTime = memberToScore.getValue().longValue();
-                    return Pair.of(DAGDescriptorUtil.buildDescriptorId(businessId, featureName, DAGDescriptorUtil.MD5_PREFIX + md5), createTime);
+                    return Pair.of(DAGStorageKeysUtil.buildDescriptorId(businessId, featureName, DAGStorageKeysUtil.MD5_PREFIX + md5), createTime);
                 })
                 .sorted((c1, c2) -> c2.getValue().compareTo(c1.getValue()))
                 .map(idToCreateTime -> ImmutableMap.of("descriptor_id", idToCreateTime.getLeft(), "create_time", idToCreateTime.getRight()))

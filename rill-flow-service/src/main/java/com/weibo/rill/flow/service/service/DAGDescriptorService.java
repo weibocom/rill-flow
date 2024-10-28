@@ -30,7 +30,7 @@ import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
 import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.manager.AviatorCache;
 import com.weibo.rill.flow.service.storage.dao.*;
-import com.weibo.rill.flow.service.util.DAGDescriptorUtil;
+import com.weibo.rill.flow.service.util.DAGStorageKeysUtil;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.weibo.rill.flow.service.util.DAGDescriptorUtil.MD5_PREFIX;
+import static com.weibo.rill.flow.service.util.DAGStorageKeysUtil.MD5_PREFIX;
 
 @Service
 @Slf4j
@@ -82,7 +82,7 @@ public class DAGDescriptorService {
     }
 
     public String saveDescriptorVO(String businessId, String featureName, String alias, DescriptorVO descriptorVO) {
-        if (descriptorVO == null || DAGDescriptorUtil.nameInvalid(businessId, featureName, alias)) {
+        if (descriptorVO == null || DAGStorageKeysUtil.nameInvalid(businessId, featureName, alias)) {
             log.info("saveDescriptorVO param invalid, businessId:{}, featureName:{}, alias:{}, descriptor:{}", businessId, featureName, alias, descriptorVO);
             throw new TaskException(BizError.ERROR_DATA_FORMAT);
         }
@@ -158,7 +158,7 @@ public class DAGDescriptorService {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
-            if (fields.length < 2 || DAGDescriptorUtil.nameInvalid(fields[0], fields[1])) {
+            if (fields.length < 2 || DAGStorageKeysUtil.nameInvalid(fields[0], fields[1])) {
                 log.info("getDescriptorPO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
@@ -172,12 +172,12 @@ public class DAGDescriptorService {
                 log.info("getDescriptorPO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
-            if (thirdField.startsWith(DAGDescriptorUtil.MD5_PREFIX)) {
-                descriptorRedisKey = DAGDescriptorUtil.buildDescriptorRedisKey(businessId, featureName, thirdField.replaceFirst(MD5_PREFIX, StringUtils.EMPTY));
+            if (thirdField.startsWith(DAGStorageKeysUtil.MD5_PREFIX)) {
+                descriptorRedisKey = DAGStorageKeysUtil.buildDescriptorRedisKey(businessId, featureName, thirdField.replaceFirst(MD5_PREFIX, StringUtils.EMPTY));
             } else {
                 String alias = thirdField;
                 descriptorRedisKey = useCache ?
-                        descriptorIdToRedisKeyCache.get(DAGDescriptorUtil.buildDescriptorId(businessId, featureName, alias),
+                        descriptorIdToRedisKeyCache.get(DAGStorageKeysUtil.buildDescriptorId(businessId, featureName, alias),
                                 () -> dagAliasDAO.getDescriptorRedisKeyByAlias(businessId, featureName, alias)) :
                         dagAliasDAO.getDescriptorRedisKeyByAlias(businessId, featureName, alias);
             }
@@ -195,7 +195,7 @@ public class DAGDescriptorService {
         long aviatorUid = uid == null ? 0L : uid;
         Map<String, Object> aviatorInput = MapUtils.isEmpty(input) ? Collections.emptyMap() : input;
         return ruleMap.entrySet().stream()
-                .filter(entry -> !DAGDescriptorUtil.containsEmpty(entry.getKey(), entry.getValue()))
+                .filter(entry -> !DAGStorageKeysUtil.containsEmpty(entry.getKey(), entry.getValue()))
                 .sorted(Map.Entry.comparingByKey())
                 .filter(entry -> {
                     try {
@@ -215,6 +215,6 @@ public class DAGDescriptorService {
     private String getDescriptorAliasByGrayRule(Long uid, Map<String, Object> input, String businessId, String featureName) {
         Map<String, String> aliasToGrayRuleMap = dagGrayDAO.getGray(businessId, featureName);
         log.info("getDescriptorAliasByGrayRule map empty:{}", MapUtils.isEmpty(aliasToGrayRuleMap));
-        return getValueFromRuleMap(uid, input, aliasToGrayRuleMap, DAGDescriptorUtil.RELEASE);
+        return getValueFromRuleMap(uid, input, aliasToGrayRuleMap, DAGStorageKeysUtil.RELEASE);
     }
 }

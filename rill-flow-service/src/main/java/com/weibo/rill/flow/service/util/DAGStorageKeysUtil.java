@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-public class DAGDescriptorUtil {
+public class DAGStorageKeysUtil {
     public static final String BUSINESS_ID = "business_id";
     public static final String MD5_PREFIX = "md5_";
     public static final String RELEASE = "release";
@@ -40,7 +40,7 @@ public class DAGDescriptorUtil {
     private static final String FUNCTION_AB_KEY_RULE = "functionAB_%s_%s";
     private static final String DESCRIPTOR_KEY_RULE = "descriptor_%s_%s_%s";
 
-    private DAGDescriptorUtil() {
+    private DAGStorageKeysUtil() {
     }
 
     public static boolean containsEmpty(String... member) {

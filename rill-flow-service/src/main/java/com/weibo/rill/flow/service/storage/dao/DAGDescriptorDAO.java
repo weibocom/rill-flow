@@ -24,7 +24,7 @@ import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.storage.redis.api.RedisClient;
-import com.weibo.rill.flow.service.util.DAGDescriptorUtil;
+import com.weibo.rill.flow.service.util.DAGStorageKeysUtil;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static com.weibo.rill.flow.service.util.DAGDescriptorUtil.MD5_PREFIX;
+import static com.weibo.rill.flow.service.util.DAGStorageKeysUtil.MD5_PREFIX;
 
 /**
  * <pre>
@@ -140,14 +140,14 @@ public class DAGDescriptorDAO {
 
         List<String> keys = Lists.newArrayList();
         List<String> argv = Lists.newArrayList();
-        keys.add(DAGDescriptorUtil.buildVersionRedisKey(businessId, featureName, alias));
-        keys.add(DAGDescriptorUtil.buildDescriptorRedisKey(businessId, featureName, md5));
+        keys.add(DAGStorageKeysUtil.buildVersionRedisKey(businessId, featureName, alias));
+        keys.add(DAGStorageKeysUtil.buildDescriptorRedisKey(businessId, featureName, md5));
         argv.add(String.valueOf(versionMaxCount));
         argv.add(String.valueOf(System.currentTimeMillis()));
         argv.add(md5);
         argv.add(descriptor);
         redisClient.eval(VERSION_ADD, businessId, keys, argv);
 
-        return DAGDescriptorUtil.buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
+        return DAGStorageKeysUtil.buildDescriptorId(businessId, featureName, MD5_PREFIX + md5);
     }
 }
