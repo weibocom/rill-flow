@@ -224,13 +224,12 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         List<Object> listCurrent = (List<Object>) current;
         int index = Integer.parseInt(part);
         Object insertPosition = listCurrent.get(index);
-        if (insertPosition != null) {
-            return insertPosition;
-        }
         if (jsonPathParts.get(i + 1).matches("\\d+")) {
-            List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+            // 1. 下一个元素是数字，也就是数组的索引，所以需要创建数组并且填充到索引位置
+            List<Object> nextArray = createAndFillNextArrayPart(insertPosition, jsonPathParts, i);
             listCurrent.set(index, nextArray);
-        } else if (i + 1 < jsonPathParts.size() ) {
+        } else if (i + 1 < jsonPathParts.size() && insertPosition == null) {
+            // 2. 下一个元素不是数字，则创建 map
             listCurrent.set(index, new HashMap<>());
         }
         return listCurrent.get(index);
@@ -239,25 +238,29 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
     private Object processMapJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
         Map<String, Object> mapCurrent = (Map<String, Object>) current;
         Object currentValue = mapCurrent.get(part);
-        if (currentValue != null) {
-            return currentValue;
-        }
         if (jsonPathParts.get(i + 1).matches("\\d+")) {
-            List<Object> nextArray = createAndFillNextArrayPart(jsonPathParts, i);
+            // 1. 下一个元素是数字，也就是数组的索引，所以需要创建数组并且填充到索引位置
+            List<Object> nextArray = createAndFillNextArrayPart(currentValue, jsonPathParts, i);
             mapCurrent.put(part, nextArray);
-        } else if (i + 1 < jsonPathParts.size()) {
+        } else if (i + 1 < jsonPathParts.size() && currentValue == null) {
+            // 2. 下一个元素不是数字，则创建 map
             mapCurrent.put(part, new HashMap<>());
         }
         return mapCurrent.get(part);
     }
 
     /**
-     * 下一个元素创建数组类型对象，并用 null 值填充指定元素个数
+     * 为下一个元素创建数组类型对象，并用 null 值填充指定元素个数
      */
-    private List<Object> createAndFillNextArrayPart(List<String> jsonPathParts, int i) {
-        List<Object> nextArray = new ArrayList<>();
+    private List<Object> createAndFillNextArrayPart(Object nextPart, List<String> jsonPathParts, int i) {
+        List<Object> nextArray;
+        if (nextPart instanceof List) {
+            nextArray = (List<Object>) nextPart;
+        } else {
+            nextArray = new ArrayList<>();
+        }
         int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
-        for (int j = 0; j <= nextIndex; j++) {
+        for (int j = nextArray.size(); j <= nextIndex; j++) {
             nextArray.add(null);
         }
         return nextArray;
