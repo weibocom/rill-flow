@@ -208,14 +208,14 @@ public class DAGDescriptorFacade {
                         .map(it -> Long.parseLong(String.valueOf(it)))
                         .orElse(0L)
         );
-        DescriptorVO descriptorVO = descriptorManager.getDescriptorPO(uid, input, descriptorId);
+        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(uid, input, descriptorId);
         return ImmutableMap.of(DESCRIPTOR_ID, descriptorId,
                 "uid", String.valueOf(uid),
                 DESCRIPTOR, descriptorVO.getDescriptor());
     }
 
     public JSONObject getDescriptor(String descriptorId) {
-        DescriptorVO descriptorVO = descriptorManager.getDescriptorPO(null, null, descriptorId);
+        DescriptorVO descriptorVO = descriptorManager.getDescriptorVO(null, null, descriptorId);
         JSONObject descriptorObject = yamlToJson(descriptorVO.getDescriptor());
         if (descriptorObject == null) {
             log.warn("descriptorId:{} descriptor is null", descriptorId);

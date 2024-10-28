@@ -164,7 +164,7 @@ public class DescriptorManager {
     /**
      * 获取 DAG 描述符，用于提供用户编辑和展示
      */
-    public DescriptorVO getDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId) {
+    public DescriptorVO getDescriptorVO(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
         DAG dag = getDAG(uid, input, dagDescriptorId);
         // 在下发给用户展示和编辑之前，对工作流描述符的属性进行处理，去除系统运行所需的属性
@@ -216,8 +216,8 @@ public class DescriptorManager {
 
             // 根据redisKey获取文件内容
             DescriptorPO descriptorPO = switcherManagerImpl.getSwitcherState("ENABLE_GET_DESCRIPTOR_FROM_CACHE") ?
-                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorPO(businessId, descriptorRedisKey)) :
-                    getDescriptorPO(businessId, descriptorRedisKey);
+                    descriptorRedisKeyToYamlCache.get(descriptorRedisKey, () -> getDescriptorVO(businessId, descriptorRedisKey)) :
+                    getDescriptorVO(businessId, descriptorRedisKey);
             if (descriptorPO == null || StringUtils.isEmpty(descriptorPO.getDescriptor())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("descriptor:%s value empty", dagDescriptorId));
             }
@@ -259,7 +259,7 @@ public class DescriptorManager {
         }
     }
 
-    private DescriptorPO getDescriptorPO(String businessId, String descriptorRedisKey) {
+    private DescriptorPO getDescriptorVO(String businessId, String descriptorRedisKey) {
         String descriptor = redisClient.get(businessId, descriptorRedisKey);
         return descriptor == null? null: new DescriptorPO(descriptor);
     }

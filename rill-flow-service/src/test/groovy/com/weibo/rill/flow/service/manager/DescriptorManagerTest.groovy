@@ -101,7 +101,7 @@ class DescriptorManagerTest extends Specification {
         thrown(TaskException)
     }
 
-    def 'test getDescriptorPO with valid input'() {
+    def 'test getDescriptorVO with valid input'() {
         given:
         def uid = 123L
         def input = [key: "value"]
@@ -112,7 +112,7 @@ class DescriptorManagerTest extends Specification {
         def expectedDescriptorVO = new DescriptorVO()
 
         when:
-        def result = descriptorManager.getDescriptorPO(uid, input, dagDescriptorId)
+        def result = descriptorManager.getDescriptorVO(uid, input, dagDescriptorId)
 
         then:
         1 * redisClient.zrange(_, _, -1, -1) >> ["md5hash"]
@@ -122,14 +122,14 @@ class DescriptorManagerTest extends Specification {
         result == expectedDescriptorVO
     }
 
-    def 'test getDescriptorPO with invalid input'() {
+    def 'test getDescriptorVO with invalid input'() {
         given:
         def uid = 123L
         Map<String, Object> input = [:]
         def dagDescriptorId = "invalid:id"
 
         when:
-        descriptorManager.getDescriptorPO(uid, input, dagDescriptorId)
+        descriptorManager.getDescriptorVO(uid, input, dagDescriptorId)
 
         then:
         thrown(TaskException)
