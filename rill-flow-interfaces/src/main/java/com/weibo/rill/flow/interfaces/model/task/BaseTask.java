@@ -16,6 +16,8 @@
 
 package com.weibo.rill.flow.interfaces.model.task;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.strategy.Degrade;
@@ -47,6 +49,8 @@ public abstract class BaseTask {
     private Progress progress;
     private Degrade degrade;
     private Timeline timeline;
+    @JsonProperty("keyCallback")
+    @JsonAlias("key_callback")
     private boolean isKeyCallback = false;
     private String keyExp;
     private Map<String,Object> parameters;
