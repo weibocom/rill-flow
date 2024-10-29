@@ -7,8 +7,7 @@ import spock.lang.Specification
 class DAGABTestDAOTest extends Specification {
     DAGABTestDAO dagABTestDAO
     RedisClient redisClient
-    
-    // 使用只包含字母和数字的测试数据
+
     static final String VALID_BUSINESS_ID = "testbusiness123"
     static final String VALID_CONFIG_KEY = "testconfig456"
     static final String VALID_RESOURCE = "testresource789"

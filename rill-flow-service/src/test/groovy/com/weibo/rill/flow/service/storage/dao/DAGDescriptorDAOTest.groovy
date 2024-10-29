@@ -11,7 +11,6 @@ class DAGDescriptorDAOTest extends Specification {
     RedisClient redisClient
     SwitcherManager switcherManager
 
-    // 使用只包含字母和数字的测试数据
     static final String VALID_BUSINESS_ID = "testbusiness123"
     static final String VALID_FEATURE_NAME = "testfeature456"
     static final String VALID_ALIAS = "testalias789"
