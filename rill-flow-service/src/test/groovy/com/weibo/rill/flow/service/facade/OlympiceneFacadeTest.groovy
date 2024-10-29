@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2021-2023 Weibo, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.weibo.rill.flow.service.facade
 
 import com.alibaba.fastjson.JSONObject
@@ -17,7 +33,7 @@ import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException
 import com.weibo.rill.flow.service.context.DAGContextInitializer
 import com.weibo.rill.flow.service.dconfs.BizDConfs
 import com.weibo.rill.flow.service.invoke.DAGFlowRedo
-import com.weibo.rill.flow.service.manager.DescriptorManager
+import com.weibo.rill.flow.service.service.DAGDescriptorService
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic
 import com.weibo.rill.flow.service.statistic.DAGSubmitChecker
 import com.weibo.rill.flow.service.statistic.ProfileRecordService
@@ -37,7 +53,7 @@ class OlympiceneFacadeTest extends Specification {
     Olympicene olympicene = Mock(Olympicene)
     BizDConfs bizDConfs = Mock(BizDConfs)
     DAGStringParser dagStringParser = Mock(DAGStringParser)
-    DescriptorManager descriptorManager = Mock(DescriptorManager)
+    DAGDescriptorService descriptorManager = Mock(DAGDescriptorService)
     DAGResourceStatistic dagResourceStatistic = Mock(DAGResourceStatistic)
     RuntimeStorage runtimeStorage = Mock(RuntimeStorage)
     LongTermStorage longTermStorage = Mock(LongTermStorage)
@@ -51,8 +67,7 @@ class OlympiceneFacadeTest extends Specification {
         facade.dagSubmitChecker = dagSubmitChecker
         facade.dagContextInitializer = dagContextInitializer
         facade.olympicene = olympicene
-        facade.dagStringParser = dagStringParser
-        facade.descriptorManager = descriptorManager
+        facade.dagDescriptorService = descriptorManager
         facade.dagResourceStatistic = dagResourceStatistic
         facade.runtimeStorage = runtimeStorage
         facade.longTermStorage = longTermStorage
@@ -64,7 +79,6 @@ class OlympiceneFacadeTest extends Specification {
         dagSubmitChecker.getCheckConfig(_) >> null
         dagSubmitChecker.check(*_) >> null
         descriptorManager.getDAG(*_) >> dag
-        descriptorManager.getDescriptorPO(*_) >> null
         dagStringParser.parse(_) >> dag
     }
 
