@@ -43,6 +43,7 @@ public class DAG {
     private List<BaseTask> tasks;
     @Setter
     private List<BaseResource> resources;
+    @JsonProperty("callback")
     private CallbackConfig callbackConfig;
     @Setter
     private Map<String, String> defaultContext;
