@@ -77,7 +77,7 @@ public class DAGDescriptorService {
 
     public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        DescriptorPO descriptorPO = getDescriptorPO(uid, input, dagDescriptorId, false);
+        DescriptorPO descriptorPO = getDescriptorPOFromDAO(uid, input, dagDescriptorId, false);
         return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
     }
 
@@ -108,7 +108,7 @@ public class DAGDescriptorService {
 
             String dagDescriptorId = uri.getAuthority();
             // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorPO dagDescriptorPO = getDescriptorPO(uid, input, dagDescriptorId, true);
+            DescriptorPO dagDescriptorPO = getDescriptorPOFromDAO(uid, input, dagDescriptorId, true);
             DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
             if (CollectionUtils.isEmpty(dag.getResources())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");
@@ -148,21 +148,21 @@ public class DAGDescriptorService {
      * 先根据descriptorId获取其对应的redisKey，再根据redisKey取对应版本的yaml文件具体内容
      *
      * 该逻辑对应两个缓存
-     * 1. descriptorIdToRedisKeyCache
+     * 1. descriptorIdToRedisKeyCache（service 层）
      *    descriptorId最近更新版本yaml文件在redis存储的key
      *    如：testBusinessId:testFeatureName:release -> testBusinessId:testFeatureName:md5_4297f44b13955235245b2497399d7a93
-     * 2. descriptorRedisKeyToYamlCache
+     * 2. descriptorRedisKeyToYamlCache（DAO 层）
      *    redisKey与yaml文件一一对应 所以该缓存默认启用
      *    如: testBusinessId:testFeatureName:md5_4297f44b13955235245b2497399d7a93 -> yaml
      *
      * </pre>
      */
-    private DescriptorPO getDescriptorPO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    private DescriptorPO getDescriptorPOFromDAO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
             if (fields.length < 2 || DAGStorageKeysUtil.nameInvalid(fields[0], fields[1])) {
-                log.info("getDescriptorPO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
+                log.info("getDescriptorPOFromDAO dagDescriptorId data format error, dagDescriptorId:{}", dagDescriptorId);
                 throw new TaskException(BizError.ERROR_DATA_FORMAT.getCode(), "dagDescriptorId:" + dagDescriptorId + " format error");
             }
 
@@ -172,7 +172,7 @@ public class DAGDescriptorService {
             String thirdField = fields.length > 2 ? fields[2] : null;
             if (StringUtils.isEmpty(thirdField)) {
                 thirdField = getDescriptorAliasByGrayRule(uid, input, businessId, featureName);
-                log.info("getDescriptorPO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
+                log.info("getDescriptorPOFromDAO result businessId:{} featureName:{} alias:{}", businessId, featureName, thirdField);
             }
             String descriptorRedisKey;
             if (thirdField.startsWith(DAGStorageKeysUtil.MD5_PREFIX)) {
@@ -189,7 +189,7 @@ public class DAGDescriptorService {
         } catch (TaskException taskException) {
             throw taskException;
         } catch (Exception e) {
-            log.warn("getDescriptorPO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
+            log.warn("getDescriptorPOFromDAO fails, uid:{}, dagDescriptorId:{}", uid, dagDescriptorId, e);
             throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), String.format("get descriptor:%s fails", dagDescriptorId));
         }
     }
