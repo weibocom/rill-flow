@@ -18,7 +18,8 @@
     "koa-router": "^12.0.0",
     "koa-static": "^5.0.0",
     "koa-websocket": "^7.0.0",
-    "koa2-cors": "^2.0.6"
+    "koa2-cors": "^2.0.6",
+    "server": "file:"
   },
   "devDependencies": {
     "@types/koa": "^2.13.6",

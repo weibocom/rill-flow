@@ -27,6 +27,7 @@
     "babel-plugin-import": "^1.13.8",
     "codemirror": "^5.65.12",
     "codemirror-editor-vue3": "^2.4.1",
+    "flow-graph": "file:",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
