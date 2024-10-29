@@ -75,6 +75,9 @@ public class DAGDescriptorService {
         return getDAG(uid, input, dagDescriptorId, false);
     }
 
+    /**
+     * 存储 DescriptorVO 并返回对应的 descriptorId
+     */
     public String saveDescriptorVO(String businessId, String featureName, String alias, DescriptorVO descriptorVO) {
         if (descriptorVO == null || DAGStorageKeysUtil.nameInvalid(businessId, featureName, alias)) {
             log.info("saveDescriptorVO param invalid, businessId:{}, featureName:{}, alias:{}, descriptor:{}", businessId, featureName, alias, descriptorVO);
