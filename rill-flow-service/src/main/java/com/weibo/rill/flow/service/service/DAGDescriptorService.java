@@ -134,6 +134,9 @@ public class DAGDescriptorService {
     public String calculateResourceName(Long uid, Map<String, Object> input, String executionId, String configKey) {
         String businessId = ExecutionIdUtil.getBusinessId(executionId);
         Pair<String, Map<String, String>> functionAB = dagABTestDAO.getFunctionAB(businessId, configKey);
+        if (functionAB == null) {
+            return null;
+        }
         String resourceName = getValueFromRuleMap(uid, input, functionAB.getRight(), functionAB.getLeft());
         log.info("calculateResourceName result resourceName:{} executionId:{} configKey:{}", resourceName, executionId, configKey);
         return resourceName;
