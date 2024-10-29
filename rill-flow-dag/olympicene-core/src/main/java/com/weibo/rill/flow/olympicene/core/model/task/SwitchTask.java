@@ -16,7 +16,6 @@
 
 package com.weibo.rill.flow.olympicene.core.model.task;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -28,7 +27,9 @@ import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
@@ -49,7 +50,7 @@ public class SwitchTask extends BaseTask {
             @JsonProperty("progress") Progress progress,
             @JsonProperty("degrade") Degrade degrade,
             @JsonProperty("timeline") Timeline timeline,
-            @JsonProperty("keyCallback") @JsonAlias({"key_callback", "isKeyCallback"}) boolean keyCallback,
+            @JsonProperty("keyCallback") boolean keyCallback,
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
             @JsonProperty("templateId") String templateId,

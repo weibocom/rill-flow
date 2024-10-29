@@ -48,7 +48,6 @@ public abstract class BaseTask {
     private Progress progress;
     private Degrade degrade;
     private Timeline timeline;
-    @JsonProperty("keyCallback")
     private boolean keyCallback = false;
     private String keyExp;
     private Map<String,Object> parameters;

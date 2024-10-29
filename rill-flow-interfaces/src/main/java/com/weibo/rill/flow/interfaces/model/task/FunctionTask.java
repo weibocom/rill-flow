@@ -67,7 +67,7 @@ public class FunctionTask extends BaseTask {
                         @JsonProperty("degrade") Degrade degrade,
                         @JsonProperty("timeline") Timeline timeline,
                         @JsonProperty("requestType") String requestType,
-                        @JsonProperty("keyCallback") @JsonAlias({"key_callback", "isKeyCallback"}) boolean keyCallback,
+                        @JsonProperty("keyCallback") boolean keyCallback,
                         @JsonProperty("keyExp") String keyExp,
                         @JsonProperty("parameters") Map<String, Object> parameters,
                         @JsonProperty("templateId") String templateId,
