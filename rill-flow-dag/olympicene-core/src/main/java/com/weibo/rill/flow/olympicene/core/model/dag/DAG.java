@@ -63,7 +63,7 @@ public class DAG {
                @JsonProperty("timer") Timeline timeline,
                @JsonProperty("tasks") List<BaseTask> tasks,
                @JsonProperty("resources") List<BaseResource> resources,
-               @JsonProperty("callback") @JsonAlias("callback_config") CallbackConfig callbackConfig,
+               @JsonProperty("callback") @JsonAlias({"callback_config", "callbackConfig"}) CallbackConfig callbackConfig,
                @JsonProperty("defaultContext") Map<String, String> defaultContext,
                @JsonProperty("commonMapping") Map<String, List<Mapping>> commonMapping,
                @JsonProperty("namespace") String namespace,
