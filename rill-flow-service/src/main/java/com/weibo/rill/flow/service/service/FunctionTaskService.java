@@ -20,8 +20,6 @@ import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
-import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.storage.dao.DAGABTestDAO;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +41,6 @@ public class FunctionTaskService {
     private DAGABTestDAO dagABTestDAO;
     @Autowired
     private DAGDescriptorService dagDescriptorService;
-    @Autowired
-    private DAGDescriptorConverter dagDescriptorConverter;
 
     public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
         try {
@@ -52,8 +48,7 @@ public class FunctionTaskService {
 
             String dagDescriptorId = uri.getAuthority();
             // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorPO dagDescriptorPO = dagDescriptorService.getDescriptorPOFromDAO(uid, input, dagDescriptorId, true);
-            DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
+            DAG dag = dagDescriptorService.getDAG(uid, input, dagDescriptorId, true);
             if (CollectionUtils.isEmpty(dag.getResources())) {
                 throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");
             }

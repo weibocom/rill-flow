@@ -65,10 +65,14 @@ public class DAGDescriptorService {
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build();
 
+    public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+        DescriptorPO descriptorPO = getDescriptorPOFromDAO(uid, input, dagDescriptorId, useCache);
+        return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
+    }
+
     public DAG getDAG(Long uid, Map<String, Object> input, String dagDescriptorId) {
         // 调用量比较小 useCache为false 实时取最新的yaml保证更新会立即生效
-        DescriptorPO descriptorPO = getDescriptorPOFromDAO(uid, input, dagDescriptorId, false);
-        return dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO);
+        return getDAG(uid, input, dagDescriptorId, false);
     }
 
     public String saveDescriptorVO(String businessId, String featureName, String alias, DescriptorVO descriptorVO) {
@@ -107,7 +111,7 @@ public class DAGDescriptorService {
      *
      * </pre>
      */
-    public DescriptorPO getDescriptorPOFromDAO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    private DescriptorPO getDescriptorPOFromDAO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);

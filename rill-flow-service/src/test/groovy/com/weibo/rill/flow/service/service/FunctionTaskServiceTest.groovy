@@ -4,7 +4,6 @@ import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO
-import com.weibo.rill.flow.service.converter.DAGDescriptorConverter
 import com.weibo.rill.flow.service.storage.dao.DAGABTestDAO
 import org.apache.commons.lang3.tuple.Pair
 import spock.lang.Specification
@@ -14,16 +13,13 @@ class FunctionTaskServiceTest extends Specification {
     FunctionTaskService functionTaskService
     DAGABTestDAO dagABTestDAO
     DAGDescriptorService dagDescriptorService
-    DAGDescriptorConverter dagDescriptorConverter
 
     def setup() {
         dagABTestDAO = Mock(DAGABTestDAO)
         dagDescriptorService = Mock(DAGDescriptorService)
-        dagDescriptorConverter = Mock(DAGDescriptorConverter)
         functionTaskService = new FunctionTaskService(
                 dagABTestDAO: dagABTestDAO,
                 dagDescriptorService: dagDescriptorService,
-                dagDescriptorConverter: dagDescriptorConverter
         )
     }
 
@@ -32,7 +28,6 @@ class FunctionTaskServiceTest extends Specification {
         def uid = 123L
         def input = [key: "value"]
         def resourceName = "dag://descriptor-id?name=resource1"
-        def descriptorPO = new DescriptorPO()
         def dag = new DAG()
         def resource = new BaseResource(name: "resource1")
         dag.resources = [resource]
@@ -41,8 +36,7 @@ class FunctionTaskServiceTest extends Specification {
         def result = functionTaskService.getTaskResource(uid, input, resourceName)
 
         then:
-        1 * dagDescriptorService.getDescriptorPOFromDAO(uid, input, "descriptor-id", true) >> descriptorPO
-        1 * dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO) >> dag
+        1 * dagDescriptorService.getDAG(uid, input, "descriptor-id", true) >> dag
         result == resource
     }
 
@@ -59,8 +53,7 @@ class FunctionTaskServiceTest extends Specification {
         functionTaskService.getTaskResource(uid, input, resourceName)
 
         then:
-        1 * dagDescriptorService.getDescriptorPOFromDAO(uid, input, "descriptor-id", true) >> descriptorPO
-        1 * dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO) >> dag
+        1 * dagDescriptorService.getDAG(uid, input, "descriptor-id", true) >> dag
         thrown(TaskException)
     }
 
@@ -78,8 +71,7 @@ class FunctionTaskServiceTest extends Specification {
         functionTaskService.getTaskResource(uid, input, resourceName)
 
         then:
-        1 * dagDescriptorService.getDescriptorPOFromDAO(uid, input, "descriptor-id", true) >> descriptorPO
-        1 * dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO) >> dag
+        1 * dagDescriptorService.getDAG(uid, input, "descriptor-id", true) >> dag
         thrown(TaskException)
     }
 
