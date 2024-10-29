@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.olympicene.core.model.task;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
@@ -49,7 +50,7 @@ public class ReturnTask extends BaseTask {
                       @JsonProperty("progress") Progress progress,
                       @JsonProperty("degrade") Degrade degrade,
                       @JsonProperty("timeline") Timeline timeline,
-                      @JsonProperty("isKeyCallback") boolean isKeyCallback,
+                      @JsonProperty("isKeyCallback") @JsonAlias("key_callback") boolean isKeyCallback,
                       @JsonProperty("keyExp") String keyExp,
                       @JsonProperty("parameters") Map<String, Object> parameters,
                       @JsonProperty("templateId") String templateId,
