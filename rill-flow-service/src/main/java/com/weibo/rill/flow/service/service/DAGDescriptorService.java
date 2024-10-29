@@ -23,7 +23,6 @@ import com.googlecode.aviator.Expression;
 import com.weibo.rill.flow.common.constant.ReservedConstant;
 import com.weibo.rill.flow.common.exception.TaskException;
 import com.weibo.rill.flow.common.model.BizError;
-import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO;
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO;
@@ -31,22 +30,15 @@ import com.weibo.rill.flow.service.converter.DAGDescriptorConverter;
 import com.weibo.rill.flow.service.manager.AviatorCache;
 import com.weibo.rill.flow.service.storage.dao.*;
 import com.weibo.rill.flow.service.util.DAGStorageKeysUtil;
-import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.weibo.rill.flow.service.util.DAGStorageKeysUtil.MD5_PREFIX;
 
@@ -67,8 +59,6 @@ public class DAGDescriptorService {
     private DAGBusinessDAO dagBusinessDAO;
     @Autowired
     private AviatorCache aviatorCache;
-    @Autowired
-    private DAGABTestDAO dagABTestDAO;
 
     private final Cache<String, String> descriptorIdToRedisKeyCache = CacheBuilder.newBuilder()
             .maximumSize(300)
@@ -102,46 +92,6 @@ public class DAGDescriptorService {
         return dagDescriptorDAO.persistDescriptorPO(businessId, featureName, alias, descriptorPO);
     }
 
-    public BaseResource getTaskResource(Long uid, Map<String, Object> input, String resourceName) {
-        try {
-            URI uri = new URI(resourceName);
-
-            String dagDescriptorId = uri.getAuthority();
-            // 调用量比较大 useCache=tre 以减轻redis数据获取压力
-            DescriptorPO dagDescriptorPO = getDescriptorPOFromDAO(uid, input, dagDescriptorId, true);
-            DAG dag = dagDescriptorConverter.convertDescriptorPOToDAG(dagDescriptorPO);
-            if (CollectionUtils.isEmpty(dag.getResources())) {
-                throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resources empty");
-            }
-
-            Map<String, BaseResource> resourceMap = dag.getResources().stream()
-                    .collect(Collectors.toMap(BaseResource::getName, it -> it));
-            Map<String, String> queryParams = new URIBuilder(uri).getQueryParams().stream()
-                    .collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue, (v1, v2) -> v1));
-            BaseResource baseResource = resourceMap.get(queryParams.get("name"));
-            if (baseResource == null) {
-                throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "dag resource null");
-            }
-            return baseResource;
-        } catch (TaskException e) {
-            throw e;
-        } catch (Exception e) {
-            log.warn("getTaskResource form dag config fails, resourceName:{}", resourceName, e);
-            throw new TaskException(BizError.ERROR_PROCESS_FAIL.getCode(), "getTaskResource fails: " + e.getMessage(), e.getCause());
-        }
-    }
-
-    public String calculateResourceName(Long uid, Map<String, Object> input, String executionId, String configKey) {
-        String businessId = ExecutionIdUtil.getBusinessId(executionId);
-        Pair<String, Map<String, String>> functionAB = dagABTestDAO.getFunctionAB(businessId, configKey);
-        if (functionAB == null) {
-            return null;
-        }
-        String resourceName = getValueFromRuleMap(uid, input, functionAB.getRight(), functionAB.getLeft());
-        log.info("calculateResourceName result resourceName:{} executionId:{} configKey:{}", resourceName, executionId, configKey);
-        return resourceName;
-    }
-
     /**
      * @param useCache 是否使用缓存:descriptorIdToRedisKeyCache
      * <pre>
@@ -157,7 +107,7 @@ public class DAGDescriptorService {
      *
      * </pre>
      */
-    private DescriptorPO getDescriptorPOFromDAO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
+    public DescriptorPO getDescriptorPOFromDAO(Long uid, Map<String, Object> input, String dagDescriptorId, boolean useCache) {
         try {
             // 校验dagDescriptorId
             String[] fields = StringUtils.isEmpty(dagDescriptorId) ? new String[0] : dagDescriptorId.trim().split(ReservedConstant.COLON);
@@ -194,7 +144,13 @@ public class DAGDescriptorService {
         }
     }
 
-    private String getValueFromRuleMap(Long uid, Map<String, Object> input, Map<String, String> ruleMap, String defaultValue) {
+    private String getDescriptorAliasByGrayRule(Long uid, Map<String, Object> input, String businessId, String featureName) {
+        Map<String, String> aliasToGrayRuleMap = dagGrayDAO.getGray(businessId, featureName);
+        log.info("getDescriptorAliasByGrayRule map empty:{}", MapUtils.isEmpty(aliasToGrayRuleMap));
+        return getValueFromRuleMap(uid, input, aliasToGrayRuleMap, DAGStorageKeysUtil.RELEASE);
+    }
+
+    public String getValueFromRuleMap(Long uid, Map<String, Object> input, Map<String, String> ruleMap, String defaultValue) {
         long aviatorUid = uid == null ? 0L : uid;
         Map<String, Object> aviatorInput = MapUtils.isEmpty(input) ? Collections.emptyMap() : input;
         return ruleMap.entrySet().stream()
@@ -213,11 +169,5 @@ public class DAGDescriptorService {
                     }
                 })
                 .map(Map.Entry::getKey).findFirst().orElse(defaultValue);
-    }
-
-    private String getDescriptorAliasByGrayRule(Long uid, Map<String, Object> input, String businessId, String featureName) {
-        Map<String, String> aliasToGrayRuleMap = dagGrayDAO.getGray(businessId, featureName);
-        log.info("getDescriptorAliasByGrayRule map empty:{}", MapUtils.isEmpty(aliasToGrayRuleMap));
-        return getValueFromRuleMap(uid, input, aliasToGrayRuleMap, DAGStorageKeysUtil.RELEASE);
     }
 }

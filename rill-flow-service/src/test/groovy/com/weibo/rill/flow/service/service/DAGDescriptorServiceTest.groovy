@@ -17,7 +17,6 @@
 package com.weibo.rill.flow.service.service
 
 import com.weibo.rill.flow.common.exception.TaskException
-import com.weibo.rill.flow.interfaces.model.resource.BaseResource
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorPO
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
@@ -35,7 +34,6 @@ class DAGDescriptorServiceTest extends Specification {
     DAGGrayDAO dagGrayDAO
     DAGBusinessDAO dagBusinessDAO
     AviatorCache aviatorCache
-    DAGABTestDAO dagABTestDAO
 
     static final String VALID_BUSINESS_ID = "testbusiness123"
     static final String VALID_FEATURE_NAME = "testfeature456"
@@ -52,7 +50,6 @@ class DAGDescriptorServiceTest extends Specification {
         dagGrayDAO = Mock(DAGGrayDAO)
         dagBusinessDAO = Mock(DAGBusinessDAO)
         aviatorCache = Mock(AviatorCache)
-        dagABTestDAO = Mock(DAGABTestDAO)
 
         service = new DAGDescriptorService(
             dagAliasDAO: dagAliasDAO,
@@ -61,8 +58,7 @@ class DAGDescriptorServiceTest extends Specification {
             dagDescriptorConverter: dagDescriptorConverter,
             dagGrayDAO: dagGrayDAO,
             dagBusinessDAO: dagBusinessDAO,
-            aviatorCache: aviatorCache,
-            dagABTestDAO: dagABTestDAO
+            aviatorCache: aviatorCache
         )
     }
 
@@ -219,54 +215,5 @@ class DAGDescriptorServiceTest extends Specification {
         VALID_BUSINESS_ID  | VALID_FEATURE_NAME  | ""            | new DescriptorVO("test")
         VALID_BUSINESS_ID  | VALID_FEATURE_NAME  | "invalid_alias"| new DescriptorVO("test")
         VALID_BUSINESS_ID  | VALID_FEATURE_NAME  | VALID_ALIAS    | null
-    }
-
-    def "test getTaskResource success"() {
-        given:
-        def uid = 123L
-        def input = [key: "value"]
-        def resourceName = "dag://${VALID_DESCRIPTOR_ID}?name=testResource"
-        def descriptorPO = new DescriptorPO()
-        def dag = new DAG()
-        def resource = Mock(BaseResource)
-        resource.getName() >> "testResource"
-        dag.resources = [resource]
-
-        when:
-        def result = service.getTaskResource(uid, input, resourceName)
-
-        then:
-        0 * dagGrayDAO.getGray(_, _)  // 不应该调用 getGray，因为有完整的描述符ID
-        1 * dagAliasDAO.getDescriptorRedisKeyByAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> VALID_REDIS_KEY
-        1 * dagDescriptorDAO.getDescriptorPO(VALID_DESCRIPTOR_ID, VALID_REDIS_KEY, VALID_BUSINESS_ID) >> descriptorPO
-        1 * dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO) >> dag
-        result == resource
-    }
-
-    def "test getTaskResource with gray rules"() {
-        given:
-        def uid = 123L
-        def input = [key: "value"]
-        def descriptorId = "${VALID_BUSINESS_ID}:${VALID_FEATURE_NAME}"
-        def resourceName = "dag://${descriptorId}?name=testResource"
-        def descriptorPO = new DescriptorPO()
-        def dag = new DAG()
-        def resource = Mock(BaseResource)
-        def grayRules = [(VALID_ALIAS): "uid > 100"]
-        resource.getName() >> "testResource"
-        dag.resources = [resource]
-
-        when:
-        def result = service.getTaskResource(uid, input, resourceName)
-
-        then:
-        1 * dagGrayDAO.getGray(VALID_BUSINESS_ID, VALID_FEATURE_NAME) >> grayRules
-        1 * aviatorCache.getAviatorExpression("uid > 100") >> Mock(com.googlecode.aviator.Expression) {
-            execute(_) >> true
-        }
-        1 * dagAliasDAO.getDescriptorRedisKeyByAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> VALID_REDIS_KEY
-        1 * dagDescriptorDAO.getDescriptorPO(descriptorId, VALID_REDIS_KEY, VALID_BUSINESS_ID) >> descriptorPO
-        1 * dagDescriptorConverter.convertDescriptorPOToDAG(descriptorPO) >> dag
-        result == resource
     }
 }
