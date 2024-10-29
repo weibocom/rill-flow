@@ -20,11 +20,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
+import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
-import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
@@ -60,7 +60,7 @@ public class PassTaskRunner extends AbstractTaskRunner {
         log.info("pass task begin to run executionId:{}, taskInfoName:{}", executionId, taskInfo.getName());
         if (CollectionUtils.isNotEmpty(taskInfo.getTask().getOutputMappings())) {
             Map<String, Object> context = ContextHelper.getInstance().getContext(dagContextStorage, executionId, taskInfo);
-            outputMappings(context, new HashMap<>(), new HashMap<>(), taskInfo.getTask().getOutputMappings());
+            outputMappings(context, new HashMap<>(), input, taskInfo.getTask().getOutputMappings());
             saveContext(executionId, context, Sets.newHashSet(taskInfo));
         }
 
