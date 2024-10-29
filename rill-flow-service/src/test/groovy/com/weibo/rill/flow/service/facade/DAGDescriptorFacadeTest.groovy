@@ -16,7 +16,7 @@
 
 package com.weibo.rill.flow.service.facade
 
-
+import com.alibaba.fastjson.JSONObject
 import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DescriptorVO
@@ -192,5 +192,188 @@ class DAGDescriptorFacadeTest extends Specification {
         result.config_key == VALID_CONFIG_KEY
         result.ab.default_resource_name == defaultResource
         result.ab.rules.size() == 2
+    }
+
+    def "test modifyAlias success"() {
+        when:
+        def result = facade.modifyAlias(add, VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS)
+
+        then:
+        if (add) {
+            1 * dagAliasDAO.createAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> true
+        } else {
+            1 * dagAliasDAO.remAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> true
+        }
+        result == [ret: true]
+
+        where:
+        add << [true, false]
+    }
+
+    def "test getAlias success"() {
+        given:
+        def aliases = ["alias1", "alias2"] as Set
+
+        when:
+        def result = facade.getAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME)
+
+        then:
+        1 * dagAliasDAO.getAlias(VALID_BUSINESS_ID, VALID_FEATURE_NAME) >> aliases
+        result == [
+            business_id: VALID_BUSINESS_ID,
+            feature: VALID_FEATURE_NAME,
+            aliases: aliases
+        ]
+    }
+
+    def "test modifyGray success"() {
+        given:
+        def grayRule = "test gray rule"
+
+        when:
+        def result = facade.modifyGray("identity", add, VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS, grayRule)
+
+        then:
+        if (add) {
+            1 * dagGrayDAO.createGray(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS, grayRule) >> true
+        } else {
+            1 * dagGrayDAO.remGray(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> true
+        }
+        result == [ret: true]
+
+        where:
+        add << [true, false]
+    }
+
+    def "test getGray success"() {
+        given:
+        def grayRules = [
+            "alias1": "rule1",
+            "alias2": "rule2"
+        ]
+
+        when:
+        def result = facade.getGray(VALID_BUSINESS_ID, VALID_FEATURE_NAME)
+
+        then:
+        1 * dagGrayDAO.getGray(VALID_BUSINESS_ID, VALID_FEATURE_NAME) >> grayRules
+        result == [
+            business_id: VALID_BUSINESS_ID,
+            feature: VALID_FEATURE_NAME,
+            gray: grayRules
+        ]
+    }
+
+    def "test getABConfigKey success"() {
+        given:
+        def configKeys = ["key1", "key2"] as Set
+
+        when:
+        def result = facade.getABConfigKey(VALID_BUSINESS_ID)
+
+        then:
+        1 * dagabTestDAO.getABConfigKey(VALID_BUSINESS_ID) >> configKeys
+        result == [
+            business_id: VALID_BUSINESS_ID,
+            config_keys: configKeys
+        ]
+    }
+
+    def "test modifyFunctionAB success"() {
+        given:
+        def defaultResourceName = "defaultResource"
+        def abRule = "test ab rule"
+        def identity = "testIdentity"
+
+        when:
+        def result = facade.modifyFunctionAB(identity, add, VALID_BUSINESS_ID, VALID_CONFIG_KEY, defaultResourceName, abRule)
+
+        then:
+        if (add) {
+            1 * dagabTestDAO.createFunctionAB(VALID_BUSINESS_ID, VALID_CONFIG_KEY, defaultResourceName, abRule) >> true
+        } else {
+            1 * dagabTestDAO.remFunctionAB(VALID_BUSINESS_ID, VALID_CONFIG_KEY, defaultResourceName) >> true
+        }
+        1 * applicationEventPublisher.publishEvent(_)
+        result == [ret: true]
+
+        where:
+        add << [true, false]
+    }
+
+    def "test getVersion success"() {
+        given:
+        def versions = [
+            [descriptor_id: VALID_DESCRIPTOR_ID, create_time: 1234567890],
+            [descriptor_id: "${VALID_BUSINESS_ID}:${VALID_FEATURE_NAME}:md5_def456", create_time: 1234567891]
+        ]
+
+        when:
+        def result = facade.getVersion(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS)
+
+        then:
+        1 * dagAliasDAO.getVersion(VALID_BUSINESS_ID, VALID_FEATURE_NAME, VALID_ALIAS) >> versions
+        result == [
+            business_id: VALID_BUSINESS_ID,
+            feature: VALID_FEATURE_NAME,
+            alias: VALID_ALIAS,
+            versions: versions
+        ]
+    }
+
+    def "test getDescriptor with yaml content success"() {
+        given:
+        def yamlContent = """
+            tasks:
+              - name: task1
+                resourceName: resource1
+                next: task2,task3
+              - name: task2
+                resourceName: resource2
+              - name: task3
+                resourceName: resource3
+        """
+        def dag = new DAG()
+        def descriptorVO = new DescriptorVO(yamlContent)
+
+        when:
+        def result = facade.getDescriptor(VALID_DESCRIPTOR_ID)
+
+        then:
+        1 * dagDescriptorService.getDAG(null, null, VALID_DESCRIPTOR_ID) >> dag
+        1 * dagDescriptorConverter.convertDAGToDescriptorVO(dag) >> descriptorVO
+        result instanceof JSONObject
+        result.tasks.task1.task.name == "task1"
+        result.tasks.task1.next == ["task2", "task3"]
+        result.tasks.task2.task.name == "task2"
+        result.tasks.task3.task.name == "task3"
+    }
+
+    def "test getDescriptor with invalid yaml content"() {
+        given:
+        def dag = new DAG()
+        def descriptorVO = new DescriptorVO("invalid: yaml: content: :")
+
+        when:
+        facade.getDescriptor(VALID_DESCRIPTOR_ID)
+
+        then:
+        1 * dagDescriptorService.getDAG(null, null, VALID_DESCRIPTOR_ID) >> dag
+        1 * dagDescriptorConverter.convertDAGToDescriptorVO(dag) >> descriptorVO
+        thrown(TaskException)
+    }
+
+    def "test getDescriptor with null descriptor"() {
+        given:
+        def dag = new DAG()
+        def descriptorVO = new DescriptorVO(null)
+
+        when:
+        facade.getDescriptor(VALID_DESCRIPTOR_ID)
+
+        then:
+        1 * dagDescriptorService.getDAG(null, null, VALID_DESCRIPTOR_ID) >> dag
+        1 * dagDescriptorConverter.convertDAGToDescriptorVO(dag) >> descriptorVO
+        thrown(TaskException)
     }
 }
