@@ -53,14 +53,14 @@ public class ChoiceTask extends BaseTask {
             @JsonProperty("progress") Progress progress,
             @JsonProperty("degrade") Degrade degrade,
             @JsonProperty("timeline") Timeline timeline,
-            @JsonProperty("isKeyCallback") @JsonAlias("key_callback") boolean isKeyCallback,
+            @JsonProperty("keyCallback") @JsonAlias({"key_callback", "isKeyCallback"}) boolean keyCallback,
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
             @JsonProperty("templateId") String templateId,
             @JsonProperty("inputType") String inputType,
             @JsonProperty("outputType") String outputType) {
         super(name, title, description, category, next, false, inputMappings, outputMappings, progress,
-                degrade, timeline, isKeyCallback, keyExp, parameters, templateId, input, inputType, outputType);
+                degrade, timeline, keyCallback, keyExp, parameters, templateId, input, inputType, outputType);
         this.choices = choices;
     }
 

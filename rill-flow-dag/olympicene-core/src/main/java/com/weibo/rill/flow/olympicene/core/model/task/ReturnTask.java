@@ -50,7 +50,7 @@ public class ReturnTask extends BaseTask {
                       @JsonProperty("progress") Progress progress,
                       @JsonProperty("degrade") Degrade degrade,
                       @JsonProperty("timeline") Timeline timeline,
-                      @JsonProperty("isKeyCallback") @JsonAlias("key_callback") boolean isKeyCallback,
+                      @JsonProperty("keyCallback") @JsonAlias({"key_callback", "isKeyCallback"}) boolean keyCallback,
                       @JsonProperty("keyExp") String keyExp,
                       @JsonProperty("parameters") Map<String, Object> parameters,
                       @JsonProperty("templateId") String templateId,
@@ -58,7 +58,7 @@ public class ReturnTask extends BaseTask {
                       @JsonProperty("inputType") String inputType,
                       @JsonProperty("outputType") String outputType) {
         super(name, title, description, category, next, false, inputMappings, outputMappings, progress, degrade,
-                timeline, isKeyCallback, keyExp, parameters, templateId, input, inputType, outputType);
+                timeline, keyCallback, keyExp, parameters, templateId, input, inputType, outputType);
         Optional.ofNullable(timeline).ifPresent(it -> it.setTimeoutInSeconds(null));
         this.conditions = conditions;
     }
