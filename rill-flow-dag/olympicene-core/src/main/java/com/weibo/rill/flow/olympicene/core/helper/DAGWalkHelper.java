@@ -84,10 +84,14 @@ public class DAGWalkHelper {
             // 2. 流式输入任务，任意依赖的流式任务开始执行或者非流式任务已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
             return taskInfo.getDependencies().stream().anyMatch(dependency -> {
                 TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
-                return (dependencyOutputType == TaskInputOutputType.STREAM
-                            && dependency.getTaskStatus() != TaskStatus.NOT_STARTED)
-                        || (dependencyOutputType == TaskInputOutputType.BLOCK
-                            && isTaskSuccessOrSkip(dependency, isTaskKeyMode));
+                boolean streamDependencyStarted = false;
+                boolean blockDependencyFinished = false;
+                if (dependencyOutputType == TaskInputOutputType.STREAM) {
+                    streamDependencyStarted = dependency.getTaskStatus() != TaskStatus.NOT_STARTED;
+                } else {
+                    blockDependencyFinished = isTaskSuccessOrSkip(dependency, isTaskKeyMode);
+                }
+                return streamDependencyStarted || blockDependencyFinished;
             });
         } else {
             // 3. 非流式输入任务，所有依赖任务是否都已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
