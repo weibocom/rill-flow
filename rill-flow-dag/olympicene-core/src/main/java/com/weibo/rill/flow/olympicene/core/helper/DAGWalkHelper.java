@@ -59,11 +59,13 @@ public class DAGWalkHelper {
         return readyToRunTasks;
     }
 
+    /**
+     * 筛选出准备运行的任务:
+     * 1. 当前任务不为空且状态为未开始
+     * 2. 依赖任务全部完成（如果在关键路径模式下，则包括关键路径完成）
+     */
     private Set<TaskInfo> getReadyToRunTasksByDependencies(Collection<TaskInfo> taskInfos) {
         boolean isKeyMode = isKeyMode(taskInfos);
-        // 筛选出准备运行的任务:
-        // 1. 当前任务不为空且状态为未开始
-        // 2. 依赖任务全部完成（如果在关键路径模式下，则包括关键路径完成）
         return taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode))
