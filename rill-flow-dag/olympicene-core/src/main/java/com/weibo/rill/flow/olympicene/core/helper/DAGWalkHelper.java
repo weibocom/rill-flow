@@ -110,7 +110,7 @@ public class DAGWalkHelper {
     }
 
     /**
-     * 获取准备运行的流式输入任务
+     * 获取准备运行的流式输入任务，并添加到 readyToRunTasks
      * 
      * @param taskInfos 所有任务的集合
      * @param readyToRunTasks 已准备运行的任务集合
