@@ -123,10 +123,8 @@ public class DAGWalkHelper {
         boolean streamDependencyStarted = false;
         boolean blockDependencyFinished = false;
         if (dependencyOutputType == TaskInputOutputType.STREAM) {
-            // 1. 任意依赖的流式输出任务开始执行或者准备被执行
             streamDependencyStarted = dependency.getTaskStatus() != TaskStatus.NOT_STARTED || readyToRunTasks.contains(dependency);
         } else {
-            // 2. 任意依赖的非流式输出任务执行完成（包括关键路径模式下关键路径执行完成）
             blockDependencyFinished = isTaskSuccessOrSkip(dependency, isTaskKeyMode);
         }
         return streamDependencyStarted || blockDependencyFinished;
