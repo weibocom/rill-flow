@@ -55,15 +55,14 @@ public class DAGWalkHelper {
         boolean isKeyMode = isKeyMode(taskInfos);
 
         // 筛选出准备运行的任务:
-        // 1. 任务不为空且状态为未开始
-        // 2. 所有依赖的 block 输出任务都已成功或跳过
-        // 3. 如果是关键路径回调任务，并且在关键路径模式下，则只要关键路径完成执行就可以运行
+        // 1. 当前任务不为空且状态为未开始
+        // 2. 依赖任务全部完成（如果在关键路径模式下，则包括关键路径完成）
         Set<TaskInfo> readyToRunTasks = taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode))
                 .collect(Collectors.toSet());
 
-        // 4. 如果 stream 输入的任务依赖的任意 stream 输出任务在待执行列表中，则该 stream 输入任务也可以执行
+        // 3. 如果 stream 输入的任务依赖的任意 stream 输出任务在待执行列表中，则该 stream 输入任务也可以执行
         readyToRunTasks.addAll(getReadyToRunStreamInputTasks(taskInfos, readyToRunTasks));
         return readyToRunTasks;
     }
