@@ -94,6 +94,7 @@ class DAGWalkHelperTest extends Specification {
      * 6. 流式输入，有一个 block 输出节点完成，其他 block 输出节点未完成 -> 执行
      * 7. 流式输入，所有依赖均未开始执行，但依赖的一个 stream 输出节点可执行 -> 执行
      * 8. 流式输入，所有依赖均未开始执行，依赖的 stream 输出节点也不可执行 -> 不执行
+     * 9. 当一条路径上存在多个未执行的流式输入任务时，只有第一个需要被执行
      */
 
     def "1. test getReadyToRunTasks when non stream input task with all dependencies succeed"() {
@@ -341,5 +342,38 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoC)
         !ret.contains(taskInfoD)
         ret.contains(taskInfoE)
+    }
+
+    def "9. test getReadyToRunTasks when there are multiple stream input tasks"() {
+        given:
+        BaseTask taskA = Mock(BaseTask)
+        taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskA.getName() >> "A"
+        taskA.getOutputType() >> "stream"
+        TaskInfo taskInfoA = new TaskInfo(name: "A", taskStatus: TaskStatus.NOT_STARTED, task: taskA)
+        BaseTask taskB = Mock(BaseTask)
+        taskB.getCategory() >> TaskCategory.SUSPENSE.getValue()
+        taskB.getName() >> "B"
+        taskB.getOutputType() >> "stream"
+        taskB.getInputType() >> "stream"
+        TaskInfo taskInfoB = new TaskInfo(name: "B", taskStatus: TaskStatus.NOT_STARTED, task: taskB)
+        BaseTask taskC = Mock(BaseTask)
+        taskC.getCategory() >> TaskCategory.FUNCTION.getValue()
+        taskC.getName() >> "C"
+        taskC.getInputType() >> "stream"
+        taskC.isKeyCallback() >> true
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        taskInfoA.setNext([taskInfoB])
+        taskInfoB.setNext([taskInfoC])
+        taskInfoB.setDependencies([taskInfoA])
+        taskInfoC.setDependencies([taskInfoB])
+
+        when:
+        Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC])
+
+        then:
+        ret.contains(taskInfoA)
+        ret.contains(taskInfoB)
+        !ret.contains(taskInfoC)
     }
 }
