@@ -96,7 +96,7 @@ class DAGWalkHelperTest extends Specification {
      * 8. 流式输入，所有依赖均未开始执行，依赖的 stream 输出节点也不可执行 -> 不执行
      */
 
-    def "1.test getReadyToRunTasks when dependencies all succeed"() {
+    def "1. test getReadyToRunTasks when non stream input task with all dependencies succeed"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -123,7 +123,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoC)
     }
 
-    def "2.3. test getReadyToRunTasks is key mode"() {
+    def "2.3. test getReadyToRunTasks when non stream input task with key path dependencies succeed"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -163,7 +163,7 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoE)
     }
 
-    def "4. test getReadyToRunTasks when dependent on an unstarted block output task"() {
+    def "4. test getReadyToRunTasks when non stream input task depends on unfinished stream output task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -178,7 +178,7 @@ class DAGWalkHelperTest extends Specification {
         taskC.getName() >> "C"
         taskC.getOutputType() >> "stream"
         taskC.isKeyCallback() >> true
-        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.NOT_STARTED, task: taskC)
+        TaskInfo taskInfoC = new TaskInfo(name: "C", taskStatus: TaskStatus.RUNNING, task: taskC)
         BaseTask taskD = Mock(BaseTask)
         taskD.getCategory() >> TaskCategory.FUNCTION.getValue()
         taskD.getName() >> "D"
@@ -193,11 +193,11 @@ class DAGWalkHelperTest extends Specification {
         then:
         !ret.contains(taskInfoA)
         !ret.contains(taskInfoB)
-        ret.contains(taskInfoC)
+        !ret.contains(taskInfoC)
         !ret.contains(taskInfoD)
     }
 
-    def "5. test getReadyToRunTasks when stream input task dependents on all unstarted tasks"() {
+    def "5. test getReadyToRunTasks when stream input task with all block output dependencies unfinished"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -231,7 +231,7 @@ class DAGWalkHelperTest extends Specification {
         !ret.contains(taskInfoD)
     }
 
-    def "6. test getReadyToRunTasks when stream input task dependents on a success task"() {
+    def "6. test getReadyToRunTasks when stream input task with one block output dependency succeed"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -265,7 +265,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoD)
     }
 
-    def "7. test getReadyToRunTasks when stream input task dependents on an unstarted stream output task"() {
+    def "7. test getReadyToRunTasks when stream input task depends on ready to run stream output task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
@@ -300,7 +300,7 @@ class DAGWalkHelperTest extends Specification {
         ret.contains(taskInfoD)
     }
 
-    def "8. test getReadyToRunTasks when stream input task dependents on an unstarted stream output task which won't be run next"() {
+    def "8. test getReadyToRunTasks when stream input task depends on unready stream output task"() {
         given:
         BaseTask taskA = Mock(BaseTask)
         taskA.getCategory() >> TaskCategory.FUNCTION.getValue()
