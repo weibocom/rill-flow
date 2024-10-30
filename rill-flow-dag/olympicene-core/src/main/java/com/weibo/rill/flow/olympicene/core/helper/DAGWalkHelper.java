@@ -52,26 +52,29 @@ public class DAGWalkHelper {
     }
 
     public Set<TaskInfo> getReadyToRunTasks(Collection<TaskInfo> taskInfos) {
-        boolean isKeyMode = isKeyMode(taskInfos);
+        // 根据依赖关系获取准备运行的任务
+        Set<TaskInfo> readyToRunTasks = getReadyToRunTasksByDependencies(taskInfos);
+        // 添加准备运行的流式输入任务
+        addReadyToRunStreamInputTasks(taskInfos, readyToRunTasks);
+        return readyToRunTasks;
+    }
 
+    private Set<TaskInfo> getReadyToRunTasksByDependencies(Collection<TaskInfo> taskInfos) {
+        boolean isKeyMode = isKeyMode(taskInfos);
         // 筛选出准备运行的任务:
         // 1. 当前任务不为空且状态为未开始
         // 2. 依赖任务全部完成（如果在关键路径模式下，则包括关键路径完成）
-        Set<TaskInfo> readyToRunTasks = taskInfos.stream()
+        return taskInfos.stream()
                 .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode))
                 .collect(Collectors.toSet());
-
-        // 3. 如果 stream 输入的任务依赖的任意 stream 输出任务在待执行列表中，则该 stream 输入任务也可以执行
-        addReadyToRunStreamInputTasks(taskInfos, readyToRunTasks);
-        return readyToRunTasks;
     }
 
     /**
      * 判断依赖的所有任务是否都已完成
      * 1. 如果没有依赖，说明依赖的所有任务都已完成
      * 2. 流式输入任务，有任意依赖的 block 输出任务完成或关键路径下完成
-     * 3. 非流式输入任务，所有依赖的 block 输出任务是否都已经完成，或在关键路径模式下关键路径完成
+     * 3. 非流式输入任务，所有依赖的 block 输出任务是否都已经完成，或在关键路径模式下关键路径完成或跳过
      */
     private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
         // 1. 没有依赖视为依赖均已完成
