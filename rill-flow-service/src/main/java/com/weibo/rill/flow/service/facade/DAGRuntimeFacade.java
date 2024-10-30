@@ -113,6 +113,7 @@ public class DAGRuntimeFacade {
             throw new IllegalArgumentException("status is " + dagInfo.getDagStatus() + " now, and cannot be set to " + status);
         }
 
+        // 任务执行完成后，将执行时间信息写入到 invokeMsg 中便于查询
         if (status.isCompleted()) {
             DAGInvokeMsg dagInvokeMsg = dagInfo.getDagInvokeMsg();
             if (dagInvokeMsg != null && CollectionUtils.isNotEmpty(dagInvokeMsg.getInvokeTimeInfos())) {
