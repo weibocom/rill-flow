@@ -334,6 +334,7 @@ class DAGWalkHelperTest extends Specification {
 
         when:
         Set<TaskInfo> ret = DAGWalkHelper.getInstance().getReadyToRunTasks([taskInfoA, taskInfoB, taskInfoC, taskInfoD, taskInfoE])
+
         then:
         ret.contains(taskInfoA)
         ret.contains(taskInfoB)
