@@ -63,7 +63,7 @@ public class DAGWalkHelper {
                 .collect(Collectors.toSet());
 
         // 3. 如果 stream 输入的任务依赖的任意 stream 输出任务在待执行列表中，则该 stream 输入任务也可以执行
-        readyToRunTasks.addAll(getReadyToRunStreamInputTasks(taskInfos, readyToRunTasks));
+        addReadyToRunStreamInputTasks(taskInfos, readyToRunTasks);
         return readyToRunTasks;
     }
 
@@ -109,24 +109,22 @@ public class DAGWalkHelper {
      * 
      * @param taskInfos 所有任务的集合
      * @param readyToRunTasks 已准备运行的任务集合
-     * @return 准备运行的流输入任务集合
      */
-    private Set<TaskInfo> getReadyToRunStreamInputTasks(Collection<TaskInfo> taskInfos, Set<TaskInfo> readyToRunTasks) {
+    private void addReadyToRunStreamInputTasks(Collection<TaskInfo> taskInfos, Set<TaskInfo> readyToRunTasks) {
         Set<TaskInfo> readyToRunStreamTasks = new HashSet<>();
         taskInfos.stream().filter(Objects::nonNull).filter(taskInfo -> taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
                 .filter(taskInfo -> TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType()) == TaskInputOutputType.STREAM)
                 .forEach(taskInfo -> {
                     boolean needRun = taskInfo.getDependencies().stream().anyMatch(dependency -> {
                         TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
-                        // 如果依赖任务是流输出类型且已开始执行，或者准备运行，则将当前任务添加到准备运行的流任务集合中
-                        return dependencyOutputType == TaskInputOutputType.STREAM
-                                && (dependency.getTaskStatus() != TaskStatus.NOT_STARTED || readyToRunTasks.contains(dependency));
+                        // 如果依赖任务是流输出类型且准备运行，则将当前任务添加到准备运行的流任务集合中
+                        return dependencyOutputType == TaskInputOutputType.STREAM && readyToRunTasks.contains(dependency);
                     });
                     if (needRun) {
                         readyToRunStreamTasks.add(taskInfo);
                     }
                 });
-        return readyToRunStreamTasks;
+        readyToRunTasks.addAll(readyToRunStreamTasks);
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {
