@@ -36,6 +36,7 @@ import com.weibo.rill.flow.olympicene.core.helper.DAGInfoMaker;
 import com.weibo.rill.flow.olympicene.core.helper.DAGWalkHelper;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import com.weibo.rill.flow.olympicene.core.model.task.TaskCategory;
 import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
@@ -110,6 +111,17 @@ public class DAGRuntimeFacade {
 
         if (dagInfo.getDagStatus().ordinal() >= status.ordinal()) {
             throw new IllegalArgumentException("status is " + dagInfo.getDagStatus() + " now, and cannot be set to " + status);
+        }
+
+        // 任务执行完成后，将执行时间信息写入到 invokeMsg 中便于查询
+        if (status.isCompleted()) {
+            DAGInvokeMsg dagInvokeMsg = dagInfo.getDagInvokeMsg();
+            if (dagInvokeMsg != null && CollectionUtils.isNotEmpty(dagInvokeMsg.getInvokeTimeInfos())) {
+                List<InvokeTimeInfo> invokeTimeInfos = dagInvokeMsg.getInvokeTimeInfos();
+                invokeTimeInfos.get(invokeTimeInfos.size() - 1).setEndTimeInMillisecond(System.currentTimeMillis());
+                dagInvokeMsg.setInvokeTimeInfos(invokeTimeInfos);
+            }
+            dagInfo.setDagInvokeMsg(dagInvokeMsg);
         }
 
         dagInfo.setDagStatus(status);

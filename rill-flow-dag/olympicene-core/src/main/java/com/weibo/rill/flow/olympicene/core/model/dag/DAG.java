@@ -16,6 +16,7 @@
 
 package com.weibo.rill.flow.olympicene.core.model.dag;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
@@ -43,6 +44,7 @@ public class DAG {
     private List<BaseTask> tasks;
     @Setter
     private List<BaseResource> resources;
+    @JsonProperty("callback")
     private CallbackConfig callbackConfig;
     @Setter
     private Map<String, String> defaultContext;
@@ -61,7 +63,7 @@ public class DAG {
                @JsonProperty("timer") Timeline timeline,
                @JsonProperty("tasks") List<BaseTask> tasks,
                @JsonProperty("resources") List<BaseResource> resources,
-               @JsonProperty("callback") CallbackConfig callbackConfig,
+               @JsonProperty("callback") @JsonAlias({"callback_config", "callbackConfig"}) CallbackConfig callbackConfig,
                @JsonProperty("defaultContext") Map<String, String> defaultContext,
                @JsonProperty("commonMapping") Map<String, List<Mapping>> commonMapping,
                @JsonProperty("namespace") String namespace,

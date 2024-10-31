@@ -376,4 +376,24 @@ class DAGDescriptorFacadeTest extends Specification {
         1 * dagDescriptorConverter.convertDAGToDescriptorVO(dag) >> descriptorVO
         thrown(TaskException)
     }
+
+    def "test generateResourceProtocol"() {
+        given:
+        JSONObject task = new JSONObject(["resourceProtocol": "testProtocol", "resourceName": "http://rill-flow-server"])
+        when:
+        facade.generateResourceProtocol(task)
+        then:
+        task != null
+        task.getString("resourceProtocol") == "testProtocol"
+    }
+
+    def "test generateResourceProtocol without protocol"() {
+        given:
+        JSONObject task = new JSONObject(["resourceName": "http://rill-flow-server"])
+        when:
+        facade.generateResourceProtocol(task)
+        then:
+        task != null
+        task.getString("resourceProtocol") == "http"
+    }
 }

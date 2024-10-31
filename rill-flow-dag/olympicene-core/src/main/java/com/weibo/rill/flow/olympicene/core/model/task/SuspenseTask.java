@@ -52,13 +52,15 @@ public class SuspenseTask extends BaseTask {
                         @JsonProperty("progress") Progress progress,
                         @JsonProperty("degrade") Degrade degrade,
                         @JsonProperty("timeline") Timeline timeline,
-                        @JsonProperty("isKeyCallback") boolean isKeyCallback,
+                        @JsonProperty("keyCallback") boolean keyCallback,
                         @JsonProperty("keyExp") String keyExp,
                         @JsonProperty("parameters") Map<String, Object> parameters,
                         @JsonProperty("templateId") String templateId,
-                        @JsonProperty("input") Map<String, Object> input) {
+                        @JsonProperty("input") Map<String, Object> input,
+                        @JsonProperty("inputType") String inputType,
+                        @JsonProperty("outputType") String outputType) {
         super(name, title, description, category, next, tolerance, inputMappings, outputMappings, progress, degrade,
-                timeline, isKeyCallback, keyExp, parameters, templateId, input);
+                timeline, keyCallback, keyExp, parameters, templateId, input, inputType, outputType);
         this.conditions = conditions;
         this.interruptions = interruptions;
     }

@@ -62,6 +62,7 @@ public class DAGDescriptorFacade {
     private static final String VERSIONS = "versions";
     private static final String DESCRIPTOR_ID = "descriptor_id";
     private static final String DESCRIPTOR = "descriptor";
+    private static final String RESOURCE_PROTOCOL = "resourceProtocol";
     @Autowired
     private DAGDescriptorService dagDescriptorService;
     @Autowired
@@ -265,12 +266,12 @@ public class DAGDescriptorFacade {
      */
     private void generateResourceProtocol(JSONObject task) {
         try {
-            if (task == null || StringUtils.isNotEmpty(task.getString(task.getString("resourceProtocol")))) {
+            if (task == null || StringUtils.isNotEmpty(task.getString(RESOURCE_PROTOCOL))) {
                 return;
             }
             String resourceName = task.getString("resourceName");
             Resource resource = new Resource(resourceName);
-            task.put("resourceProtocol", resource.getSchemeProtocol());
+            task.put(RESOURCE_PROTOCOL, resource.getSchemeProtocol());
         } catch (Exception e) {
             log.warn("generateResourceProtocol error", e);
         }
