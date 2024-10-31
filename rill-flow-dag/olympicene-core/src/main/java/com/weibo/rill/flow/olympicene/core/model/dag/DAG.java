@@ -16,13 +16,14 @@
 
 package com.weibo.rill.flow.olympicene.core.model.dag;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.resource.BaseResource;
-import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
 import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
 import com.weibo.rill.flow.interfaces.model.task.BaseTask;
+import com.weibo.rill.flow.olympicene.core.model.strategy.CallbackConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,15 +40,20 @@ public class DAG {
     private String version;
     private DAGType type;
     private Timeline timeline;
+    @Setter
     private List<BaseTask> tasks;
     @Setter
     private List<BaseResource> resources;
+    @JsonProperty("callback")
     private CallbackConfig callbackConfig;
     @Setter
     private Map<String, String> defaultContext;
     @Setter
     private Map<String, List<Mapping>> commonMapping;
     private String inputSchema;
+    private Map<String, Object> output;
+    @Setter
+    private String endTaskName;
 
     @JsonCreator
     public DAG(@JsonProperty("workspace") String workspace,
@@ -57,12 +63,13 @@ public class DAG {
                @JsonProperty("timer") Timeline timeline,
                @JsonProperty("tasks") List<BaseTask> tasks,
                @JsonProperty("resources") List<BaseResource> resources,
-               @JsonProperty("callback") CallbackConfig callbackConfig,
+               @JsonProperty("callback") @JsonAlias({"callback_config", "callbackConfig"}) CallbackConfig callbackConfig,
                @JsonProperty("defaultContext") Map<String, String> defaultContext,
                @JsonProperty("commonMapping") Map<String, List<Mapping>> commonMapping,
                @JsonProperty("namespace") String namespace,
                @JsonProperty("service") String service,
-               @JsonProperty("inputSchema") String inputSchema) {
+               @JsonProperty("inputSchema") String inputSchema,
+               @JsonProperty("output") Map<String, Object> output) {
         this.workspace = StringUtils.isBlank(workspace) ? namespace : workspace;
         this.dagName = StringUtils.isBlank(dagName) ? service : dagName;
         this.version = version;
@@ -74,5 +81,6 @@ public class DAG {
         this.defaultContext = defaultContext;
         this.commonMapping = commonMapping;
         this.inputSchema = inputSchema;
+        this.output = output;
     }
 }

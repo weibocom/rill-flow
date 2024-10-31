@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath {
     Configuration conf = Configuration.builder().options(Option.DEFAULT_PATH_LEAF_TO_NULL).build();
-    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[\"(.*?)\"]|\\['(.*?)']");
+    private static final Pattern JSONPATH_PATTERN = Pattern.compile("\\[(.*?)]");
 
     @Value("${rill.flow.function.trigger.uri}")
     private String rillFlowFunctionTriggerUri;
@@ -192,24 +192,67 @@ public class JSONPathInputOutputMapping implements InputOutputMapping, JSONPath 
         while (matcher.find()) {
             if (matcher.group(1) != null) {
                 jsonPathParts.add(matcher.group(1));
-            } else if (matcher.group(2) != null) {
-                jsonPathParts.add(matcher.group(2));
             }
         }
 
-        jsonPathParts.remove(jsonPathParts.size() - 1);
-
         Object current = map;
-        for (String part: jsonPathParts) {
+        for (int i = 0; i < jsonPathParts.size() - 1; i++) {
+            String part = jsonPathParts.get(i);
+            if (part.startsWith("\"") || part.startsWith("'")) {
+                part = part.substring(1, part.length() - 1);
+            }
             if (current instanceof Map) {
-                Map<String, Object> mapCurrent = (Map<String, Object>) current;
-                current = mapCurrent.computeIfAbsent(part, k -> new HashMap<>());
-            } else {
-                break;
+                current = processMapJsonPathPart(current, part, jsonPathParts, i);
+            } else if (current instanceof List) {
+                current = processListJsonPathPart(current, part, jsonPathParts, i);
             }
         }
 
         return JsonPath.using(conf).parse(map).set(path, value).json();
+    }
+
+    private Object processListJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
+        List<Object> listCurrent = (List<Object>) current;
+        int index = Integer.parseInt(part);
+        Object insertPosition = listCurrent.get(index);
+        if (jsonPathParts.get(i + 1).matches("\\d+")) {
+            // 1. 下一个元素是数字，也就是数组的索引，所以需要创建数组并且填充到索引位置
+            List<Object> nextArray = createAndFillNextArrayPart(insertPosition, jsonPathParts, i);
+            listCurrent.set(index, nextArray);
+        } else if (i + 1 < jsonPathParts.size() && insertPosition == null) {
+            // 2. 下一个元素不是数字，则创建 map
+            listCurrent.set(index, new HashMap<>());
+        }
+        return listCurrent.get(index);
+    }
+
+    private Object processMapJsonPathPart(Object current, String part, List<String> jsonPathParts, int i) {
+        Map<String, Object> mapCurrent = (Map<String, Object>) current;
+        Object currentValue = mapCurrent.get(part);
+        if (jsonPathParts.get(i + 1).matches("\\d+")) {
+            List<Object> nextArray = createAndFillNextArrayPart(currentValue, jsonPathParts, i);
+            mapCurrent.put(part, nextArray);
+        } else if (i + 1 < jsonPathParts.size() && currentValue == null) {
+            mapCurrent.put(part, new HashMap<>());
+        }
+        return mapCurrent.get(part);
+    }
+
+    /**
+     * 为下一个元素创建数组类型对象，并用 null 值填充指定元素个数
+     */
+    private List<Object> createAndFillNextArrayPart(Object nextPart, List<String> jsonPathParts, int i) {
+        List<Object> nextArray;
+        if (nextPart instanceof List) {
+            nextArray = (List<Object>) nextPart;
+        } else {
+            nextArray = new ArrayList<>();
+        }
+        int nextIndex = Integer.parseInt(jsonPathParts.get(i + 1));
+        for (int j = nextArray.size(); j <= nextIndex; j++) {
+            nextArray.add(null);
+        }
+        return nextArray;
     }
 
     @Override

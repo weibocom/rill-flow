@@ -46,11 +46,13 @@ import com.weibo.rill.flow.olympicene.traversal.mappings.JSONPathInputOutputMapp
 import com.weibo.rill.flow.service.component.DAGToolConverter;
 import com.weibo.rill.flow.service.invoke.HttpInvokeHelper;
 import com.weibo.rill.flow.service.manager.AviatorCache;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.service.DAGDescriptorService;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.statistic.TenantTaskStatistic;
 import com.weibo.rill.flow.service.storage.LongTermStorage;
 import com.weibo.rill.flow.service.storage.RuntimeStorage;
+import com.weibo.rill.flow.service.storage.dao.DAGBusinessDAO;
+import com.weibo.rill.flow.service.storage.dao.DAGFeatureDAO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -81,7 +83,7 @@ public class DAGRuntimeFacade {
     @Autowired
     private LongTermStorage longTermStorage;
     @Autowired
-    private DescriptorManager descriptorManager;
+    private DAGDescriptorService dagDescriptorService;
     @Autowired
     private DAGResourceStatistic dagResourceStatistic;
     @Autowired
@@ -92,6 +94,10 @@ public class DAGRuntimeFacade {
     private AviatorCache aviatorCache;
     @Autowired
     private OlympiceneFacade olympiceneFacade;
+    @Autowired
+    private DAGBusinessDAO dagBusinessDAO;
+    @Autowired
+    private DAGFeatureDAO dagFeatureDAO;
 
     public boolean updateDagStatus(String executionId, DAGStatus status) {
         if (StringUtils.isBlank(executionId) || status == null) {
@@ -107,6 +113,7 @@ public class DAGRuntimeFacade {
             throw new IllegalArgumentException("status is " + dagInfo.getDagStatus() + " now, and cannot be set to " + status);
         }
 
+        // 任务执行完成后，将执行时间信息写入到 invokeMsg 中便于查询
         if (status.isCompleted()) {
             DAGInvokeMsg dagInvokeMsg = dagInfo.getDagInvokeMsg();
             if (dagInvokeMsg != null && CollectionUtils.isNotEmpty(dagInvokeMsg.getInvokeTimeInfos())) {
@@ -388,9 +395,8 @@ public class DAGRuntimeFacade {
     }
 
     public Map<String, Object> dependencyCheck(String descriptorId, String descriptor) {
-        String dagDescriptor = StringUtils.isNotBlank(descriptorId) ?
-                descriptorManager.getDagDescriptor(0L, Collections.emptyMap(), descriptorId) : descriptor;
-        DAG dag = dagStringParser.parse(dagDescriptor);
+        DAG dag = StringUtils.isNotBlank(descriptorId) ?
+                dagDescriptorService.getDAG(0L, Collections.emptyMap(), descriptorId) : dagStringParser.parse(descriptor);
         Map<String, List<String>> dependencies = dagWalkHelper.getDependedResources(dag);
         List<Map<String, Object>> resourceToNames = dependencies.entrySet().stream()
                 .map(entry -> ImmutableMap.of("resource_name", entry.getKey(), "names", entry.getValue()))
@@ -445,7 +451,7 @@ public class DAGRuntimeFacade {
                     .featureId(feature)
                     .build());
         } else if (StringUtils.isNotEmpty(business) && StringUtils.isEmpty(feature)) {
-            descriptorManager.getFeature(business).forEach(featureId -> {
+            dagFeatureDAO.getFeature(business).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(business)
                         .featureId(featureId)
@@ -453,7 +459,7 @@ public class DAGRuntimeFacade {
                 dagRecordList.add(record);
             });
         } else {
-            descriptorManager.getBusiness().forEach(businessId -> descriptorManager.getFeature(businessId).forEach(featureId -> {
+            dagBusinessDAO.getBusiness().forEach(businessId -> dagFeatureDAO.getFeature(businessId).forEach(featureId -> {
                 DAGRecord record = DAGRecord.builder()
                         .businessId(businessId)
                         .featureId(featureId)

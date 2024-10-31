@@ -8,3 +8,4 @@ dependency-reduced-pom.xml
 .DS_Store
 /rill-flow-web/src/main/resources/static/
 .vscode/
+logs

@@ -23,7 +23,9 @@ import com.weibo.rill.flow.common.model.DAGRecord;
 import com.weibo.rill.flow.common.model.UserLoginRequest;
 import com.weibo.rill.flow.service.facade.DAGDescriptorFacade;
 import com.weibo.rill.flow.service.facade.DAGRuntimeFacade;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.storage.dao.DAGAliasDAO;
+import com.weibo.rill.flow.service.storage.dao.DAGBusinessDAO;
+import com.weibo.rill.flow.service.storage.dao.DAGFeatureDAO;
 import com.weibo.rill.flow.service.trace.TraceableContextWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,13 +58,19 @@ public class BgController {
     private String traceQueryHost;
 
     @Autowired
-    private DescriptorManager descriptorManager;
-
-    @Autowired
     private DAGDescriptorFacade dagDescriptorFacade;
 
     @Autowired
     private DAGRuntimeFacade dagRuntimeFacade;
+
+    @Autowired
+    private DAGBusinessDAO dagBusinessDAO;
+
+    @Autowired
+    private DAGFeatureDAO dagFeatureDAO;
+
+    @Autowired
+    private DAGAliasDAO dagAliasDAO;
 
     /**
      * 流程图的详情
@@ -95,10 +103,10 @@ public class BgController {
     ) {
         JSONObject result = new JSONObject();
         List<DAGRecord> dagRecordList = new ArrayList<>();
-        descriptorManager.getBusiness().stream().forEach(bussinessId -> {
-            descriptorManager.getFeature(bussinessId).stream().forEach(featureId -> {
-                descriptorManager.getAlias(bussinessId, featureId).stream().forEach(alia -> {
-                    List<Map> versions = descriptorManager.getVersion(bussinessId, featureId, alia);
+        dagBusinessDAO.getBusiness().stream().forEach(bussinessId -> {
+            dagFeatureDAO.getFeature(bussinessId).stream().forEach(featureId -> {
+                dagAliasDAO.getAlias(bussinessId, featureId).stream().forEach(alia -> {
+                    List<Map> versions = dagAliasDAO.getVersion(bussinessId, featureId, alia);
                     if (CollectionUtils.isNotEmpty(versions)) {
                         DAGRecord record = DAGRecord.builder()
                                 .businessId(bussinessId)

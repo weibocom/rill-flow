@@ -43,9 +43,6 @@ public class DAGWalkHelper {
 
     private static final DAGWalkHelper INSTANCE = new DAGWalkHelper();
 
-    private static final Set<String> FORK_TASK_CATEGORIES = Set.of(TaskCategory.SWITCH.getValue(), TaskCategory.RETURN.getValue(),
-            TaskCategory.FOREACH.getValue(), TaskCategory.CHOICE.getValue());
-
     private DAGWalkHelper() {
         // do nothing
     }
@@ -55,136 +52,82 @@ public class DAGWalkHelper {
     }
 
     public Set<TaskInfo> getReadyToRunTasks(Collection<TaskInfo> taskInfos) {
-        boolean hasStreamInputTask = taskInfos.stream()
-                .map(TaskInfo::getTask)
-                .filter(Objects::nonNull)
-                .anyMatch(task -> TaskInputType.getInputTypeByValue(task.getInputType()) == TaskInputType.STREAM);
         boolean isKeyMode = isKeyMode(taskInfos);
-
-        // 筛选出准备运行的任务:
-        // 1. 任务不为空且状态为未开始
-        // 2. 所有依赖任务都已成功或跳过
-        // 3. 如果是关键路径回调任务，则只在关键路径模式下运行
-        Set<TaskInfo> readyToRunTasks = taskInfos.stream()
-                .filter(taskInfo -> taskInfo != null && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
-                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, hasStreamInputTask, isKeyMode))
-                .collect(Collectors.toSet());
-
-        // 如果存在 stream 输入任务，则找到所有可以运行的 stream 输入任务
-        if (hasStreamInputTask) {
-            readyToRunTasks.addAll(findStreamInputTasksCanRun(readyToRunTasks));
-        }
+        // 根据依赖关系获取准备运行的非流式输入任务
+        Set<TaskInfo> readyToRunTasks = getReadyToRunBlockInputTasks(taskInfos, isKeyMode);
+        // 添加准备运行的流式输入任务
+        addReadyToRunStreamInputTasks(taskInfos, readyToRunTasks, isKeyMode);
         return readyToRunTasks;
     }
 
-    private Collection<TaskInfo> findStreamInputTasksCanRun(Set<TaskInfo> readyToRunTasks) {
-        Map<String, TaskInfo> streamInputTaskInfoMap = new HashMap<>();
-        Set<String> skipTaskNames = Sets.newHashSet();
-        for (TaskInfo taskInfo : readyToRunTasks) {
-            findNextStreamInputTask(taskInfo, streamInputTaskInfoMap, skipTaskNames);
-        }
-        return streamInputTaskInfoMap.values();
+    /**
+     * 筛选出准备运行的任务:
+     * 1. 当前任务不为空且状态为未开始
+     * 2. 依赖任务全部完成（如果在关键路径模式下，则包括关键路径完成）
+     */
+    private Set<TaskInfo> getReadyToRunBlockInputTasks(Collection<TaskInfo> taskInfos, boolean isKeyMode) {
+        return taskInfos.stream()
+                .filter(Objects::nonNull)
+                .filter(taskInfo -> taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
+                .filter(taskInfo -> TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType()) == TaskInputOutputType.BLOCK)
+                .filter(taskInfo -> isDependenciesAllSuccessOrSkip(taskInfo, isKeyMode))
+                .collect(Collectors.toSet());
     }
 
     /**
-     * 找到当前节点路径上的下一个可以被执行的 stream 输入节点
-     * @param taskInfo 当前节点
-     * @param streamInputTaskInfoMap 作为返回的直结果参数
-     * @param skipTaskNames 已经处理过的任务名称，用于去重，避免重复处理
+     * 非流式输入任务，所有依赖的 block 输出任务都已经完成，或在关键路径模式下关键路径完成或跳过，则任务可以运行
      */
-    private void findNextStreamInputTask(TaskInfo taskInfo, Map<String, TaskInfo> streamInputTaskInfoMap, Set<String> skipTaskNames) {
-        List<TaskInfo> nextTaskInfos = taskInfo.getNext();
-        String category = taskInfo.getTask().getCategory();
-        TaskInputType inputType = TaskInputType.getInputTypeByValue(taskInfo.getTask().getInputType());
-        
-        if (shouldSkipTask(taskInfo, nextTaskInfos, category, inputType)) {
-            return;
-        }
-        
-        for (TaskInfo nextTaskInfo : nextTaskInfos) {
-            processNextTaskInfo(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
-        }
-    }
-
-    private boolean shouldSkipTask(TaskInfo taskInfo, List<TaskInfo> nextTaskInfos, String category, TaskInputType inputType) {
-        return CollectionUtils.isEmpty(nextTaskInfos) || FORK_TASK_CATEGORIES.contains(category)
-                || (inputType == TaskInputType.STREAM && taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED);
-    }
-
-    private void processNextTaskInfo(TaskInfo nextTaskInfo, Map<String, TaskInfo> streamInputTaskInfoMap, Set<String> skipTaskNames) {
-        String nextTaskName = nextTaskInfo.getName();
-        String nextCategory = nextTaskInfo.getTask().getCategory();
-        TaskInputType nextInputType = TaskInputType.getInputTypeByValue(nextTaskInfo.getTask().getInputType());
-
-        if (skipTaskNames.contains(nextTaskName) || FORK_TASK_CATEGORIES.contains(nextCategory)) {
-            return;
-        }
-        skipTaskNames.add(nextTaskName);
-        if (nextInputType == TaskInputType.STREAM && nextTaskInfo.getTaskStatus() == TaskStatus.NOT_STARTED) {
-            if (!isDependOnUnfinishedStreamInputTask(nextTaskInfo, new HashSet<>(Set.of(nextTaskName)))) {
-                streamInputTaskInfoMap.put(nextTaskInfo.getName(), nextTaskInfo);
-            }
-            return;
-        }
-        findNextStreamInputTask(nextTaskInfo, streamInputTaskInfoMap, skipTaskNames);
-    }
-
-    /**
-     * 判断是否依赖于尚未执行完成的 Stream 输入节点
-     * @param taskInfo 任务信息
-     * @param skipTaskNames 跳过的任务名称，用于去重避免重复处理
-     * @return boolean 类型结果
-     */
-    private boolean isDependOnUnfinishedStreamInputTask(TaskInfo taskInfo, Set<String> skipTaskNames) {
-        // 如果节点不依赖任何节点，返回 false
+    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean isKeyMode) {
+        // 1. 没有依赖视为依赖均已完成
         if (CollectionUtils.isEmpty(taskInfo.getDependencies())) {
-            return false;
+            return true;
         }
-        // 如果节点依赖的任务已经被处理过，则直接跳过
-        // 如果有任何一个依赖的任务是没有处理完成的 Stream 输入节点，则返回 false
-        // 如果是非 Stream 输入节点，则递归调用，直到找到没有处理完成的 Stream 输入节点，或者全部节点都已被处理过
-        return taskInfo.getDependencies().stream()
-            .filter(dependencyTask -> !skipTaskNames.contains(dependencyTask.getName()))
-            .anyMatch(dependencyTask -> {
-                skipTaskNames.add(dependencyTask.getName());
-                TaskInputType inputType = TaskInputType.getInputTypeByValue(dependencyTask.getTask().getInputType());
-                return (inputType == TaskInputType.STREAM && !dependencyTask.getTaskStatus().isSuccessOrSkip())
-                    || (inputType != TaskInputType.STREAM && isDependOnUnfinishedStreamInputTask(dependencyTask, skipTaskNames));
-            });
+        boolean isTaskKeyMode = isKeyMode && taskInfo.getTask().isKeyCallback();
+        // 2. 非流式输入任务，所有依赖任务是否都已完成（非关键路径模式下完成或跳过，或者在关键路径模式下关键路径完成或跳过）
+        return taskInfo.getDependencies().stream().allMatch(dependency -> isTaskSuccessOrSkip(dependency, isTaskKeyMode));
     }
 
-    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasStreamInputTask, boolean isKeyMode) {
-        boolean isKeyCallback = taskInfo.getTask().isKeyCallback();
-        return isDependenciesAllSuccessOrSkip(taskInfo, hasStreamInputTask, isKeyMode, isKeyCallback);
+    private boolean isTaskSuccessOrSkip(TaskInfo taskInfo, boolean isTaskKeyMode) {
+        return taskInfo.getTaskStatus().isSuccessOrSkip()
+                || (isTaskKeyMode && taskInfo.getTaskStatus().isSuccessOrKeySuccessOrSkip());
     }
 
     /**
-     * 判断依赖的所有任务是否都已完成
-     * 1. 如果没有依赖，说明依赖的所有任务都已完成
-     * 2. 如果依赖的是 Stream 输入类型的节点，那么忽略该 Stream 输入节点，检查 Stream 输入节点的所有依赖是否都已完成
-     * 3. 如果依赖的是非 Stream 输入类型的节点，那么检查该非 Stream 输入节点是否已完成
-     *
-     * @param taskInfo 待处理的任务信息
-     * @param hasStreamInputTask 当前所有待处理任务中是否存在 Stream 输入节点
-     * @param isKeyMode 当前是否处于关键路径模式
-     * @param isKeyCallback 待处理的任务是否是关键路径回调任务
-     * @return 返回待处理的任务是否可以被执行
+     * 获取准备运行的流式输入任务，并添加到 readyToRunTasks
+     * 
+     * @param taskInfos 所有任务的集合
+     * @param readyToRunTasks 已准备运行的任务集合
      */
-    private boolean isDependenciesAllSuccessOrSkip(TaskInfo taskInfo, boolean hasStreamInputTask, boolean isKeyMode, boolean isKeyCallback) {
-        if (!hasStreamInputTask) {
-            return CollectionUtils.isEmpty(taskInfo.getDependencies())
-                    || taskInfo.getDependencies().stream().allMatch(
-                            i -> (i.getTaskStatus().isSuccessOrSkip())
-                                    || isKeyMode && isKeyCallback && i.getTaskStatus().isSuccessOrKeySuccessOrSkip());
-        }
+    private void addReadyToRunStreamInputTasks(Collection<TaskInfo> taskInfos, Set<TaskInfo> readyToRunTasks, boolean isKeyMode) {
+        Set<TaskInfo> readyToRunStreamTasks = new HashSet<>();
+        taskInfos.stream().filter(Objects::nonNull).filter(taskInfo -> taskInfo.getTaskStatus() == TaskStatus.NOT_STARTED)
+                .filter(taskInfo -> TaskInputOutputType.getTypeByValue(taskInfo.getTask().getInputType()) == TaskInputOutputType.STREAM)
+                .forEach(taskInfo -> {
+                    boolean isTaskKeyMode = isKeyMode && taskInfo.getTask().isKeyCallback();
+                    boolean needRun = taskInfo.getDependencies().stream()
+                            .anyMatch(dependency -> isStreamTaskReadyToRun(readyToRunTasks, dependency, isTaskKeyMode));
+                    if (needRun) {
+                        readyToRunStreamTasks.add(taskInfo);
+                    }
+                });
+        readyToRunTasks.addAll(readyToRunStreamTasks);
+    }
 
-        return CollectionUtils.isEmpty(taskInfo.getDependencies()) ||
-               taskInfo.getDependencies().stream().allMatch(dependency -> {
-                   TaskInputType inputType = TaskInputType.getInputTypeByValue(dependency.getTask().getInputType());
-                   return inputType == TaskInputType.STREAM && isDependenciesAllSuccessOrSkip(dependency, true, isKeyMode, isKeyCallback)
-                           || inputType != TaskInputType.STREAM && dependency.getTaskStatus().isSuccessOrSkip()
-                           || isKeyMode && isKeyCallback && dependency.getTaskStatus().isSuccessOrKeySuccessOrSkip();
-               });
+    /**
+     * 判断流式输入任务是否可执行，只要有任何依赖符合以下任一条件，流式输入任务就可以执行
+     * 1. 任意依赖的流式输出任务开始执行或者准备被执行
+     * 2. 任意依赖的非流式输出任务执行完成（包括关键路径模式下关键路径执行完成）
+     */
+    private boolean isStreamTaskReadyToRun(Set<TaskInfo> readyToRunTasks, TaskInfo dependency, boolean isTaskKeyMode) {
+        TaskInputOutputType dependencyOutputType = TaskInputOutputType.getTypeByValue(dependency.getTask().getOutputType());
+        boolean streamDependencyStarted = false;
+        boolean blockDependencyFinished = false;
+        if (dependencyOutputType == TaskInputOutputType.STREAM) {
+            streamDependencyStarted = dependency.getTaskStatus() != TaskStatus.NOT_STARTED || readyToRunTasks.contains(dependency);
+        } else {
+            blockDependencyFinished = isTaskSuccessOrSkip(dependency, isTaskKeyMode);
+        }
+        return streamDependencyStarted || blockDependencyFinished;
     }
 
     private boolean isKeyMode(Collection<TaskInfo> allTasks) {

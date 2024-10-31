@@ -62,6 +62,7 @@ public class FlowAuthHeaderGenerator implements AuthHeaderGenerator {
             AuthHttpUtil.addSignToParam(paramMap, authSecret);
             input.remove("generate_auth");
         }
+        httpHeaders.add("X-Flow-Server", flowServerHost);
         httpHeaders.add("X-Callback-Url", flowServerHost + flowCallbackUri + "?" + AuthHttpUtil.paramToQueryString(paramMap, "utf-8"));
     }
 }

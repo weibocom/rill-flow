@@ -27,7 +27,9 @@ import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
@@ -48,13 +50,15 @@ public class SwitchTask extends BaseTask {
             @JsonProperty("progress") Progress progress,
             @JsonProperty("degrade") Degrade degrade,
             @JsonProperty("timeline") Timeline timeline,
-            @JsonProperty("isKeyCallback") boolean isKeyCallback,
+            @JsonProperty("keyCallback") boolean keyCallback,
             @JsonProperty("keyExp") String keyExp,
             @JsonProperty("parameters") Map<String, Object> parameters,
             @JsonProperty("templateId") String templateId,
-            @JsonProperty("inputType") String inputType) {
+            @JsonProperty("input") Map<String, Object> input,
+            @JsonProperty("inputType") String inputType,
+            @JsonProperty("outputType") String outputType) {
         super(name, title, description, category, null, false, inputMappings, null, progress,
-                degrade, timeline, isKeyCallback, keyExp, parameters, templateId, inputType);
+                degrade, timeline, keyCallback, keyExp, parameters, templateId, input, inputType, outputType);
         this.switches = switches;
         this.setNext(switches.stream().map(Switch::getNext).collect(Collectors.joining(",")));
     }
