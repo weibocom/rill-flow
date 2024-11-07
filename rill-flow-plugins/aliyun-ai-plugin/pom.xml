@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.weibo</groupId>
         <artifactId>rill-flow-plugins</artifactId>
-        <version>0.1.16-SNAPSHOT</version>
+        <version>0.1.17-SNAPSHOT</version>
     </parent>
     <artifactId>aliyun-ai-plugin</artifactId>
     <packaging>jar</packaging>

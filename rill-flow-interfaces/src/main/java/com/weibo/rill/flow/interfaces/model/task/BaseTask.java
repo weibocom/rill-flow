@@ -47,10 +47,13 @@ public abstract class BaseTask {
     private Progress progress;
     private Degrade degrade;
     private Timeline timeline;
-    private boolean isKeyCallback = false;
+    private boolean keyCallback = false;
     private String keyExp;
     private Map<String,Object> parameters;
     private String templateId;
+    private Map<String, Object> input;
+    private String inputType;
+    private String outputType;
 
     public abstract List<BaseTask> subTasks();
 }

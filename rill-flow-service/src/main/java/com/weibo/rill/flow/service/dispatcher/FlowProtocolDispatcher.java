@@ -20,20 +20,19 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.weibo.rill.flow.interfaces.dispatcher.DispatcherExtension;
+import com.weibo.rill.flow.interfaces.model.resource.Resource;
+import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
+import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
+import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
+import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
+import com.weibo.rill.flow.olympicene.traversal.Olympicene;
 import com.weibo.rill.flow.service.dconfs.BizDConfs;
-import com.weibo.rill.flow.service.manager.DescriptorManager;
+import com.weibo.rill.flow.service.service.DAGDescriptorService;
 import com.weibo.rill.flow.service.statistic.DAGResourceStatistic;
 import com.weibo.rill.flow.service.util.ExecutionIdUtil;
 import com.weibo.rill.flow.service.util.ProfileActions;
 import com.weibo.rill.flow.service.util.PrometheusActions;
-import com.weibo.rill.flow.olympicene.core.model.DAGSettings;
-import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo;
-import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
-import com.weibo.rill.flow.olympicene.core.model.dag.DAG;
-import com.weibo.rill.flow.interfaces.model.task.FunctionTask;
-import com.weibo.rill.flow.olympicene.ddl.parser.DAGStringParser;
-import com.weibo.rill.flow.olympicene.traversal.Olympicene;
-import com.weibo.rill.flow.interfaces.model.resource.Resource;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +46,7 @@ import java.util.Optional;
 @Service
 public class FlowProtocolDispatcher implements DispatcherExtension {
     @Autowired
-    private DescriptorManager descriptorManager;
-    @Autowired
-    private DAGStringParser dagBuilder;
+    private DAGDescriptorService dagDescriptorService;
     @Autowired
     private BizDConfs bizDConfs;
     @Setter
@@ -70,8 +67,7 @@ public class FlowProtocolDispatcher implements DispatcherExtension {
         Map<String, Object> data = Maps.newHashMap();
         Optional.ofNullable(dispatchInfo.getInput()).ifPresent(data::putAll);
         Long uid = Optional.ofNullable(data.get("uid")).map(it -> Long.parseLong(String.valueOf(it))).orElse(0L);
-        String dagDescriptor = descriptorManager.getDagDescriptor(uid, data, resource.getSchemeValue());
-        DAG dag = dagBuilder.parse(dagDescriptor);
+        DAG dag = dagDescriptorService.getDAG(uid, data, resource.getSchemeValue());
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
         data.put("flow_execution_id", executionId);
         DAGSettings dagSettings = DAGSettings.builder()
