@@ -536,4 +536,47 @@ class DAGDescriptorConverterImplTest extends Specification {
         descriptor.contains("name: \"taskB\"")
         descriptor.contains("body.data: \"\$.taskA.output.data\"")
     }
+
+    def "fix null point exception when task.input is null"() {
+        given:
+        String descriptor = "workspace: default\n" +
+                "dagName: testGenerateOutputMappings\n" +
+                "alias: release\n" +
+                "type: flow\n" +
+                "tasks:\n" +
+                "  - name: functionA\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    pattern: task_sync\n" +
+                "    next: functionB\n" +
+                "    inputMappings:\n" +
+                "      - source: hello\n" +
+                "        target: \$.input.body.world\n" +
+                "    resourceProtocol: http\n" +
+                "  - name: functionB\n" +
+                "    category: function\n" +
+                "    resourceName: http://test.url\n" +
+                "    requestType: POST\n" +
+                "    input:\n" +
+                "      body.elements: \$.functionA.elements.*.name\n" +
+                "      body.first_id: \$.functionA.elements[0].id\n" +
+                "    resourceProtocol: http\n" +
+                "    pattern: task_sync\n"
+        when:
+        DAG originDag = converter.convertDescriptorPOToDAG(new DescriptorPO(descriptor))
+        DescriptorVO descriptorVO = converter.convertDAGToDescriptorVO(originDag)
+        DAG dag = dagParser.parse(descriptorVO.getDescriptor())
+        then:
+        dag.tasks.forEach { task -> {
+                if (task.getName() == "functionA") {
+                    assert task.getInputMappings().size() == 1
+                    assert task.getInput() == null
+                } else {
+                    assert task.getInputMappings() == null
+                    assert task.getInput().size() == 2
+                }
+            }
+        }
+    }
 }
