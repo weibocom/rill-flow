@@ -368,8 +368,12 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
         if (CollectionUtils.isEmpty(inputMappings) || MapUtils.isEmpty(taskInput)) {
             return;
         }
-        Set<String> inputTargets = taskInput.keySet().stream().map(key -> INPUT_PREFIX + key).collect(Collectors.toSet());
-        List<Mapping> filteredMappings = inputMappings.stream().filter(mapping -> !inputTargets.contains(mapping.getTarget())).toList();
+        Set<String> inputTargets = taskInput.keySet().stream()
+                .map(key -> INPUT_PREFIX + key).collect(Collectors.toSet());
+
+        List<Mapping> filteredMappings = inputMappings.stream()
+                .filter(mapping -> !inputTargets.contains(mapping.getTarget())).toList();
+
         task.setInputMappings(CollectionUtils.isEmpty(filteredMappings) ? null : filteredMappings);
     }
 }
