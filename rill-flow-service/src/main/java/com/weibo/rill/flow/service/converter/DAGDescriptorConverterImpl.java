@@ -364,10 +364,11 @@ public class DAGDescriptorConverterImpl implements DAGDescriptorConverter {
      */
     private void processInputMappingsWhenGetDescriptor(BaseTask task) {
         List<Mapping> inputMappings = task.getInputMappings();
-        if (CollectionUtils.isEmpty(inputMappings)) {
+        Map<String, Object> taskInput = task.getInput();
+        if (CollectionUtils.isEmpty(inputMappings) || MapUtils.isEmpty(taskInput)) {
             return;
         }
-        Set<String> inputTargets = task.getInput().keySet().stream()
+        Set<String> inputTargets = taskInput.keySet().stream()
                 .map(key -> INPUT_PREFIX + key).collect(Collectors.toSet());
 
         List<Mapping> filteredMappings = inputMappings.stream()
