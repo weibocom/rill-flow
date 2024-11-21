@@ -73,7 +73,7 @@ public class FlowProtocolDispatcher implements DispatcherExtension {
         DAGSettings dagSettings = DAGSettings.builder()
                 .ignoreExist(false)
                 .dagMaxDepth(bizDConfs.getFlowDAGMaxDepth()).build();
-        olympicene.submit(executionId, dag, data, dagSettings, notifyInfo);
+        olympicene.submit(executionId, null, dag, data, dagSettings, notifyInfo);
         dagResourceStatistic.updateFlowTypeResourceStatus(parentDAGExecutionId, parentTaskName, resource.getResourceName(), dag);
         ProfileActions.recordTinyDAGSubmit(executionId);
         // 记录prometheus

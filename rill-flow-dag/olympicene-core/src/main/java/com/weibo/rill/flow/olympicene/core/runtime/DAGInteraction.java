@@ -32,7 +32,7 @@ public interface DAGInteraction {
     /**
      * 提交需执行的DAG任务
      */
-    void submit(String executionId, DAG dag, Map<String, Object> data, DAGSettings settings, NotifyInfo notifyInfo);
+    void submit(String executionId, String taskName, DAG dag, Map<String, Object> data, DAGSettings settings, NotifyInfo notifyInfo);
 
     /**
      * 完成task后调用接口
