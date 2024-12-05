@@ -20,12 +20,16 @@ import com.weibo.rill.flow.interfaces.model.task.InvokeTimeInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInvokeMsg
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus
+import com.weibo.rill.flow.service.statistic.TenantTaskStatistic
+import com.weibo.rill.flow.service.storage.LongTermStorage
 import com.weibo.rill.flow.service.storage.RuntimeStorage
 import spock.lang.Specification
 
 class DAGRuntimeFacadeTest extends Specification {
     RuntimeStorage runtimeStorage = Mock(RuntimeStorage)
-    DAGRuntimeFacade dagRuntimeFacade = new DAGRuntimeFacade(runtimeStorage: runtimeStorage)
+    LongTermStorage longTermStorage = Mock(LongTermStorage)
+    TenantTaskStatistic tenantTaskStatistic = Mock(TenantTaskStatistic)
+    DAGRuntimeFacade dagRuntimeFacade = new DAGRuntimeFacade(runtimeStorage: runtimeStorage, longTermStorage: longTermStorage, tenantTaskStatistic: tenantTaskStatistic)
 
     def setup() {
         runtimeStorage.clearDAGInfo(*_) >> null
@@ -86,6 +90,18 @@ class DAGRuntimeFacadeTest extends Specification {
         runtimeStorage.saveDAGInfo(*_) >> null
         when:
         dagRuntimeFacade.updateDagStatus("test_execution_id", DAGStatus.SUCCEED)
+        then:
+        thrown IllegalArgumentException
+    }
+
+    def "test getBasicDAGInfo when DAGInfo does not exist in both storages"() {
+        given:
+        runtimeStorage.getBasicDAGInfo("test_execution_id") >> null
+        longTermStorage.getBasicDAGInfo("test_execution_id") >> null
+
+        when:
+        dagRuntimeFacade.getBasicDAGInfo("test_execution_id", false)
+
         then:
         thrown IllegalArgumentException
     }
