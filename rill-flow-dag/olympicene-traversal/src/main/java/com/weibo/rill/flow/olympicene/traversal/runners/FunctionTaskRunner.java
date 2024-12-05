@@ -144,14 +144,16 @@ public class FunctionTaskRunner extends AbstractTaskRunner {
             output = buildOutput(dispatchRetJson);
             log.info("dispatchTask success, executionId:{}, taskName:{}, output:{}",
                     executionId, taskInfo.getName(), output);
+
+            TaskStatus taskStatus = buildTaskStatus(output, taskInfo, taskInvokeMsg);
+            Retry retry = ((FunctionTask) taskInfo.getTask()).getRetry();
+            RetryContext retryContext = RetryContext.builder().retryConfig(retry).taskStatus(taskStatus).taskInfo(taskInfo).build();
             NotifyInfo notifyInfo = NotifyInfo.builder()
                     .taskInfoName(taskInfo.getName())
-                    .taskStatus(buildTaskStatus(output, taskInfo, taskInvokeMsg))
+                    .taskStatus(taskStatus)
+                    .retryContext(retryContext)
                     .taskInvokeMsg(taskInvokeMsg)
                     .build();
-
-            Retry retry = ((FunctionTask) taskInfo.getTask()).getRetry();
-            RetryContext retryContext = RetryContext.builder().retryConfig(retry).taskStatus(notifyInfo.getTaskStatus()).taskInfo(taskInfo).build();
             if (retryPolicy.needRetry(retryContext, output)) {
                 return handleRetryCallback(executionId, taskInfo, notifyInfo);
             }
