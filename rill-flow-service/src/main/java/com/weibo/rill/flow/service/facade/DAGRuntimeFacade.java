@@ -235,6 +235,10 @@ public class DAGRuntimeFacade {
             dagInfo = longTermStorage.getBasicDAGInfo(executionId);
         }
 
+        if (dagInfo == null) {
+            throw new IllegalArgumentException("dag is not found");
+        }
+
         Map<String, Object> result = makeDAGInfoMap(dagInfo, brief);
         result.put("context", getContext(executionId, null));
         result.put("invoke_summary", tenantTaskStatistic.getFlowAggregate(executionId));
