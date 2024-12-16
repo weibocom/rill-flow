@@ -67,8 +67,8 @@ public class DAGRunner {
         this.dagStorageProcedure = dagStorageProcedure;
     }
 
-    public ExecutionResult submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
-        ExecutionResult ret = ExecutionResult.builder().build();
+    public ExecutionResult submitDAG(String executionId, String taskName, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
+        ExecutionResult ret = ExecutionResult.builder().needRetry(false).retryIntervalInSeconds(0).build();
 
         dagStorageProcedure.lockAndRun(LockerKey.buildDagInfoLockName(executionId), () -> {
             DAGInfo currentExecutionIdDagInfo = dagInfoStorage.getBasicDAGInfo(executionId);
@@ -104,6 +104,15 @@ public class DAGRunner {
                     .dagInvokeMsg(dagInvokeMsg)
                     .dagStatus(DAGStatus.RUNNING)
                     .make();
+
+            if (MapUtils.isNotEmpty(dagInfoToUpdate.getTasks()) && taskName != null) {
+                for (Map.Entry<String, TaskInfo> taskInfoEntry : dagInfoToUpdate.getTasks().entrySet()) {
+                    if (!taskInfoEntry.getKey().equals(taskName)) {
+                        taskInfoEntry.getValue().setTaskStatus(TaskStatus.SKIPPED);
+                    }
+                }
+            }
+
             ret.setDagInfo(dagInfoToUpdate);
             Optional.ofNullable(dagInvokeMsg)
                     .map(DAGInvokeMsg::getExecutionRoutes)
@@ -259,7 +268,7 @@ public class DAGRunner {
         }
 
         log.info("finishDAG finish, executionId:{}", executionId);
-        return ExecutionResult.builder().dagInfo(wholeDagInfo).context(context).build();
+        return ExecutionResult.builder().dagInfo(wholeDagInfo).context(context).needRetry(false).retryIntervalInSeconds(0).build();
     }
 
     private void updateDAGInvokeStartTime(DAGInfo dagInfo) {

@@ -95,6 +95,7 @@ public class FlowController {
     @RequestMapping(value = "submit.json", method = RequestMethod.POST)
     public Map<String, Object> submit(User flowUser,
                                       @ApiParam(value = "工作流ID") @RequestParam(value = "descriptor_id") String descriptorId,
+                                      @ApiParam(value = "单步执行任务名称") @RequestParam(value = "task_name", required = false) String taskName,
                                       @ApiParam(value = "执行完成后的回调地址") @RequestParam(value = "callback", required = false) String callback,
                                       @ApiParam(value = "用于检测资源是否可用的检测规则") @RequestParam(value = "resource_check", required = false) String resourceCheck,
                                       @ApiParam(value = "工作流执行的context信息") @RequestBody(required = false) JSONObject data) {
