@@ -16,40 +16,193 @@
 
 package com.weibo.rill.flow.service.dispatcher
 
+import com.weibo.rill.flow.common.exception.TaskException
 import com.weibo.rill.flow.interfaces.model.http.HttpParameter
+import com.weibo.rill.flow.interfaces.model.resource.Resource
+import com.weibo.rill.flow.interfaces.model.strategy.DispatchInfo
+import com.weibo.rill.flow.interfaces.model.task.FunctionTask
+import com.weibo.rill.flow.interfaces.model.task.TaskInfo
+import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager
+import com.weibo.rill.flow.service.invoke.HttpInvokeHelper
+import com.weibo.rill.flow.service.statistic.DAGResourceStatistic
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
+import org.springframework.web.client.RestClientResponseException
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class FunctionProtocolDispatcherTest extends Specification {
-    FunctionProtocolDispatcher dispatcher = new FunctionProtocolDispatcher();
+    FunctionProtocolDispatcher dispatcher
+    HttpInvokeHelper httpInvokeHelper
+    DAGResourceStatistic dagResourceStatistic
+    SwitcherManager switcherManager
 
-    def "buildHttpEntity test"() {
-        given:
-        def httpParameter = HttpParameter.builder()
-                .header(inputHeader)
-                .body(inputBody)
-                .build()
-        MultiValueMap<String, String> header = new LinkedMultiValueMap<>()
-        Optional.ofNullable(httpParameter.getHeader())
-                .ifPresent { it -> it.forEach { key, value -> header.add(key, value) } }
+    def setup() {
+        dispatcher = new FunctionProtocolDispatcher()
+        httpInvokeHelper = Mock(HttpInvokeHelper)
+        dagResourceStatistic = Mock(DAGResourceStatistic)
+        switcherManager = Mock(SwitcherManager)
 
-        when:
-        def httpEntity = dispatcher.buildHttpEntity(method, header, httpParameter)
-
-        then:
-        httpEntity.body == body
-
-        where:
-        method          | inputHeader                                                   | inputBody                     | body
-        null            | [:]                                                           | [:]                           | null
-        HttpMethod.GET  | [:]                                                           | [:]                           | null
-        HttpMethod.POST | [:]                                                           | [:]                           | [:]
-        HttpMethod.POST | [:]                                                           | [k: "v", user: [name: "Bob"]] | [k: "v", user: [name: "Bob"]]
-        HttpMethod.POST | ["Content-Type": MediaType.APPLICATION_JSON_VALUE]            | [k: "v", user: [name: "Bob"]] | [k: "v", user: [name: "Bob"]]
-        HttpMethod.POST | ["Content-Type": MediaType.APPLICATION_FORM_URLENCODED_VALUE] | [k: "v", name: "Bob"]         | [k: ["v"], name: ["Bob"]]
+        dispatcher.httpInvokeHelper = httpInvokeHelper
+        dispatcher.dagResourceStatistic = dagResourceStatistic
+        dispatcher.switcherManagerImpl = switcherManager
     }
 
+    def "test handle method with successful HTTP request"() {
+        given:
+        def resource = Mock(Resource)
+        def taskInfo = Mock(TaskInfo) {
+            getName() >> "test-task"
+            getTask() >> Mock(FunctionTask) {
+                getRequestType() >> "POST"
+            }
+        }
+        def dispatchInfo = Mock(DispatchInfo) {
+            getExecutionId() >> "test-execution-id"
+            getTaskInfo() >> taskInfo
+            getInput() >> ["key": "value"]
+            getHeaders() >> new LinkedMultiValueMap<String, String>()
+        }
+        def httpParameter = HttpParameter.builder()
+                .queryParams([:])
+                .body([:])
+                .callback([:])
+                .header([:])
+                .build()
+        def expectedResponse = '{"status": "success"}'
+
+        when:
+        def result = dispatcher.handle(resource, dispatchInfo)
+
+        then:
+        1 * switcherManager.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") >> false
+        1 * httpInvokeHelper.functionRequestParams(_, _, _, _) >> httpParameter
+        1 * httpInvokeHelper.buildUrl(_, _) >> "http://test.url"
+        1 * httpInvokeHelper.invokeRequest(_, _, _, _, _, _) >> expectedResponse
+        1 * dagResourceStatistic.updateUrlTypeResourceStatus(_, _, _, expectedResponse)
+        result == expectedResponse
+    }
+
+    def "test handle method with RestClientResponseException"() {
+        given:
+        def resource = Mock(Resource) {
+            getResourceName() >> "test-resource"
+        }
+        def taskInfo = Mock(TaskInfo) {
+            getName() >> "test-task"
+            getTask() >> Mock(FunctionTask) {
+                getRequestType() >> "POST"
+            }
+        }
+        def dispatchInfo = Mock(DispatchInfo) {
+            getExecutionId() >> "test-execution-id"
+            getTaskInfo() >> taskInfo
+            getInput() >> ["key": "value"]
+            getHeaders() >> new LinkedMultiValueMap<String, String>()
+        }
+        def httpParameter = HttpParameter.builder()
+                .queryParams([:])
+                .body([:])
+                .callback([:])
+                .header([:])
+                .build()
+        def errorResponse = "Error response"
+        def exception = Mock(RestClientResponseException) {
+            getRawStatusCode() >> 500
+            getResponseBodyAsString() >> errorResponse
+        }
+
+        when:
+        dispatcher.handle(resource, dispatchInfo)
+
+        then:
+        1 * switcherManager.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") >> false
+        1 * httpInvokeHelper.functionRequestParams(_, _, _, _) >> httpParameter
+        1 * httpInvokeHelper.buildUrl(_, _) >> "http://test.url"
+        1 * httpInvokeHelper.invokeRequest(_, _, _, _, _, _) >> { throw exception }
+        1 * dagResourceStatistic.updateUrlTypeResourceStatus(_, _, _, errorResponse)
+        thrown(TaskException)
+    }
+
+    @Unroll
+    def "test handle method with different HTTP methods: #requestType"() {
+        given:
+        def resource = Mock(Resource)
+        def taskInfo = Mock(TaskInfo) {
+            getName() >> "test-task"
+            getTask() >> Mock(FunctionTask) {
+                getRequestType() >> requestType
+            }
+        }
+        def dispatchInfo = Mock(DispatchInfo) {
+            getExecutionId() >> "test-execution-id"
+            getTaskInfo() >> taskInfo
+            getInput() >> ["key": "value"]
+            getHeaders() >> new LinkedMultiValueMap<String, String>()
+        }
+        def httpParameter = HttpParameter.builder()
+                .queryParams([:])
+                .body([:])
+                .callback([:])
+                .header([:])
+                .build()
+        def expectedResponse = '{"status": "success"}'
+
+        when:
+        def result = dispatcher.handle(resource, dispatchInfo)
+
+        then:
+        1 * switcherManager.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") >> false
+        1 * httpInvokeHelper.functionRequestParams(_, _, _, _) >> httpParameter
+        1 * httpInvokeHelper.buildUrl(_, _) >> "http://test.url"
+        1 * httpInvokeHelper.invokeRequest(_, _, _, _, expectedMethod, _) >> expectedResponse
+        1 * dagResourceStatistic.updateUrlTypeResourceStatus(_, _, _, expectedResponse)
+        result == expectedResponse
+
+        where:
+        requestType | expectedMethod
+        "POST"     | HttpMethod.POST
+        "GET"      | HttpMethod.GET
+        "PUT"      | HttpMethod.PUT
+        null       | HttpMethod.POST  // default method
+    }
+
+    def "test handle method with form-urlencoded content type"() {
+        given:
+        def resource = Mock(Resource)
+        def taskInfo = Mock(TaskInfo) {
+            getName() >> "test-task"
+            getTask() >> Mock(FunctionTask) {
+                getRequestType() >> "POST"
+            }
+        }
+        def headers = new LinkedMultiValueMap<String, String>()
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        def dispatchInfo = Mock(DispatchInfo) {
+            getExecutionId() >> "test-execution-id"
+            getTaskInfo() >> taskInfo
+            getInput() >> ["key": "value"]
+            getHeaders() >> headers
+        }
+        def httpParameter = HttpParameter.builder()
+                .queryParams([:])
+                .body(["formKey": "formValue"])
+                .callback([:])
+                .header([:])
+                .build()
+        def expectedResponse = '{"status": "success"}'
+
+        when:
+        def result = dispatcher.handle(resource, dispatchInfo)
+
+        then:
+        1 * switcherManager.getSwitcherState("ENABLE_FUNCTION_DISPATCH_RET_CHECK") >> false
+        1 * httpInvokeHelper.functionRequestParams(_, _, _, _) >> httpParameter
+        1 * httpInvokeHelper.buildUrl(_, _) >> "http://test.url"
+        1 * httpInvokeHelper.invokeRequest(_, _, _, _, _, _) >> expectedResponse
+        1 * dagResourceStatistic.updateUrlTypeResourceStatus(_, _, _, expectedResponse)
+        result == expectedResponse
+    }
 }
