@@ -58,6 +58,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -111,6 +113,7 @@ public class OlympiceneFacade {
     }
 
 
+    @Trace(operationName = "submit")
     public Map<String, Object> submit(User flowUser, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
         return submit(Optional.ofNullable(flowUser).map(User::getUid).orElse(0L), descriptorId, context, callback, resourceCheckConfig);
     }
@@ -120,6 +123,8 @@ public class OlympiceneFacade {
         String executionId = ExecutionIdUtil.generateExecutionId(dag);
 
         dagSubmitChecker.check(executionId, resourceCheckConfig);
+
+        ActiveSpan.tag("executionId", executionId);
 
         NotifyInfo notifyInfo = null;
         if (StringUtils.isNotBlank(callback)) {

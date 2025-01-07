@@ -93,6 +93,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <okhttp.version>4.12.0</okhttp.version>
         <jacoco.version>0.8.11</jacoco.version>
+        <skywalking.version>8.12.0</skywalking.version>
     </properties>
 
     <dependencyManagement>
@@ -276,6 +277,12 @@
                 <version>${swagger.version}</version>
             </dependency>
             <!--swagger end-->
+
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-trace</artifactId>
+                <version>${skywalking.version}</version>
+            </dependency>
 
             <!--log start-->
             <dependency>
