@@ -107,6 +107,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
             ActiveSpan.tag("taskName", taskInfo.getName());
             ActiveSpan.tag("taskCategory", taskInfo.getTask().getCategory());
             if (needNormalSkip(executionId, taskInfo)) {
+                ActiveSpan.tag("taskStatus", "skipped current and following tasks");
                 skipCurrentAndFollowingTasks(executionId, taskInfo);
                 return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
             }
