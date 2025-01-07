@@ -113,7 +113,7 @@ public class OlympiceneFacade {
     }
 
 
-    @Trace(operationName = "submit")
+    @Trace(operationName = "OlympiceneFacade.submit")
     public Map<String, Object> submit(User flowUser, String descriptorId, Map<String, Object> context, String callback, ResourceCheckConfig resourceCheckConfig) {
         return submit(Optional.ofNullable(flowUser).map(User::getUid).orElse(0L), descriptorId, context, callback, resourceCheckConfig);
     }

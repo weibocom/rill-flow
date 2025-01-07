@@ -20,6 +20,7 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo;
 import com.weibo.rill.flow.interfaces.model.mapping.Mapping;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.model.task.ExecutionResult;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ public interface TaskRunner {
                        Map<String, Object> output,
                        List<Mapping> rules);
 
+    @Trace(operationName = "TaskRunner.run")
     ExecutionResult run(String executionId, TaskInfo taskInfo, Map<String, Object> context);
 
     ExecutionResult finish(String executionId, NotifyInfo notifyInfo, Map<String, Object> output);

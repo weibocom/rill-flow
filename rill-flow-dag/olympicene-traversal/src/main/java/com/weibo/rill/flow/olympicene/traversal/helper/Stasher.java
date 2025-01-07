@@ -33,6 +33,7 @@ public interface Stasher {
 
     boolean needStashFlow(DAGInfo dagInfo, DAGStatus dagStatus);
 
+    @Trace(operationName = "Stasher.stashFlow")
     boolean stashFlow(DAGInfo wholeDagInfo, Map<String, Object> dagContext);
 
 }
