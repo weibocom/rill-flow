@@ -47,6 +47,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 
 import java.util.*;
 
@@ -100,9 +101,11 @@ public abstract class AbstractTaskRunner implements TaskRunner {
     }
 
     @Override
+    @Trace(operationName = "TaskRunner.run")
     public ExecutionResult run(String executionId, TaskInfo taskInfo, Map<String, Object> context) {
         try {
             ActiveSpan.tag("taskName", taskInfo.getName());
+            ActiveSpan.tag("taskCategory", taskInfo.getTask().getCategory());
             if (needNormalSkip(executionId, taskInfo)) {
                 skipCurrentAndFollowingTasks(executionId, taskInfo);
                 return ExecutionResult.builder().taskStatus(taskInfo.getTaskStatus()).build();
