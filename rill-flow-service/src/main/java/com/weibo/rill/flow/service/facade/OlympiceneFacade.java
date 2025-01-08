@@ -124,6 +124,7 @@ public class OlympiceneFacade {
 
         dagSubmitChecker.check(executionId, resourceCheckConfig);
 
+        ActiveSpan.tag("descriptorId", descriptorId);
         ActiveSpan.tag("executionId", executionId);
 
         NotifyInfo notifyInfo = null;
