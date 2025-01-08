@@ -20,20 +20,17 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGInfo;
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 
 import java.util.Map;
 
 public interface Stasher {
 
-    @Trace(operationName = "Stasher.stash")
     boolean stash(String executionId, Pair<TaskInfo, Map<String, Object>> taskInfoToContext);
 
     boolean needStash(String executionId, TaskInfo taskInfo, Map<String, Object> context);
 
     boolean needStashFlow(DAGInfo dagInfo, DAGStatus dagStatus);
 
-    @Trace(operationName = "Stasher.stashFlow")
     boolean stashFlow(DAGInfo wholeDagInfo, Map<String, Object> dagContext);
 
 }
