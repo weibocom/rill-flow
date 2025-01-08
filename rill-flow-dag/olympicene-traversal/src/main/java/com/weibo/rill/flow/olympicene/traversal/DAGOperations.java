@@ -196,6 +196,7 @@ public class DAGOperations {
 
     @Trace(operationName = "DAGOperations.finishTaskSync")
     public void finishTaskSync(String executionId, String taskCategory, NotifyInfo notifyInfo, Map<String, Object> output) {
+        ActiveSpan.tag("executionId", executionId);
         ActiveSpan.tag("taskName", notifyInfo.getTaskInfoName());
         ActiveSpan.tag("taskCategory", taskCategory);
         log.info("finishTask task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
