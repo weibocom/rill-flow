@@ -44,6 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -192,7 +194,10 @@ public class DAGOperations {
         }));
     }
 
+    @Trace(operationName = "DAGOperations.finishTaskSync")
     public void finishTaskSync(String executionId, String taskCategory, NotifyInfo notifyInfo, Map<String, Object> output) {
+        ActiveSpan.tag("taskName", notifyInfo.getTaskInfoName());
+        ActiveSpan.tag("taskCategory", taskCategory);
         log.info("finishTask task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
         Map<String, Object> params = Maps.newHashMap();
         params.put(EXECUTION_ID, executionId);
@@ -231,7 +236,10 @@ public class DAGOperations {
         dagTraversal.submitTraversal(executionId, null);
     }
 
+
+    @Trace(operationName = "DAGOperations.submitDAG")
     public void submitDAG(String executionId, DAG dag, DAGSettings settings, Map<String, Object> data, NotifyInfo notifyInfo) {
+        ActiveSpan.tag("executionId", executionId);
         log.info("submitDAG task begin to execute executionId:{} notifyInfo:{}", executionId, notifyInfo);
         ExecutionResult executionResult = dagRunner.submitDAG(executionId, dag, settings, data, notifyInfo);
         Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
@@ -239,7 +247,9 @@ public class DAGOperations {
         dagTraversal.submitTraversal(executionId, null);
     }
 
+    @Trace(operationName = "DAGOperations.finishDAG")
     public void finishDAG(String executionId, DAGInfo dagInfo, DAGStatus dagStatus, DAGInvokeMsg dagInvokeMsg) {
+        ActiveSpan.tag("executionId", executionId);
         log.info("finishDAG task begin to execute executionId:{} dagStatus:{}", executionId, dagStatus);
         Map<String, Object> params = Maps.newHashMap();
         params.put(EXECUTION_ID, executionId);

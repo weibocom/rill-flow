@@ -35,6 +35,8 @@ import com.weibo.rill.flow.olympicene.traversal.notify.NotifyType;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -111,7 +113,9 @@ public class Olympicene implements DAGInteraction {
      * 唤醒suspense任务
      */
     @Override
+    @Trace(operationName = "wakeup suspense")
     public void wakeup(String executionId, Map<String, Object> data, NotifyInfo notifyInfo) {
+        ActiveSpan.tag("executionId", executionId);
         runNotify(executionId, NotifyType.WAKEUP, notifyInfo,
                 () -> {
                     Optional.ofNullable(notifyInfo.getTaskInfoName())
