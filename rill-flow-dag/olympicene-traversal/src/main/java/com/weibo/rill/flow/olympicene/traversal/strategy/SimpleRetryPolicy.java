@@ -22,6 +22,7 @@ import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
 import com.weibo.rill.flow.olympicene.core.model.strategy.RetryContext;
 import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
+import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
                 .map(TaskInvokeMsg::getInvokeTimeInfos)
                 .map(List::size)
                 .orElse(1);
+        ActiveSpan.tag("invokeTimes", String.valueOf(invokeTimes + 1));
         int maxRetryTimes = Optional.ofNullable(context.getRetryConfig()).map(Retry::getMaxRetryTimes).orElse(0);
 
         return invokeTimes <= maxRetryTimes;

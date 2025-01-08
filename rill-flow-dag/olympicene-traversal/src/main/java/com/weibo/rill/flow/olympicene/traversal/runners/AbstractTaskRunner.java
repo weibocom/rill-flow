@@ -136,11 +136,13 @@ public abstract class AbstractTaskRunner implements TaskRunner {
             }
 
             updateProgressArgs(executionId, taskInfo, input);
+            ActiveSpan.tag("taskStatusBeforeRun", taskInfo.getTaskStatus().toString());
 
             ExecutionResult ret = doRun(executionId, taskInfo, input);
             if (MapUtils.isEmpty(ret.getInput())) {
                 ret.setInput(input);
             }
+            ActiveSpan.tag("taskStatusAfterRun", taskInfo.getTaskStatus().toString());
             return ret;
         } catch (Exception e) {
             log.warn("run task fails, executionId:{}, taskName:{}", executionId, taskInfo.getName(), e);
@@ -152,6 +154,7 @@ public abstract class AbstractTaskRunner implements TaskRunner {
 
             boolean tolerance = Optional.ofNullable(taskInfo.getTask()).map(BaseTask::isTolerance).orElse(false);
             taskInfo.setTaskStatus(tolerance ? TaskStatus.SKIPPED : TaskStatus.FAILED);
+            ActiveSpan.tag("taskStatusAfterRun", taskInfo.getTaskStatus().toString());
 
             Map<String, TaskInfo> subTasks = taskInfo.getChildren();
             taskInfo.setChildren(new LinkedHashMap<>());
