@@ -314,9 +314,6 @@ public class DAGOperations {
             Optional.ofNullable(getTimeoutSeconds(new HashMap<>(), executionResult.getContext(), dag.getTimeline()))
                     .ifPresent(timeoutSeconds -> timeCheckRunner.addDAGToTimeoutCheck(executionId, timeoutSeconds));
             dagTraversal.submitTraversal(executionId, null);
-        } finally {
-            // 不要在这里结束 span，让它持续到整个流程结束
-            // dagSpan.end();
         }
     }
 
