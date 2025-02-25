@@ -123,9 +123,8 @@ public class TracerHelper {
             String traceId = contextInfo.getString("traceId");
             String spanId = contextInfo.getString("spanId");
             String traceFlags = contextInfo.getString("traceFlags");
-            String traceStateStr = contextInfo.getString("traceState");
-            TraceState traceState = traceStateStr != null ? 
-                TraceState.fromString(traceStateStr) : TraceState.getDefault();
+            // We'll use default TraceState since parsing from string isn't available
+            TraceState traceState = TraceState.getDefault();
 
             SpanContext spanContext = SpanContext.create(
                     traceId,
