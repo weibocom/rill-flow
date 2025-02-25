@@ -101,6 +101,7 @@ public class TracerHelper {
             contextInfo.put("traceId", spanContext.getTraceId());
             contextInfo.put("spanId", spanContext.getSpanId());
             contextInfo.put("traceFlags", spanContext.getTraceFlags().asHex());
+            contextInfo.put("traceState", spanContext.getTraceState().toString());
             
             redisClient.set(key, contextInfo.toJSONString());
             redisClient.expire(key, TRACE_EXPIRE_SECONDS);
@@ -122,12 +123,15 @@ public class TracerHelper {
             String traceId = contextInfo.getString("traceId");
             String spanId = contextInfo.getString("spanId");
             String traceFlags = contextInfo.getString("traceFlags");
+            String traceStateStr = contextInfo.getString("traceState");
+            TraceState traceState = traceStateStr != null ? 
+                TraceState.fromString(traceStateStr) : TraceState.getDefault();
 
             SpanContext spanContext = SpanContext.create(
                     traceId,
                     spanId,
                     TraceFlags.fromHex(traceFlags, 0),
-                    TraceState.getDefault()
+                    traceState
             );
 
             return Context.current().with(Span.wrap(spanContext));
