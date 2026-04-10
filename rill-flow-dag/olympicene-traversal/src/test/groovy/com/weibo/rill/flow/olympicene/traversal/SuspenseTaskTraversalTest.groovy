@@ -7,6 +7,7 @@ import com.weibo.rill.flow.olympicene.core.model.NotifyInfo
 import com.weibo.rill.flow.olympicene.core.model.dag.DAG
 import com.weibo.rill.flow.olympicene.core.model.dag.DAGStatus
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo
+import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus
 import com.weibo.rill.flow.olympicene.core.runtime.DAGParser
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure
@@ -218,5 +219,157 @@ class SuspenseTaskTraversalTest extends Specification {
         data            | ret
         ["url": "bbb"]  | DAGEvent.TASK_FINISH
         ["text": "aaa"] | DAGEvent.TASK_FAILED
+    }
+    def "suspense task should be SKIPPED on timeout when skipOnTimeout=true and tolerance=true"() {
+        given:
+        // skipOnTimeout=true 且 tolerance=true，超时后节点应变为 SKIPPED
+        String text = "version: 0.0.1\n" +
+                "namespace: olympicene\n" +
+                "service: mca\n" +
+                "name: test\n" +
+                "type: flow\n" +
+                "tasks: \n" +
+                "- category: suspense\n" +
+                "  name: A\n" +
+                "  tolerance: true\n" +
+                "  timeline:\n" +
+                "    timeoutInSeconds: \"120\"\n" +
+                "    skipOnTimeout: \"true\"\n" +
+                "  conditions:\n" +
+                "    - \$.input.[?(@.url == \"bbb\")]\n" +
+                "  next: B\n" +
+                "- category: function\n" +
+                "  name: B\n" +
+                "  resourceName: \"olympicene::test::funtion1::prod\" \n" +
+                "  pattern: task_scheduler\n" +
+                "  inputMappings:\n" +
+                "     - target: \$.input.gopUrls\n" +
+                "       source: \$.context.gopUrls\n" +
+                "  outputMappings:\n" +
+                "     - target: \$.context.url\n" +
+                "       source: \$.output.url"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        // 提交 DAG，suspense 节点进入 RUNNING 状态等待唤醒
+        olympicene.submit('timeout_skip_1', dag, [:])
+        // 模拟超时：TimeCheckRunner 会以 taskStatus=FAILED, msg="timeout" 调用 finishTaskSync
+        olympicene.wakeup('timeout_skip_1', [:],
+                NotifyInfo.builder()
+                        .taskInfoName('A')
+                        .taskStatus(TaskStatus.FAILED)
+                        .taskInvokeMsg(TaskInvokeMsg.builder().msg("timeout").build())
+                        .build())
+        TaskInfo taskInfo = dagStorage.getBasicTaskInfo('timeout_skip_1', 'A')
+
+        then:
+        // skipOnTimeout=true && tolerance=true && timeout → 应为 SKIPPED
+        taskInfo.getTaskStatus() == TaskStatus.SKIPPED
+    }
+
+    def "suspense task should be FAILED on timeout when skipOnTimeout=false"() {
+        given:
+        // skipOnTimeout=false，超时后节点应触发 TASK_FAILED 事件（不被跳过）
+        String text = "version: 0.0.1\n" +
+                "namespace: olympicene\n" +
+                "service: mca\n" +
+                "name: test\n" +
+                "type: flow\n" +
+                "tasks: \n" +
+                "- category: suspense\n" +
+                "  name: A\n" +
+                "  tolerance: true\n" +
+                "  timeline:\n" +
+                "    timeoutInSeconds: \"120\"\n" +
+                "    skipOnTimeout: \"false\"\n" +
+                "  conditions:\n" +
+                "    - \$.input.[?(@.url == \"bbb\")]\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit('timeout_noskip_1', dag, [:])
+        olympicene.wakeup('timeout_noskip_1', [:],
+                NotifyInfo.builder()
+                        .taskInfoName('A')
+                        .taskStatus(TaskStatus.FAILED)
+                        .taskInvokeMsg(TaskInvokeMsg.builder().msg("timeout").build())
+                        .build())
+
+        then:
+        // skipOnTimeout=false → 触发 TASK_FAILED 回调事件，而不是 TASK_SKIPPED
+        1 * callback.onEvent({
+            Event event -> event.eventCode == DAGEvent.TASK_FAILED.getCode()
+        })
+    }
+
+    def "suspense task should be FAILED on timeout when tolerance=false even if skipOnTimeout=true"() {
+        given:
+        // tolerance=false，即使 skipOnTimeout=true，超时后也应触发 TASK_FAILED 事件
+        String text = "version: 0.0.1\n" +
+                "namespace: olympicene\n" +
+                "service: mca\n" +
+                "name: test\n" +
+                "type: flow\n" +
+                "tasks: \n" +
+                "- category: suspense\n" +
+                "  name: A\n" +
+                "  tolerance: false\n" +
+                "  timeline:\n" +
+                "    timeoutInSeconds: \"120\"\n" +
+                "    skipOnTimeout: \"true\"\n" +
+                "  conditions:\n" +
+                "    - \$.input.[?(@.url == \"bbb\")]\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        olympicene.submit('timeout_tol_false_1', dag, [:])
+        olympicene.wakeup('timeout_tol_false_1', [:],
+                NotifyInfo.builder()
+                        .taskInfoName('A')
+                        .taskStatus(TaskStatus.FAILED)
+                        .taskInvokeMsg(TaskInvokeMsg.builder().msg("timeout").build())
+                        .build())
+
+        then:
+        // tolerance=false → 触发 TASK_FAILED 回调事件，而不是 TASK_SKIPPED
+        1 * callback.onEvent({
+            Event event -> event.eventCode == DAGEvent.TASK_FAILED.getCode()
+        })
+    }
+    def "suspense task should remain FAILED on interruption even if skipOnTimeout=true and tolerance=true"() {
+        given:
+        // tolerance=true 且 skipOnTimeout=true，但触发的是打断而非超时，应保持 FAILED
+        String text = "version: 0.0.1\n" +
+                "namespace: olympicene\n" +
+                "service: mca\n" +
+                "name: test\n" +
+                "type: flow\n" +
+                "tasks: \n" +
+                "- category: suspense\n" +
+                "  name: A\n" +
+                "  tolerance: true\n" +
+                "  timeline:\n" +
+                "    timeoutInSeconds: \"120\"\n" +
+                "    skipOnTimeout: \"true\"\n" +
+                "  inputMappings:\n" +
+                "     - target: \$.input.url\n" +
+                "       source: \$.context.url\n" +
+                "     - target: \$.input.text\n" +
+                "       source: \$.context.text\n" +
+                "  conditions:\n" +
+                "    - \$.input.[?(@.url == \"bbb\")]\n" +
+                "  interruptions:\n" +
+                "    - \$.input.[?(@.text == \"aaa\")]\n"
+        DAG dag = dagParser.parse(text)
+
+        when:
+        // 提交 DAG，初始上下文触发 interruption 条件（text=aaa）
+        olympicene.submit('interrupt_with_skip_flag_1', dag, ["text": "aaa"])
+
+        then:
+        // 虽然 tolerance=true && skipOnTimeout=true，但触发的是打断而非超时，应为 TASK_FAILED 而非 TASK_SKIPPED
+        1 * callback.onEvent({
+            Event event -> event.eventCode == DAGEvent.TASK_FAILED.getCode()
+        })
     }
 }

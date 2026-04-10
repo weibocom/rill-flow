@@ -26,15 +26,19 @@ import lombok.Setter;
 @Getter
 public class Timeline {
     private String timeoutInSeconds;
+    private String skipOnTimeout;
     private String suspenseIntervalSeconds;
     private String suspenseTimestamp;
 
     @JsonCreator
     public Timeline(@JsonProperty("timeoutInSeconds") String timeoutInSeconds,
+                    @JsonProperty("skipOnTimeout") String skipOnTimeout,
                     @JsonProperty("suspenseIntervalSeconds") String suspenseIntervalSeconds,
                     @JsonProperty("suspenseTimestamp") String suspenseTimestamp) {
         this.timeoutInSeconds = timeoutInSeconds;
+        this.skipOnTimeout = skipOnTimeout;
         this.suspenseIntervalSeconds = suspenseIntervalSeconds;
         this.suspenseTimestamp = suspenseTimestamp;
     }
 }
+
