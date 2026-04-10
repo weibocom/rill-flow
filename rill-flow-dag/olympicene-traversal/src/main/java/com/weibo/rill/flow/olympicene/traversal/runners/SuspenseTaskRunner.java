@@ -19,6 +19,8 @@ package com.weibo.rill.flow.olympicene.traversal.runners;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.weibo.rill.flow.interfaces.model.strategy.Timeline;
+import com.weibo.rill.flow.interfaces.model.task.BaseTask;
 import com.weibo.rill.flow.interfaces.model.task.TaskInfo;
 import com.weibo.rill.flow.interfaces.model.task.TaskInvokeMsg;
 import com.weibo.rill.flow.interfaces.model.task.TaskStatus;
@@ -31,11 +33,11 @@ import com.weibo.rill.flow.olympicene.core.runtime.DAGContextStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGInfoStorage;
 import com.weibo.rill.flow.olympicene.core.runtime.DAGStorageProcedure;
 import com.weibo.rill.flow.olympicene.core.switcher.SwitcherManager;
-import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import com.weibo.rill.flow.olympicene.traversal.constant.TraversalErrorCode;
 import com.weibo.rill.flow.olympicene.traversal.exception.DAGTraversalException;
 import com.weibo.rill.flow.olympicene.traversal.helper.ContextHelper;
 import com.weibo.rill.flow.olympicene.traversal.mappings.InputOutputMapping;
+import com.weibo.rill.flow.olympicene.traversal.utils.ConditionsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -117,7 +119,25 @@ public class SuspenseTaskRunner extends AbstractTaskRunner {
             if (notifyInfo.getTaskStatus() != null && notifyInfo.getTaskStatus().isCompleted()) {
                 taskInfo.updateInvokeMsg(notifyInfo.getTaskInvokeMsg());
                 updateTaskInvokeEndTime(taskInfo);
-                taskInfo.setTaskStatus(notifyInfo.getTaskStatus());
+                TaskStatus finalStatus = notifyInfo.getTaskStatus();
+                // 仅超时（msg="timeout"）时，若 skipOnTimeout=true 且 tolerance=true，则将状态置为 SKIPPED 而非 FAILED
+                boolean isTimeout = java.util.Optional.ofNullable(notifyInfo.getTaskInvokeMsg())
+                        .map(TaskInvokeMsg::getMsg)
+                        .map("timeout"::equals)
+                        .orElse(false);
+                if (finalStatus == TaskStatus.FAILED && isTimeout) {
+                    boolean tolerance = java.util.Optional.ofNullable(taskInfo.getTask())
+                            .map(BaseTask::isTolerance).orElse(false);
+                    boolean skipOnTimeout = java.util.Optional.ofNullable(taskInfo.getTask())
+                            .map(BaseTask::getTimeline)
+                            .map(Timeline::getSkipOnTimeout)
+                            .map(Boolean::parseBoolean)
+                            .orElse(false);
+                    if (tolerance && skipOnTimeout) {
+                        finalStatus = TaskStatus.SKIPPED;
+                    }
+                }
+                taskInfo.setTaskStatus(finalStatus);
                 dagInfoStorage.saveTaskInfos(executionId, ImmutableSet.of(taskInfo));
                 return;
             }
