@@ -39,8 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage  -Dsonar.projectKey=weibocom_rill-flow
-        if: env.SONAR_TOKEN != ''
+        run: mvn -B clean javadoc:javadoc verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage -Dsonar.projectKey=weibocom_rill-flow
+        if: env.SONAR_TOKEN != '' && env.SONAR_TOKEN != null
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
